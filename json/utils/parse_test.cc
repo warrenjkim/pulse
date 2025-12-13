@@ -1,9 +1,9 @@
-#include "warren/json/utils/parse.h"
+#include "pulse/json/utils/parse.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 namespace {
@@ -21,4 +21,4 @@ TEST(UtilsTest, Parse) {
 
 }  // namespace
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

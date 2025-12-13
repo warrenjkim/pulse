@@ -1,13 +1,13 @@
-#include "warren/json/parse/lexer.h"
+#include "pulse/json/parse/lexer.h"
 
 #include <ostream>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "warren/json/parse/token.h"
-#include "warren/json/utils/to_string.h"
+#include "pulse/json/parse/token.h"
+#include "pulse/json/utils/to_string.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 inline void PrintTo(const Token& token, std::ostream* os) {
@@ -291,4 +291,4 @@ TEST(LexerTest, EofOnEmptyInput) {
 }  // namespace
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

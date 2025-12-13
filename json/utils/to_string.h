@@ -2,11 +2,11 @@
 
 #include <string>
 
-#include "warren/json/parse/lexer.h"
-#include "warren/json/parse/token.h"
-#include "warren/json/value.h"
+#include "pulse/json/parse/lexer.h"
+#include "pulse/json/parse/token.h"
+#include "pulse/json/value.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 struct PrintOptions {
@@ -29,4 +29,4 @@ inline std::ostream& operator<<(std::ostream& os, const Value& v) {
 }
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

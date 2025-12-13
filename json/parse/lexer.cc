@@ -1,11 +1,11 @@
-#include "warren/json/parse/lexer.h"
+#include "pulse/json/parse/lexer.h"
 
 #include <cctype>    // isdigit, isspace, isxdigit, tolower
 #include <optional>  // nullopt, optional
 
-#include "warren/json/parse/token.h"
+#include "pulse/json/parse/token.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 Lexer::Lexer(std::string json)
@@ -287,4 +287,4 @@ void Lexer::strip_whitespace() {
 }
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

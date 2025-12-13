@@ -11,7 +11,7 @@ cc_library(
     hdrs = [
         "exception.h",
     ],
-    include_prefix = "warren/json/utils",
+    include_prefix = "pulse/json/utils",
     visibility = ["//visibility:public"],
 )
 
@@ -20,7 +20,7 @@ cc_library(
     hdrs = [
         "parse.h",
     ],
-    include_prefix = "warren/json/utils",
+    include_prefix = "pulse/json/utils",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [
@@ -47,7 +47,7 @@ cc_library(
     hdrs = [
         "to_string.h",
     ],
-    include_prefix = "warren/json/utils",
+    include_prefix = "pulse/json/utils",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [

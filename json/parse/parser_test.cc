@@ -1,10 +1,10 @@
-#include "warren/json/parse/parser.h"
+#include "pulse/json/parse/parser.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "warren/json/parse/lexer.h"
+#include "pulse/json/parse/lexer.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 namespace {
@@ -109,4 +109,4 @@ TEST(ParserTest, SimpleArray) {
 }  // namespace
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

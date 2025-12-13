@@ -1,12 +1,12 @@
-#include "warren/json/utils/to_string.h"
+#include "pulse/json/utils/to_string.h"
 
 #include <sstream>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "warren/json/utils/parse.h"
+#include "pulse/json/utils/parse.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 namespace {
@@ -230,4 +230,4 @@ TEST(UtilsTest, PrettyPrintOstream) {
 }  // namespace
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

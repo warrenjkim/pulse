@@ -1,9 +1,9 @@
-#include "warren/json/value.h"
+#include "pulse/json/value.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 namespace {
@@ -228,4 +228,4 @@ TEST(ValueTest, TypeErrorsThrow) {
 }  // namespace
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse
