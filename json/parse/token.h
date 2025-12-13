@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 enum class TokenType {
@@ -38,4 +38,4 @@ struct Token {
 };
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

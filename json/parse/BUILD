@@ -11,7 +11,7 @@ cc_library(
     hdrs = [
         "token.h",
     ],
-    include_prefix = "warren/json/parse",
+    include_prefix = "pulse/json/parse",
     strip_include_prefix = ".",
     visibility = [
         "//json:__subpackages__",
@@ -23,7 +23,7 @@ cc_library(
     hdrs = [
         "reader.h",
     ],
-    include_prefix = "warren/json/parse",
+    include_prefix = "pulse/json/parse",
     strip_include_prefix = ".",
     visibility = [
         "//json:__subpackages__",
@@ -38,7 +38,7 @@ cc_library(
     hdrs = [
         "lexer.h",
     ],
-    include_prefix = "warren/json/parse",
+    include_prefix = "pulse/json/parse",
     strip_include_prefix = ".",
     visibility = [
         "//json:__subpackages__",
@@ -68,7 +68,7 @@ cc_library(
     hdrs = [
         "parser.h",
     ],
-    include_prefix = "warren/json/parse",
+    include_prefix = "pulse/json/parse",
     strip_include_prefix = ".",
     visibility = [
         "//json:__subpackages__",

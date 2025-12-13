@@ -2,10 +2,10 @@
 
 #include <cstddef>
 
-#include "warren/json/parse/lexer.h"
-#include "warren/json/value.h"
+#include "pulse/json/parse/lexer.h"
+#include "pulse/json/value.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 class Parser {
@@ -35,4 +35,4 @@ class Parser {
 };
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

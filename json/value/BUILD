@@ -3,7 +3,7 @@ cc_library(
     hdrs = [
         "value.h",
     ],
-    include_prefix = "warren/json",
+    include_prefix = "pulse/json",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [

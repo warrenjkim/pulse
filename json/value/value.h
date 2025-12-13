@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "warren/json/utils/exception.h"
+#include "pulse/json/utils/exception.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 class Value;
@@ -464,4 +464,4 @@ class Value {
 };
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

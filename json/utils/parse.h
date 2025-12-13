@@ -2,11 +2,11 @@
 
 #include <string>
 
-#include "warren/json/parse/lexer.h"
-#include "warren/json/parse/parser.h"
-#include "warren/json/value.h"
+#include "pulse/json/parse/lexer.h"
+#include "pulse/json/parse/parser.h"
+#include "pulse/json/value.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 inline Value operator""_json(const char* json, size_t len) {
@@ -18,4 +18,4 @@ inline Value parse(std::string json) {
 }
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

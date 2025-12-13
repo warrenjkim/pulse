@@ -3,10 +3,10 @@
 #include <optional>
 #include <string>
 
-#include "warren/json/parse/reader.h"
-#include "warren/json/parse/token.h"
+#include "pulse/json/parse/reader.h"
+#include "pulse/json/parse/token.h"
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 class Lexer {
@@ -64,4 +64,4 @@ class Lexer {
 };
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

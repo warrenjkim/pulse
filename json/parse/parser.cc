@@ -1,14 +1,14 @@
-#include "warren/json/parse/parser.h"
+#include "pulse/json/parse/parser.h"
 
 #include <cstddef>  // size_t
 #include <cstdint>  // int32_t, uint32_t
 #include <map>
 #include <string>
 
-#include "warren/json/parse/lexer.h"
-#include "warren/json/parse/token.h"
-#include "warren/json/utils/exception.h"
-#include "warren/json/utils/to_string.h"
+#include "pulse/json/parse/lexer.h"
+#include "pulse/json/parse/token.h"
+#include "pulse/json/utils/exception.h"
+#include "pulse/json/utils/to_string.h"
 
 namespace {
 
@@ -38,10 +38,10 @@ uint32_t to_code_point(const char c1, const char c2, const char c3,
 // https://www.ietf.org/rfc/rfc3629.txt
 void emit_utf8(uint32_t code_point, std::string& res) {
   if (code_point > 0x10FFFF) {
-    throw warren::json::ParseException(
+    throw pulse::json::ParseException(
         "Code point out of Unicode range (> 0x10FFFF)");
   } else if (0xD800 <= code_point && code_point <= 0xDFFF) {
-    throw warren::json::ParseException(
+    throw pulse::json::ParseException(
         "Code point in surrogate range [0xD800, 0xDFFF]");
   }
 
@@ -82,7 +82,7 @@ std::string resolve_unicode_sequences(const std::string& s) {
       if (0xD800 <= high_surrogate_cp && high_surrogate_cp <= 0xDBFF) {
         j += 6;
         if (j + 1 >= s.length() || s[j] != '\\' || s[j + 1] != 'u') {
-          throw warren::json::ParseException(
+          throw pulse::json::ParseException(
               "Expected low surrogate after high surrogate: " +
               s.substr(j - 6, 6));
         }
@@ -91,7 +91,7 @@ std::string resolve_unicode_sequences(const std::string& s) {
         uint32_t low_surrogate_cp =
             to_code_point(s[j - 4], s[j - 3], s[j - 2], s[j - 1]);
         if (!(0xDC00 <= low_surrogate_cp && low_surrogate_cp <= 0xDFFF)) {
-          throw warren::json::ParseException(
+          throw pulse::json::ParseException(
               "Invalid low surrogate (" + s.substr(j - 6, 6) +
               ") after high surrogate: " + s.substr(j - 12, 6));
         }
@@ -116,7 +116,7 @@ std::string resolve_unicode_sequences(const std::string& s) {
 
 }  // namespace
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 Parser::Parser(Lexer lexer) : lexer_(std::move(lexer)) {}
@@ -264,4 +264,4 @@ object_t Parser::parse_object() {
 }
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

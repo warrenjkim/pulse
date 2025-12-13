@@ -1,18 +1,18 @@
-#include "warren/json/utils/to_string.h"
+#include "pulse/json/utils/to_string.h"
 
 #include <iomanip>
 #include <sstream>
 #include <string>
 
-#include "warren/json/parse/lexer.h"
-#include "warren/json/parse/token.h"
-#include "warren/json/value.h"
+#include "pulse/json/parse/lexer.h"
+#include "pulse/json/parse/token.h"
+#include "pulse/json/value.h"
 
 namespace {
 
 struct Printer {
   size_t level = 0;
-  const warren::json::PrintOptions& opts;
+  const pulse::json::PrintOptions& opts;
 
   std::string indent() const {
     return opts.compact ? "" : std::string(level * opts.tab_width, ' ');
@@ -25,14 +25,14 @@ struct Printer {
     return oss.str();
   }
 
-  std::string print(const warren::json::Value& value) {
+  std::string print(const pulse::json::Value& value) {
     return value.visit(
         []() -> std::string { return "null"; },
         [](bool b) -> std::string { return (b ? "true" : "false"); },
         [](int32_t i) -> std::string { return std::to_string(i); },
         [this](double d) -> std::string { return format(d); },
         [](const std::string& s) -> std::string { return "\"" + s + "\""; },
-        [this](const warren::json::array_t& a) -> std::string {
+        [this](const pulse::json::array_t& a) -> std::string {
           if (a.empty()) {
             return "[]";
           }
@@ -52,7 +52,7 @@ struct Printer {
 
           return array;
         },
-        [this](const warren::json::object_t& o) -> std::string {
+        [this](const pulse::json::object_t& o) -> std::string {
           if (o.empty()) {
             return "{}";
           }
@@ -79,7 +79,7 @@ struct Printer {
 
 }  // namespace
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 std::string to_string(TokenType type) {
@@ -137,4 +137,4 @@ std::string to_string(const Value& value, const PrintOptions& opts) {
 }
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse

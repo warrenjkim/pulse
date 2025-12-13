@@ -4,7 +4,7 @@
 #include <optional>
 #include <string>
 
-namespace warren {
+namespace pulse {
 namespace json {
 
 class Reader {
@@ -36,4 +36,4 @@ class Reader {
 };
 
 }  // namespace json
-}  // namespace warren
+}  // namespace pulse
