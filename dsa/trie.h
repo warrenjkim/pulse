@@ -210,7 +210,7 @@ std::unique_ptr<typename Trie<K, V>::Node> Trie<K, V>::clone(const Node* node) {
   auto copy = std::make_unique<Node>();
   copy->value = node->value;
   for (const auto& [c, child] : node->children) {
-    copy->children[c] = CloneNode(child.get());
+    copy->children[c] = clone(child.get());
   }
 
   return copy;
