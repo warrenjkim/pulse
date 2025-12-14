@@ -160,7 +160,7 @@ const V* Trie<K, V>::get(const KeyRange& key) const {
 template <typename K, typename V>
 template <typename KeyRange>
 bool Trie<K, V>::erase(const KeyRange& key) {
-  auto remove = [](this auto& self, Node* node, auto curr, auto end) -> bool {
+  auto remove = [](auto& self, Node* node, auto curr, auto end) -> bool {
     if (curr == end) {
       if (!node->value) {
         return false;
@@ -175,7 +175,7 @@ bool Trie<K, V>::erase(const KeyRange& key) {
       return false;
     }
 
-    bool removed = self(it->second.get(), ++curr, end);
+    bool removed = self(self, it->second.get(), ++curr, end);
     if (removed && !it->second->value && it->second->children.empty()) {
       node->children.erase(it);
     }
@@ -184,7 +184,7 @@ bool Trie<K, V>::erase(const KeyRange& key) {
   };
 
   auto span = make_span(key);
-  return remove(root_.get(), span.begin(), span.end());
+  return remove(remove, root_.get(), span.begin(), span.end());
 }
 
 template <typename K, typename V>
@@ -220,8 +220,7 @@ std::string to_string(const Trie<K, V>& trie) {
 
   std::vector<std::string> lines;
 
-  auto partial = [&lines](this auto& self,
-                          const typename Trie<K, V>::Node* node,
+  auto partial = [&lines](auto& self, const typename Trie<K, V>::Node* node,
                           const typename Trie<K, V>::E& key,
                           std::vector<size_t> relatives) -> void {
     std::string token;
@@ -254,7 +253,7 @@ std::string to_string(const Trie<K, V>& trie) {
       if (first) {
         first = false;
         lines.back().append("-");
-        self(child.get(), c, relatives);
+        self(self, child.get(), c, relatives);
       } else {
         lines.emplace_back();
         if (children == node->children.size()) {
@@ -269,14 +268,14 @@ std::string to_string(const Trie<K, V>& trie) {
         }
 
         lines.back().append(prefix).append("`-");
-        self(child.get(), c, relatives);
+        self(self, child.get(), c, relatives);
       }
     }
   };
 
   for (const auto& [key, node] : trie.root_->children) {
     lines.emplace_back();
-    partial(node.get(), key, {});
+    partial(partial, node.get(), key, {});
   }
 
   std::string out;
