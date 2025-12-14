@@ -212,12 +212,6 @@ std::unique_ptr<typename Trie<K, V>::Node> Trie<K, V>::clone(const Node* node) {
   return copy;
 }
 
-std::string stringify(const auto& x) {
-  std::ostringstream s;
-  s << x;
-  return std::move(s).str();
-}
-
 template <typename K, typename V>
 std::string to_string(const Trie<K, V>& trie) {
   if (trie.root_->children.empty()) {
@@ -225,14 +219,23 @@ std::string to_string(const Trie<K, V>& trie) {
   }
 
   std::vector<std::string> lines;
-  auto dfs = [&lines](this auto& self, const typename Trie<K, V>::Node* node,
-                      const typename Trie<K, V>::E& key,
-                      std::vector<size_t> relatives) -> void {
-    std::string str = stringify(key);
+
+  auto partial = [&lines](this auto& self,
+                          const typename Trie<K, V>::Node* node,
+                          const typename Trie<K, V>::E& key,
+                          std::vector<size_t> relatives) -> void {
+    std::string token;
+    {
+      std::ostringstream ss;
+      ss << key;
+
+      token = std::move(ss).str();
+    }
+
     if (node->value.has_value()) {
-      lines.back().append("(").append(std::move(str)).append(")");
+      lines.back().append("(").append(std::move(token)).append(")");
     } else {
-      lines.back().append(std::move(str));
+      lines.back().append(std::move(token));
     }
 
     if (node->children.empty()) {
@@ -273,7 +276,7 @@ std::string to_string(const Trie<K, V>& trie) {
 
   for (const auto& [key, node] : trie.root_->children) {
     lines.emplace_back();
-    dfs(node.get(), key, {});
+    partial(node.get(), key, {});
   }
 
   std::string out;
@@ -291,8 +294,6 @@ std::string to_string(const Trie<K, V>& trie) {
   if (!out.empty()) {
     out.pop_back();
   }
-
-  std::cout << out << std::endl;
 
   return out;
 }
