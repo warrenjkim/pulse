@@ -42,3 +42,7 @@ build --config=base
 
 # TODO(fix shadow)
 build --copt=-Wno-shadow
+
+test --color=yes
+test --test_output=all
+test --test_arg=--gtest_color=yes
