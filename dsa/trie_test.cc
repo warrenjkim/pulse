@@ -161,6 +161,15 @@ TEST(TrieTest, MoveOnlyValue) {
   EXPECT_THAT(**val, Eq(42));
 }
 
+TEST(TrieTest, EmplaceValue) {
+  Trie<std::string, int> trie;
+  trie["test"] = 10;
+  EXPECT_TRUE(trie.match("test"));
+  EXPECT_THAT(trie["test"], Eq(10));
+  ASSERT_THAT(trie.get("test"), NotNull());
+  EXPECT_THAT(trie.get("test"), Pointee(Eq(10)));
+}
+
 TEST(TrieTest, ToString) {
   Trie<std::string, int> trie;
 
