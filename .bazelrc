@@ -17,9 +17,7 @@ build:base --cxxopt=-Wcast-align
 build:base --cxxopt=-Wcast-qual
 build:base --cxxopt=-Wformat=2
 build:base --cxxopt=-Winit-self
-build:base --cxxopt=-Wlogical-op
 build:base --cxxopt=-Wmissing-declarations
-build:base --cxxopt=-Wmissing-include-dirs
 build:base --cxxopt=-Wnoexcept
 build:base --cxxopt=-Woverloaded-virtual
 build:base --cxxopt=-Wredundant-decls
@@ -28,7 +26,6 @@ build:base --cxxopt=-Wundef
 
 build:strict --config=base
 build:strict --cxxopt=-Werror
-build:strict --cxxopt=-Wno-missing-include-dirs
 build:strict --strip=never
 build:strict --cxxopt=-fno-omit-frame-pointer
 build:strict --cxxopt=-O1
@@ -39,9 +36,6 @@ build:strict --cxxopt=-fsanitize=address,undefined
 build:strict --linkopt=-fsanitize=address,undefined
 
 build --config=base
-
-# TODO(fix shadow)
-build --copt=-Wno-shadow
 
 test --color=yes
 test --test_output=all
