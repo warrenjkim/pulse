@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <span>
 #include <sstream>
 #include <string>
