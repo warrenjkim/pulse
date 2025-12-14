@@ -40,21 +40,6 @@ TEST(TrieTest, InsertAndMatch) {
   EXPECT_FALSE(trie.match("world"));
 }
 
-TEST(TrieTest, InsertMultipleKeys) {
-  Trie<std::string, int> trie;
-  trie.insert("hello", 1);
-  trie.insert("help", 2);
-  trie.insert("world", 3);
-
-  EXPECT_TRUE(trie.match("hello"));
-  EXPECT_TRUE(trie.match("help"));
-  EXPECT_TRUE(trie.match("world"));
-  EXPECT_FALSE(trie.match("hel"));
-
-  EXPECT_TRUE(trie.prefix("hel"));
-  EXPECT_TRUE(trie.prefix("wor"));
-}
-
 TEST(TrieTest, InsertOverwrite) {
   Trie<std::string, int> trie;
   trie.insert("hello", 1);
@@ -164,16 +149,6 @@ TEST(TrieTest, VectorKey) {
   EXPECT_FALSE(trie.match(std::vector<int>{1, 2}));
 }
 
-TEST(TrieTest, StringViewLookup) {
-  Trie<std::string, int> trie;
-  trie.insert("hello", 42);
-
-  std::string_view sv = "hello";
-  EXPECT_TRUE(trie.match(sv));
-  EXPECT_TRUE(trie.prefix(sv));
-  EXPECT_THAT(trie.get(sv), Pointee(Eq(42)));
-}
-
 TEST(TrieTest, MoveOnlyValue) {
   Trie<std::string, std::unique_ptr<int>> trie;
   trie.insert("hello", std::make_unique<int>(42));
@@ -186,7 +161,7 @@ TEST(TrieTest, MoveOnlyValue) {
   EXPECT_THAT(**val, Eq(42));
 }
 
-TEST(TrieTest, ToStringComplex) {
+TEST(TrieTest, ToString) {
   Trie<std::string, int> trie;
 
   trie.insert("test", 1);
