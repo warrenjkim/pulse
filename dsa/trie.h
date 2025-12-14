@@ -57,7 +57,7 @@ class Trie {
   };
 
   template <typename KeyRange>
-  static auto make_span(const KeyRange& key);
+  static auto make_const_span(const KeyRange& key);
 
   static std::unique_ptr<Node> clone(const Node* node);
 
@@ -84,7 +84,7 @@ template <typename K, typename V>
 template <typename KeyRange>
 void Trie<K, V>::insert(const KeyRange& key, V value) {
   Node* curr = root_.get();
-  for (const E& c : make_span(key)) {
+  for (const E& c : make_const_span(key)) {
     auto& child = curr->children[c];
     if (!child) {
       child = std::make_unique<Node>();
@@ -100,7 +100,7 @@ template <typename K, typename V>
 template <typename KeyRange>
 bool Trie<K, V>::prefix(const KeyRange& key) const {
   const Node* curr = root_.get();
-  for (const E& c : make_span(key)) {
+  for (const E& c : make_const_span(key)) {
     if (auto it = curr->children.find(c); it != curr->children.end()) {
       curr = it->second.get();
     } else {
@@ -115,7 +115,7 @@ template <typename K, typename V>
 template <typename KeyRange>
 bool Trie<K, V>::match(const KeyRange& key) const {
   const Node* curr = root_.get();
-  for (const E& c : make_span(key)) {
+  for (const E& c : make_const_span(key)) {
     if (auto it = curr->children.find(c); it != curr->children.end()) {
       curr = it->second.get();
     } else {
@@ -130,7 +130,7 @@ template <typename K, typename V>
 template <typename KeyRange>
 V& Trie<K, V>::operator[](const KeyRange& key) {
   Node* curr = root_.get();
-  for (const E& c : make_span(key)) {
+  for (const E& c : make_const_span(key)) {
     auto& child = curr->children[c];
     if (!child) {
       child = std::make_unique<Node>();
@@ -146,7 +146,7 @@ template <typename K, typename V>
 template <typename KeyRange>
 const V* Trie<K, V>::get(const KeyRange& key) const {
   const Node* curr = root_.get();
-  for (const E& c : make_span(key)) {
+  for (const E& c : make_const_span(key)) {
     if (auto it = curr->children.find(c); it != curr->children.end()) {
       curr = it->second.get();
     } else {
@@ -183,17 +183,17 @@ bool Trie<K, V>::erase(const KeyRange& key) {
     return removed;
   };
 
-  auto span = make_span(key);
+  auto span = make_const_span(key);
   return remove(remove, root_.get(), span.begin(), span.end());
 }
 
 template <typename K, typename V>
 template <typename KeyRange>
-auto Trie<K, V>::make_span(const KeyRange& key) {
+auto Trie<K, V>::make_const_span(const KeyRange& key) {
   if constexpr (std::is_convertible_v<KeyRange, std::basic_string_view<E>>) {
-    return std::basic_string_view<E>(key);
+    return std::basic_string_view<const E>(key);
   } else {
-    return std::span(key);
+    return std::span<const E>(key);
   }
 }
 
