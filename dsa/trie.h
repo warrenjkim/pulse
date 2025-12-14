@@ -139,6 +139,10 @@ V& Trie<K, V>::operator[](const KeyRange& key) {
     curr = child.get();
   }
 
+  if (!curr->value.has_value()) {
+    curr->value.emplace();
+  }
+
   return *curr->value;
 }
 
