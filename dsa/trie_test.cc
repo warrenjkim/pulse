@@ -16,6 +16,30 @@ using ::testing::Pointee;
 
 TEST(TrieTest, DefaultConstructor) { Trie<std::string, int> trie; }
 
+TEST(TrieTest, CopyConstructor) {
+  Trie<std::string, int> trie;
+  trie.insert("hello", 1);
+
+  EXPECT_TRUE(trie.prefix(""));
+  EXPECT_TRUE(trie.prefix("h"));
+  EXPECT_TRUE(trie.prefix("hel"));
+  EXPECT_TRUE(trie.prefix("hell"));
+  EXPECT_TRUE(trie.prefix("hello"));
+
+  EXPECT_FALSE(trie.prefix("helloo"));
+  EXPECT_FALSE(trie.prefix("world"));
+
+  Trie<std::string, int> other = trie;
+  EXPECT_TRUE(other.prefix(""));
+  EXPECT_TRUE(other.prefix("h"));
+  EXPECT_TRUE(other.prefix("hel"));
+  EXPECT_TRUE(other.prefix("hell"));
+  EXPECT_TRUE(other.prefix("hello"));
+
+  EXPECT_FALSE(other.prefix("helloo"));
+  EXPECT_FALSE(other.prefix("world"));
+}
+
 TEST(TrieTest, InsertAndPrefix) {
   Trie<std::string, int> trie;
   trie.insert("hello", 1);
