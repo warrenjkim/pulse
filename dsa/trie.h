@@ -70,7 +70,7 @@ template <typename K, typename V>
 Trie<K, V>::Trie() : root_(std::make_unique<Node>()) {}
 
 template <typename K, typename V>
-Trie<K, V>::Trie(const Trie& other) : root_(clone(other)) {}
+Trie<K, V>::Trie(const Trie& other) : root_(clone(other.root_.get())) {}
 
 template <typename K, typename V>
 Trie<K, V>& Trie<K, V>::operator=(const Trie& other) {
