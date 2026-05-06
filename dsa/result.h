@@ -71,4 +71,11 @@ inline std::string to_string(const Result<void>& result) {
   return result.ok() ? "Ok" : "Err(" + to_string(result.error()) + ")";
 }
 
+#define ASSIGN_OR_RETURN(var, expr)    \
+  auto&& _result = (expr);             \
+  if (!_result.ok()) {                 \
+    return std::move(_result).error(); \
+  }                                    \
+  var = *std::move(_result);
+
 }  // namespace pulse
