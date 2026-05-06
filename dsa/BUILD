@@ -37,7 +37,6 @@ cc_library(
     include_prefix = "pulse/dsa",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
-    deps = [":error_code"],
 )
 
 cc_library(
