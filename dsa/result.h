@@ -6,6 +6,7 @@
 
 namespace pulse {
 
+// TODO(template specialization for Result<void>)
 template <typename T>
 class [[nodiscard]] Result {
  public:
