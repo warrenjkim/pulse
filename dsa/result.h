@@ -41,11 +41,11 @@ class [[nodiscard]] Result {
     }                                    \
   } while (false)
 
-#define ASSIGN_OR_RETURN(var, expr)          \
-  auto&& _result_##var = (expr);             \
-  if (!_result_##var.ok()) {                 \
-    return std::move(_result_##var).error(); \
-  }                                          \
-  auto var = *std::move(_result_##var);
+#define ASSIGN_OR_RETURN(var, expr)    \
+  auto&& _result = (expr);             \
+  if (!_result.ok()) {                 \
+    return std::move(_result).error(); \
+  }                                    \
+  var = *std::move(_result);
 
 }  // namespace pulse
