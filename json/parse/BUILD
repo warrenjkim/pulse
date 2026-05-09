@@ -1,11 +1,3 @@
-test_suite(
-    name = "tests",
-    tests = [
-        ":lexer_test",
-        ":parser_test",
-    ],
-)
-
 cc_library(
     name = "token",
     hdrs = [

@@ -12,12 +12,3 @@ cc_library(
         "//json/value",
     ],
 )
-
-test_suite(
-    name = "tests",
-    tests = [
-        "//json/parse:tests",
-        "//json/utils:tests",
-        "//json/value:value_test",
-    ],
-)

@@ -1,10 +1,3 @@
-test_suite(
-    name = "tests",
-    tests = [
-        ":parse_test",
-    ],
-)
-
 cc_library(
     name = "transform",
     srcs = ["transform.cc"],
