@@ -36,20 +36,20 @@ class [[nodiscard]] Result {
 template <>
 class [[nodiscard]] Result<void> {
  public:
-  Result() : data_(OkTag{}) {}
+  struct Ok {};
+
+  Result() : data_(Ok{}) {}
 
   Result(Error error) : data_(std::move(error)) {}
 
-  bool ok() const { return std::holds_alternative<OkTag>(data_); }
+  bool ok() const { return std::holds_alternative<Ok>(data_); }
 
   const Error& error() const& { return std::get<Error>(data_); }
 
   Error&& error() && { return std::get<Error>(std::move(data_)); }
 
  private:
-  struct OkTag {};
-
-  std::variant<OkTag, Error> data_;
+  std::variant<Ok, Error> data_;
 };
 
 }  // namespace pulse
