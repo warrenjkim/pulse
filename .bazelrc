@@ -1,11 +1,7 @@
 common --announce_rc
 common --color=yes
 common --curses=yes
-
 common --check_direct_dependencies=warning
-
-build --action_env=CC=gcc
-build --action_env=CXX=g++
 
 build:base --cxxopt=-std=gnu++23
 build:base --cxxopt=-Wall
@@ -18,10 +14,8 @@ build:base --cxxopt=-Wcast-qual
 build:base --cxxopt=-Wformat=2
 build:base --cxxopt=-Winit-self
 build:base --cxxopt=-Wmissing-declarations
-build:base --cxxopt=-Wnoexcept
 build:base --cxxopt=-Woverloaded-virtual
 build:base --cxxopt=-Wredundant-decls
-build:base --cxxopt=-Wstrict-null-sentinel
 build:base --cxxopt=-Wundef
 
 build:strict --config=base
@@ -34,7 +28,6 @@ build:strict --cxxopt=-DADDRESS_SANITIZER
 build:strict --cxxopt=-DUNDEFINED_BEHAVIOR_SANITIZER
 build:strict --cxxopt=-fsanitize=address,undefined
 build:strict --linkopt=-fsanitize=address,undefined
-
 build --config=base
 
 test --color=yes
