@@ -10,8 +10,7 @@ namespace pulse::net {
 // RAII wrapper around a POSIX file descriptor.
 //
 // Ownership semantics:
-// * Each `Socket` instance owns `fd_` (i.e. `fd_` is closed on destruction), so
-// callers should not call `close()` manually.
+// * Each `Socket` instance owns `fd_`, which is closed upon destruction.
 // * Copying is disabled to prevent double closing.
 // * Moving transfers ownership of `fd_` and sets `other.fd_` to -1 to indicate
 // a moved-from `Socket`. The destructor is a no-op in this state.
@@ -31,9 +30,6 @@ class Socket {
   // Movable
   Socket(Socket&& other);
   Socket& operator=(Socket&&);
-
-  // Callers should not call `close()` on this value.
-  int fd() const;
 
   // Reads bytes from the socket into a buffer until either:
   //   (1) `delimiter` is found, in which case, return the buffer excluding the
@@ -56,7 +52,6 @@ class Socket {
  private:
   static constexpr int kMaxRequestBytes = 8 * 1024;
 
-  // The underlying POSIX file descriptor. -1 indicates a moved-from `Socket`.
   int fd_;
 };
 

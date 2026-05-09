@@ -19,13 +19,13 @@ Socket::~Socket() {
 Socket::Socket(Socket&& other) : fd_(other.fd_) { other.fd_ = -1; }
 
 Socket& Socket::operator=(Socket&& other) {
-  fd_ = other.fd_;
-  other.fd_ = -1;
+  if (this != &other) {
+    fd_ = other.fd_;
+    other.fd_ = -1;
+  }
 
   return *this;
 }
-
-int Socket::fd() const { return fd_; }
 
 std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
   std::string buffer;
