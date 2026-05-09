@@ -37,8 +37,7 @@ std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
     }
 
     if (bytes < 0) {
-      // TODO(handle errors)
-      break;
+      return "";
     }
 
     buffer += c;
@@ -55,8 +54,7 @@ size_t Socket::write(std::string_view data) {
   while (total < data.size()) {
     ssize_t bytes = send(fd_, data.data() + total, data.size() - total, 0);
     if (bytes < 0) {
-      // TODO(handle errors)
-      break;
+      return total;
     }
 
     total += static_cast<size_t>(bytes);
