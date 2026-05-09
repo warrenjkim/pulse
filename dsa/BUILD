@@ -1,10 +1,3 @@
-test_suite(
-    name = "tests",
-    tests = [
-        ":trie_test",
-    ],
-)
-
 cc_library(
     name = "dsa",
     visibility = ["//visibility:public"],

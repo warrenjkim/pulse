@@ -1,11 +1,3 @@
-test_suite(
-    name = "tests",
-    tests = [
-        ":parse_test",
-        ":to_string_test",
-    ],
-)
-
 cc_library(
     name = "exception",
     hdrs = [
