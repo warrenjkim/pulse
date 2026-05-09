@@ -12,13 +12,15 @@ namespace pulse::http {
 namespace {
 
 // TODO(store version number)
-Result<bool> parse_header(std::string_view raw,
-                          std::vector<std::string_view> header,
+// Parses the request line and header fields into `request`. `header` must be
+// the result of splitting the header section on "\r\n". The first element is
+// the request line. The next element(s) are the header field(s).
+Result<bool> parse_header(std::vector<std::string_view> header,
                           Request* request) {
   std::vector<std::string_view> request_line = split(header[0], " ");
   if (request_line.size() < 3) {
     return Error{.code = Error::Code::kInternal,
-                 .message = "invalid request: " + std::string(raw)};
+                 .message = "parse_header: malformed request line"};
   }
 
   if (std::string_view method = request_line[0]; method == "GET") {
@@ -30,15 +32,17 @@ Result<bool> parse_header(std::string_view raw,
   } else if (method == "DELETE") {
     request->method = Method::kDelete;
   } else {
-    return Error{.code = Error::Code::kInternal,
-                 .message = "invalid method: " + std::string(method) + "\n"};
+    return Error{
+        .code = Error::Code::kInternal,
+        .message = "parse_header: invalid method: " + std::string(method)};
   }
 
   std::vector<std::string_view> path_with_params = split(request_line[1], "?");
   if (path_with_params.empty() || path_with_params[0].empty() ||
       path_with_params[0][0] != '/') {
     return Error{.code = Error::Code::kInternal,
-                 .message = "invalid request: " + std::string(raw)};
+                 .message = "parse_header: invalid path" +
+                            std::string(path_with_params[0])};
   }
 
   request->path = std::string(path_with_params[0]);
@@ -52,7 +56,8 @@ Result<bool> parse_header(std::string_view raw,
       }
 
       return Error{.code = Error::Code::kInternal,
-                   .message = "invalid request: " + std::string(raw)};
+                   .message = "parse_header: malformed query parameter: " +
+                              std::string(param)};
     }
   }
 
@@ -65,7 +70,8 @@ Result<bool> parse_header(std::string_view raw,
     }
 
     return Error{.code = Error::Code::kInternal,
-                 .message = "invalid request: " + std::string(raw)};
+                 .message = "parse_header: malformed header field: " +
+                            std::string(header[i])};
   }
 
   return true;
@@ -80,7 +86,6 @@ std::vector<std::string_view> split(std::string_view string,
   std::vector<std::string_view> parts;
   while (match != std::string::npos && cursor < string.size()) {
     parts.push_back(string.substr(cursor, match - cursor));
-
     cursor = match + delimiter.size();
     match = string.find(delimiter, cursor);
   }
@@ -94,15 +99,19 @@ std::vector<std::string_view> split(std::string_view string,
 
 Result<Request> parse(std::string_view raw) {
   Request request;
-
   size_t split_index = raw.find("\r\n\r\n");
   if (split_index == std::string::npos) {
     return Error{.code = Error::Code::kInternal,
-                 .message = "invalid request: " + std::string(raw)};
+                 .message = "parse: missing header/body separator"};
   }
 
-  RETURN_IF_ERROR(
-      parse_header(raw, split(raw.substr(0, split_index), "\r\n"), &request));
+  if (Result<bool> result =
+          parse_header(split(raw.substr(0, split_index), "\r\n"), &request);
+      !result.ok()) {
+    return Error{.code = result.error().code,
+                 .message = "parse: " + result.error().message};
+  }
+
   request.body = raw.substr(split_index + 4);
 
   return request;

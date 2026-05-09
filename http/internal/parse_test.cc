@@ -15,6 +15,7 @@ void PrintTo(const Request& r, std::ostream* os) {
 namespace {
 
 using ::testing::Eq;
+using ::testing::HasSubstr;
 using ::testing::TestParamInfo;
 using ::testing::TestWithParam;
 using ::testing::Values;
@@ -35,35 +36,36 @@ TEST_P(SplitTest, split) {
 
 INSTANTIATE_TEST_SUITE_P(
     ParseTest, SplitTest,
-    ::testing::Values(SplitTestCase{.name = "DoubleSpace",
-                                    .input = "a  b c",
-                                    .delimiter = " ",
-                                    .expected = {"a", "", "b", "c"}},
-                      SplitTestCase{.name = "LeadingSpace",
-                                    .input = " a  b c",
-                                    .delimiter = " ",
-                                    .expected = {"", "a", "", "b", "c"}},
-                      SplitTestCase{.name = "TrailingSpace",
-                                    .input = "a  b c ",
-                                    .delimiter = " ",
-                                    .expected = {"a", "", "b", "c", ""}},
-                      SplitTestCase{.name = "SequenceDelimiter",
-                                    .input = "a  b c ",
-                                    .delimiter = "  ",
-                                    .expected = {"a", "b c "}},
-                      SplitTestCase{.name = "TrailingSequenceDelimiter",
-                                    .input = "a  b c  ",
-                                    .delimiter = "  ",
-                                    .expected = {"a", "b c", ""}},
-                      SplitTestCase{.name = "SpecialChars",
-                                    .input = "a\r\nb\r\n\"c\"",
-                                    .delimiter = "\r\n",
-                                    .expected = {"a", "b", "\"c\""}}),
+    Values(SplitTestCase{.name = "DoubleSpace",
+                         .input = "a  b c",
+                         .delimiter = " ",
+                         .expected = {"a", "", "b", "c"}},
+           SplitTestCase{.name = "LeadingSpace",
+                         .input = " a  b c",
+                         .delimiter = " ",
+                         .expected = {"", "a", "", "b", "c"}},
+           SplitTestCase{.name = "TrailingSpace",
+                         .input = "a  b c ",
+                         .delimiter = " ",
+                         .expected = {"a", "", "b", "c", ""}},
+           SplitTestCase{.name = "SequenceDelimiter",
+                         .input = "a  b c ",
+                         .delimiter = "  ",
+                         .expected = {"a", "b c "}},
+           SplitTestCase{.name = "TrailingSequenceDelimiter",
+                         .input = "a  b c  ",
+                         .delimiter = "  ",
+                         .expected = {"a", "b c", ""}},
+           SplitTestCase{.name = "SpecialChars",
+                         .input = "a\r\nb\r\n\"c\"",
+                         .delimiter = "\r\n",
+                         .expected = {"a", "b", "\"c\""}}),
     [](const TestParamInfo<SplitTestCase>& info) { return info.param.name; });
 
 struct InvalidRequestTestCase {
   std::string name;
   std::string_view raw;
+  std::string_view expected_message;
 };
 
 class InvalidRequestTest : public TestWithParam<InvalidRequestTestCase> {};
@@ -71,26 +73,46 @@ class InvalidRequestTest : public TestWithParam<InvalidRequestTestCase> {};
 TEST_P(InvalidRequestTest, InvalidRequest) {
   Result<Request> request = parse(GetParam().raw);
   EXPECT_FALSE(request.ok());
+  EXPECT_THAT(request.error().message, HasSubstr(GetParam().expected_message));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ParseTest, InvalidRequestTest,
-    Values(InvalidRequestTestCase{.name = "TrailingAmpersand",
-                                  .raw = "GET /entries?month=01& HTTP/1.1\r\n"
-                                         "Host: 100.x.x.x:8080\r\n"
-                                         "\r\n"},
-           InvalidRequestTestCase{.name = "UnknownMethod",
-                                  .raw = "PATCH /entries HTTP/1.1\r\n"
-                                         "Host: 100.x.x.x:8080\r\n"
-                                         "\r\n"},
-           InvalidRequestTestCase{.name = "EmptyInput", .raw = ""},
-           InvalidRequestTestCase{.name = "MissingSeparator",
-                                  .raw = "GET / HTTP/1.1\r\n"
-                                         "Host: 100.x.x.x:8080\r\n"},
-           InvalidRequestTestCase{.name = "InvalidPath",
-                                  .raw = "GET entries HTTP/1.1\r\n"
-                                         "Host: 100.x.x.x:8080\r\n"
-                                         "\r\n"}),
+    Values(
+        InvalidRequestTestCase{
+            .name = "EmptyInput",
+            .raw = "",
+            .expected_message = "missing header/body separator"},
+        InvalidRequestTestCase{.name = "UnknownMethod",
+                               .raw = "PATCH /entries HTTP/1.1\r\n"
+                                      "Host: 100.x.x.x:8080\r\n"
+                                      "\r\n",
+                               .expected_message = "invalid method: PATCH"},
+        InvalidRequestTestCase{.name = "TrailingAmpersand",
+                               .raw = "GET /entries?month=01& HTTP/1.1\r\n"
+                                      "Host: 100.x.x.x:8080\r\n"
+                                      "\r\n",
+                               .expected_message = "malformed query parameter"},
+        InvalidRequestTestCase{.name = "InvalidPath",
+                               .raw = "GET entries HTTP/1.1\r\n"
+                                      "Host: 100.x.x.x:8080\r\n"
+                                      "\r\n",
+                               .expected_message = "invalid path"},
+        InvalidRequestTestCase{
+            .name = "MissingSeparator",
+            .raw = "GET / HTTP/1.1\r\n"
+                   "Host: 100.x.x.x:8080\r\n",
+            .expected_message = "missing header/body separator"},
+        InvalidRequestTestCase{.name = "EmptyHeaderValue",
+                               .raw = "GET / HTTP/1.1\r\n"
+                                      "Host: \r\n"
+                                      "\r\n",
+                               .expected_message = "malformed header field"},
+        InvalidRequestTestCase{.name = "MalformedHeader",
+                               .raw = "GET / HTTP/1.1\r\n"
+                                      "BadHeader\r\n"
+                                      "\r\n",
+                               .expected_message = "malformed header field"}),
     [](const TestParamInfo<InvalidRequestTestCase>& info) {
       return info.param.name;
     });
