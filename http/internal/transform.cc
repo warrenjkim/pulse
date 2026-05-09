@@ -1,11 +1,13 @@
-#include "http/internal/parse.h"
+#include "http/internal/transform.h"
 
+#include <string>
 #include <string_view>
 #include <vector>
 
 #include "dsa/error.h"
 #include "dsa/result.h"
 #include "http/request.h"
+#include "http/response.h"
 
 namespace pulse::http {
 
@@ -77,6 +79,22 @@ Result<bool> parse_header(std::vector<std::string_view> header,
   return true;
 }
 
+constexpr std::string_view reason(int status) {
+  switch (status) {
+    case 200:
+      return "OK";
+    case 201:
+      return "Created";
+    case 400:
+      return "Bad Request";
+    case 404:
+      return "Not Found";
+    case 500:
+    default:
+      return "Internal Server Error";
+  }
+}
+
 }  // namespace
 
 std::vector<std::string_view> split(std::string_view string,
@@ -115,6 +133,14 @@ Result<Request> parse(std::string_view raw) {
   request.body = raw.substr(split_index + 4);
 
   return request;
+}
+
+std::string to_string(const Response& response) {
+  return "HTTP/1.1 " + std::to_string(response.status) + " " +
+         std::string(reason(response.status)) +
+         "\r\nContent-Type: " + response.content_type +
+         "\r\nContent-Length: " + std::to_string(response.body.size()) +
+         "\r\n\r\n" + response.body;
 }
 
 }  // namespace pulse::http

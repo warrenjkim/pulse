@@ -5,6 +5,7 @@
 
 #include "dsa/result.h"
 #include "http/request.h"
+#include "http/response.h"
 
 namespace pulse::http {
 
@@ -35,5 +36,8 @@ std::vector<std::string_view> split(std::string_view string,
 //   * The headers are not well-formed.
 //   * The header/body separator is missing.
 Result<Request> parse(std::string_view raw);
+
+// Serializes a `Response` into a raw HTTP/1.1 response.
+std::string to_string(const Response& response);
 
 }  // namespace pulse::http

@@ -6,9 +6,9 @@ test_suite(
 )
 
 cc_library(
-    name = "parse",
-    srcs = ["parse.cc"],
-    hdrs = ["parse.h"],
+    name = "transform",
+    srcs = ["transform.cc"],
+    hdrs = ["transform.h"],
     include_prefix = "pulse/http/internal",
     strip_include_prefix = ".",
     visibility = ["//visibility:__pkg__"],
@@ -20,33 +20,11 @@ cc_library(
 )
 
 cc_test(
-    name = "parse_test",
-    srcs = ["parse_test.cc"],
+    name = "transform_test",
+    srcs = ["transform_test.cc"],
     deps = [
-        ":parse",
+        ":transform",
         "//dsa:result",
-        "//http:types",
-        "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "serialize",
-    srcs = ["serialize.cc"],
-    hdrs = ["serialize.h"],
-    include_prefix = "pulse/http/internal",
-    strip_include_prefix = ".",
-    visibility = ["//visibility:__pkg__"],
-    deps = [
-        "//http:types",
-    ],
-)
-
-cc_test(
-    name = "serialize_test",
-    srcs = ["serialize_test.cc"],
-    deps = [
-        ":serialize",
         "//http:types",
         "@googletest//:gtest_main",
     ],
