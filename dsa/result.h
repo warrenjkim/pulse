@@ -34,19 +34,4 @@ class [[nodiscard]] Result {
   std::variant<T, Error> data_;
 };
 
-#define RETURN_IF_ERROR(expr)            \
-  do {                                   \
-    auto&& _result = (expr);             \
-    if (!_result.ok()) {                 \
-      return std::move(_result).error(); \
-    }                                    \
-  } while (false)
-
-#define ASSIGN_OR_RETURN(var, expr)    \
-  auto&& _result = (expr);             \
-  if (!_result.ok()) {                 \
-    return std::move(_result).error(); \
-  }                                    \
-  var = *std::move(_result);
-
 }  // namespace pulse
