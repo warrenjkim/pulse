@@ -6,7 +6,6 @@
 
 namespace pulse {
 
-// TODO(template specialization for Result<void>)
 template <typename T>
 class [[nodiscard]] Result {
  public:
@@ -34,19 +33,23 @@ class [[nodiscard]] Result {
   std::variant<T, Error> data_;
 };
 
-#define RETURN_IF_ERROR(expr)            \
-  do {                                   \
-    auto&& _result = (expr);             \
-    if (!_result.ok()) {                 \
-      return std::move(_result).error(); \
-    }                                    \
-  } while (false)
+template <>
+class [[nodiscard]] Result<void> {
+ public:
+  struct Ok {};
 
-#define ASSIGN_OR_RETURN(var, expr)    \
-  auto&& _result = (expr);             \
-  if (!_result.ok()) {                 \
-    return std::move(_result).error(); \
-  }                                    \
-  var = *std::move(_result);
+  Result() : data_(Ok{}) {}
+
+  Result(Error error) : data_(std::move(error)) {}
+
+  bool ok() const { return std::holds_alternative<Ok>(data_); }
+
+  const Error& error() const& { return std::get<Error>(data_); }
+
+  Error&& error() && { return std::get<Error>(std::move(data_)); }
+
+ private:
+  std::variant<Ok, Error> data_;
+};
 
 }  // namespace pulse

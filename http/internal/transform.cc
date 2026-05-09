@@ -17,7 +17,7 @@ namespace {
 // Parses the request line and header fields into `request`. `header` must be
 // the result of splitting the header section on "\r\n". The first element is
 // the request line. The next element(s) are the header field(s).
-Result<bool> parse_header(std::vector<std::string_view> header,
+Result<void> parse_header(std::vector<std::string_view> header,
                           Request* request) {
   std::vector<std::string_view> request_line = split(header[0], " ");
   if (request_line.size() < 3) {
@@ -76,7 +76,7 @@ Result<bool> parse_header(std::vector<std::string_view> header,
                             std::string(header[i])};
   }
 
-  return true;
+  return Result<void>{};
 }
 
 constexpr std::string_view reason(int status) {
@@ -123,7 +123,7 @@ Result<Request> parse(std::string_view raw) {
                  .message = "parse: missing header/body separator"};
   }
 
-  if (Result<bool> result =
+  if (Result<void> result =
           parse_header(split(raw.substr(0, split_index), "\r\n"), &request);
       !result.ok()) {
     return Error{.code = result.error().code,
