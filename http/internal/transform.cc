@@ -1,5 +1,6 @@
 #include "http/internal/transform.h"
 
+#include <iostream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -124,8 +125,7 @@ Result<Request> parse_header(std::string_view raw) {
   }
 
   std::cerr << "[" << __FILE__ << ":" << __LINE__
-            << "] parsed request: method=" << static_cast<int>(request.method)
-            << " path=" << request.path << "\n";
+            << "] parsed request: " << request << "\n";
   return request;
 }
 

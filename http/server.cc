@@ -1,5 +1,6 @@
 #include "http/server.h"
 
+#include <iostream>
 #include <map>
 #include <memory>
 #include <unordered_map>
@@ -33,11 +34,14 @@ void Server::run() {
     pool_.submit([this, socket = std::make_shared<net::Socket>(std::move(s))] {
       std::string header = socket->read_until("\r\n\r\n");
       if (header.empty()) {
+        std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] empty header\n";
         return;
       }
 
       Result<Request> request = parse_header(header);
       if (!request.ok()) {
+        std::cerr << "[" << __FILE__ << ":" << __LINE__
+                  << "] parse error: " << request.error() << "\n";
         socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 400,
                                          .body = "<h1>400 Bad Request</h1>"}));
@@ -46,6 +50,8 @@ void Server::run() {
 
       auto method = router_.find(request->method);
       if (method == router_.end()) {
+        std::cerr << "[" << __FILE__ << ":" << __LINE__
+                  << "] no routes for method: " << request->method << "\n";
         socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
@@ -54,6 +60,9 @@ void Server::run() {
 
       auto handler = method->second.find(request->path);
       if (handler == method->second.end()) {
+        std::cerr << "[" << __FILE__ << ":" << __LINE__
+                  << "] no handler for: " << request->method << " "
+                  << request->path << "\n";
         socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
@@ -65,7 +74,14 @@ void Server::run() {
         request->body = socket->read(std::stoul(it->second));
       }
 
-      socket->write(serialize((*handler->second)(*request)));
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] request: " << *request << "\n";
+
+      Response response = (*handler->second)(*request);
+      socket->write(serialize(response));
+
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] response: " << response << "\n";
     });
   }
 }
