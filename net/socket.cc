@@ -3,6 +3,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cerrno>
+#include <iostream>
 #include <string>
 #include <string_view>
 
@@ -53,6 +55,7 @@ std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
   char c;
   while (buffer.size() < max_bytes) {
     ssize_t bytes = recv(fd_, &c, /*size=*/1, /*flags=*/0);
+    std::cerr << "recv returned: " << bytes << " errno: " << errno << "\n";
     if (bytes == 0) {
       break;
     }
