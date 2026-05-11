@@ -29,7 +29,7 @@ void Server::run() {
       continue;
     }
 
-    pool_.submit([this, socket = std::move(socket)] mutable {
+    pool_.submit([this, &socket] {
       std::string header = socket.read_until("\r\n\r\n");
       if (header.empty()) {
         return;

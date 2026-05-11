@@ -4,11 +4,12 @@ cc_library(
     hdrs = ["transform.h"],
     include_prefix = "pulse/http/internal",
     strip_include_prefix = ".",
-    visibility = ["//visibility:__pkg__"],
+    visibility = ["//http:__pkg__"],
     deps = [
         "//dsa:error",
         "//dsa:result",
-        "//http:types",
+        "//http:request",
+        "//http:response",
     ],
 )
 
@@ -18,7 +19,8 @@ cc_test(
     deps = [
         ":transform",
         "//dsa:result",
-        "//http:types",
+        "//http:request",
+        "//http:response",
         "@googletest//:gtest_main",
     ],
 )
