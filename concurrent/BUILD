@@ -1,4 +1,13 @@
 cc_library(
+    name = "concurrent",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":blocking_queue",
+        ":thread_pool",
+    ],
+)
+
+cc_library(
     name = "blocking_queue",
     hdrs = ["blocking_queue.h"],
     include_prefix = "pulse/concurrent",
