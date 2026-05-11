@@ -31,15 +31,18 @@ class Socket {
   Socket(Socket&& other);
   Socket& operator=(Socket&&);
 
+  // Reads exactly `size` bytes into a buffer and returns it. This call is
+  // blocking. Returns an empty string if reading failed. The caller should
+  // treat this as a signal to close the connection.
+  std::string read(size_t size);
+
   // Reads bytes from the socket into a buffer until either:
   //   (1) `delimiter` is found, in which case, return the buffer excluding the
   //   delimiter.
   //   (2) `max_bytes` bytes have been read without finding the delimiter, in
   //   which case, return the buffer of size `max_bytes`.
-  // This call is blocking.
-  //
-  // Returns an empty string if reading failed. The caller should treat this as
-  // a signal to close the connection.
+  // This call is blocking. Returns an empty string if reading failed. The
+  // caller should treat this as a signal to close the connection.
   std::string read_until(std::string_view delimiter,
                          size_t max_bytes = kMaxRequestBytes);
 
@@ -48,6 +51,9 @@ class Socket {
   // Returns the number of bytes actually written. A return value less than
   // data.size() indicates an error mid-write.
   size_t write(std::string_view data);
+
+  // Returns true if `fd_` is valid, false otherwise.
+  bool ok() const;
 
  private:
   static constexpr int kMaxRequestBytes = 8 * 1024;
