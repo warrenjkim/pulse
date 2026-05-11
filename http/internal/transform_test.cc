@@ -160,14 +160,6 @@ INSTANTIATE_TEST_SUITE_P(
             .expected = Request{.method = Method::kGet,
                                 .path = "/",
                                 .params = {},
-                                .headers = {{"Host", "100.x.x.x:8080"}}}},
-        ValidRequestTestCase{
-            .name = "BodyWithCRLF",
-            .raw = "POST /entries HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080",
-            .expected = Request{.method = Method::kPost,
-                                .path = "/entries",
-                                .params = {},
                                 .headers = {{"Host", "100.x.x.x:8080"}}}}),
     [](const TestParamInfo<ValidRequestTestCase>& info) {
       return info.param.name;

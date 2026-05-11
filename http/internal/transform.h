@@ -35,7 +35,6 @@ std::vector<std::string_view> split(std::string_view string,
 //   * The path does not begin with '/'.
 //   * The query parameter(s) are not well-formed.
 //   * The headers are not well-formed.
-//   * The header/body separator is missing.
 // Returns a `Request` with an empty body otherwise.
 Result<Request> parse_header(std::string_view raw);
 
