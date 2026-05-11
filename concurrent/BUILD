@@ -14,3 +14,22 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "thread_pool",
+    srcs = ["thread_pool.cc"],
+    hdrs = ["thread_pool.h"],
+    include_prefix = "pulse/concurrent",
+    strip_include_prefix = ".",
+    visibility = ["//visibility:public"],
+    deps = [":blocking_queue"],
+)
+
+cc_test(
+    name = "thread_pool_test",
+    srcs = ["thread_pool_test.cc"],
+    deps = [
+        ":thread_pool",
+        "@googletest//:gtest_main",
+    ],
+)
