@@ -174,7 +174,7 @@ struct SerializeTestCase {
 class SerializeTest : public TestWithParam<SerializeTestCase> {};
 
 TEST_P(SerializeTest, Serialize) {
-  EXPECT_THAT(to_string(GetParam().response), Eq(GetParam().expected));
+  EXPECT_THAT(serialize(GetParam().response), Eq(GetParam().expected));
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -117,7 +117,7 @@ Result<Request> parse_header(std::string_view raw) {
   return request;
 }
 
-std::string to_string(const Response& response) {
+std::string serialize(const Response& response) {
   return "HTTP/1.1 " + std::to_string(response.status) + " " +
          std::string(reason(response.status)) +
          "\r\nContent-Type: " + response.content_type +
