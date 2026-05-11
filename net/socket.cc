@@ -27,6 +27,27 @@ Socket& Socket::operator=(Socket&& other) {
   return *this;
 }
 
+std::string Socket::read(size_t size) {
+  std::string buffer(size, '\0');
+  size_t actual = 0;
+  while (actual < size) {
+    ssize_t bytes =
+        recv(fd_, buffer.data() + actual, size - actual, /*flags=*/0);
+    if (bytes == 0) {
+      break;
+    }
+
+    if (bytes < 0) {
+      return "";
+    }
+
+    actual += static_cast<size_t>(bytes);
+  }
+
+  buffer.resize(actual);
+  return buffer;
+}
+
 std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
   std::string buffer;
   char c;
