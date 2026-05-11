@@ -98,6 +98,10 @@ Result<Request> parse_header(std::string_view raw) {
   }
 
   for (size_t i = 1; i < header.size(); i++) {
+    if (header[i].empty()) {
+      continue;
+    }
+
     if (size_t match = header[i].find(": ");
         match != std::string::npos && match + 2 < header[i].size()) {
       request.headers[std::string(header[i].substr(0, match))] =
