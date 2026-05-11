@@ -1,6 +1,5 @@
 #include "http/server.h"
 
-#include <iostream>
 #include <map>
 #include <memory>
 #include <unordered_map>
@@ -33,15 +32,12 @@ void Server::run() {
     // TODO(use move-only functions)
     pool_.submit([this, socket = std::make_shared<net::Socket>(std::move(s))] {
       std::string header = socket->read_until("\r\n\r\n");
-      std::cerr << "header: [" << header << "]\n";
       if (header.empty()) {
-        std::cerr << "empty header\n";
         return;
       }
 
       Result<Request> request = parse_header(header);
       if (!request.ok()) {
-        std::cerr << "parse error: " << request.error().message << "\n";
         socket->write(to_string(Response{.content_type = "text/html",
                                          .status = 400,
                                          .body = "<h1>400 Bad Request</h1>"}));
