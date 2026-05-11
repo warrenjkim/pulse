@@ -10,12 +10,16 @@ namespace pulse::http {
 // Subclass and override `operator()` to implement an endpoint:
 //
 //   struct YourEndpointHandler : Handler {
-//     Response operator()(const Request& request) override;
+//     Response operator()(const Request& request) const override {
+//       // Your logic here.
+//     }
 //   };
+//
+// In main:
 //
 //   server.route(Method::kGet, "/", std::make_unique<YourEndpointHandler>());
 struct Handler {
-  virtual Response operator()(const Request& request) = 0;
+  virtual Response operator()(const Request& request) const = 0;
   virtual ~Handler() = default;
 };
 
