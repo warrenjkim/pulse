@@ -40,6 +40,8 @@ std::string Socket::read(size_t size) {
     }
 
     if (bytes < 0) {
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] recv() failed: " << strerror(errno) << "\n";
       return "";
     }
 
@@ -55,12 +57,13 @@ std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
   char c;
   while (buffer.size() < max_bytes) {
     ssize_t bytes = recv(fd_, &c, /*size=*/1, /*flags=*/0);
-    std::cerr << "recv returned: " << bytes << " errno: " << errno << "\n";
     if (bytes == 0) {
       break;
     }
 
     if (bytes < 0) {
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] recv() failed: " << strerror(errno) << "\n";
       return "";
     }
 
@@ -78,6 +81,8 @@ size_t Socket::write(std::string_view data) {
   while (total < data.size()) {
     ssize_t bytes = send(fd_, data.data() + total, data.size() - total, 0);
     if (bytes < 0) {
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] send() failed: " << strerror(errno) << "\n";
       return total;
     }
 

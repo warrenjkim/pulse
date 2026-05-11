@@ -55,6 +55,8 @@ Result<Request> parse_header(std::string_view raw) {
   std::vector<std::string_view> header = split(raw, "\r\n");
   std::vector<std::string_view> request_line = split(header[0], " ");
   if (request_line.size() < 3) {
+    std::cerr << "[" << __FILE__ << ":" << __LINE__
+              << "] malformed request line: [" << header[0] << "]\n";
     return Error{.code = Error::Code::kInternal,
                  .message = "parse_header: malformed request line"};
   }
@@ -68,6 +70,8 @@ Result<Request> parse_header(std::string_view raw) {
   } else if (method == "DELETE") {
     request.method = Method::kDelete;
   } else {
+    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] invalid method: ["
+              << method << "]\n";
     return Error{
         .code = Error::Code::kInternal,
         .message = "parse_header: invalid method: " + std::string(method)};
@@ -76,6 +80,8 @@ Result<Request> parse_header(std::string_view raw) {
   std::vector<std::string_view> path_with_params = split(request_line[1], "?");
   if (path_with_params.empty() || path_with_params[0].empty() ||
       path_with_params[0][0] != '/') {
+    std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] invalid path: ["
+              << path_with_params[0] << "]\n";
     return Error{.code = Error::Code::kInternal,
                  .message = "parse_header: invalid path" +
                             std::string(path_with_params[0])};
@@ -90,7 +96,8 @@ Result<Request> parse_header(std::string_view raw) {
             std::string(param.substr(i + 1));
         continue;
       }
-
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] malformed query parameter: [" << param << "]\n";
       return Error{.code = Error::Code::kInternal,
                    .message = "parse_header: malformed query parameter: " +
                               std::string(param)};
@@ -109,11 +116,16 @@ Result<Request> parse_header(std::string_view raw) {
       continue;
     }
 
+    std::cerr << "[" << __FILE__ << ":" << __LINE__
+              << "] malformed header field: [" << header[i] << "]\n";
     return Error{.code = Error::Code::kInternal,
                  .message = "parse_header: malformed header field: " +
                             std::string(header[i])};
   }
 
+  std::cerr << "[" << __FILE__ << ":" << __LINE__
+            << "] parsed request: method=" << static_cast<int>(request.method)
+            << " path=" << request.path << "\n";
   return request;
 }
 
