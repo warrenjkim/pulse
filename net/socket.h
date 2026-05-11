@@ -49,6 +49,9 @@ class Socket {
   // data.size() indicates an error mid-write.
   size_t write(std::string_view data);
 
+  // Returns true if `fd_` is valid, false otherwise.
+  bool ok() const;
+
  private:
   static constexpr int kMaxRequestBytes = 8 * 1024;
 

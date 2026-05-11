@@ -11,7 +11,7 @@ namespace pulse::net {
 Socket::Socket(int fd) : fd_(fd) {}
 
 Socket::~Socket() {
-  if (fd_ >= 0) {
+  if (ok()) {
     close(fd_);
   }
 }
@@ -62,5 +62,7 @@ size_t Socket::write(std::string_view data) {
 
   return total;
 }
+
+bool Socket::ok() const { return fd_ >= 0; }
 
 }  // namespace pulse::net
