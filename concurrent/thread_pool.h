@@ -14,7 +14,7 @@ class ThreadPool {
   // Spawns `threads` number of threads that all pull work off of `queue_`.
   explicit ThreadPool(size_t threads);
 
-  // Not copyable nor movable
+  // Not copyable or movable
   ThreadPool(const ThreadPool&) = delete;
   ThreadPool& operator=(const ThreadPool&) = delete;
 
