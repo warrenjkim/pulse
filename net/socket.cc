@@ -3,6 +3,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cerrno>
+#include <cstring>
+#include <iostream>
 #include <string>
 #include <string_view>
 
@@ -38,6 +41,8 @@ std::string Socket::read(size_t size) {
     }
 
     if (bytes < 0) {
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] recv() failed: " << strerror(errno) << "\n";
       return "";
     }
 
@@ -58,6 +63,8 @@ std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
     }
 
     if (bytes < 0) {
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] recv() failed: " << strerror(errno) << "\n";
       return "";
     }
 
@@ -75,6 +82,8 @@ size_t Socket::write(std::string_view data) {
   while (total < data.size()) {
     ssize_t bytes = send(fd_, data.data() + total, data.size() - total, 0);
     if (bytes < 0) {
+      std::cerr << "[" << __FILE__ << ":" << __LINE__
+                << "] send() failed: " << strerror(errno) << "\n";
       return total;
     }
 
