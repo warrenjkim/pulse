@@ -74,7 +74,7 @@ struct InvalidRequestTestCase {
 class InvalidRequestTest : public TestWithParam<InvalidRequestTestCase> {};
 
 TEST_P(InvalidRequestTest, InvalidRequest) {
-  Result<Request> request = parse(GetParam().raw);
+  Result<Request> request = parse_header(GetParam().raw);
   EXPECT_FALSE(request.ok());
   EXPECT_THAT(request.error().message, HasSubstr(GetParam().expected_message));
 }
@@ -82,39 +82,25 @@ TEST_P(InvalidRequestTest, InvalidRequest) {
 INSTANTIATE_TEST_SUITE_P(
     ParseTest, InvalidRequestTest,
     Values(
-        InvalidRequestTestCase{
-            .name = "EmptyInput",
-            .raw = "",
-            .expected_message = "missing header/body separator"},
         InvalidRequestTestCase{.name = "UnknownMethod",
                                .raw = "PATCH /entries HTTP/1.1\r\n"
-                                      "Host: 100.x.x.x:8080\r\n"
-                                      "\r\n",
+                                      "Host: 100.x.x.x:8080",
                                .expected_message = "invalid method: PATCH"},
         InvalidRequestTestCase{.name = "TrailingAmpersand",
                                .raw = "GET /entries?month=01& HTTP/1.1\r\n"
-                                      "Host: 100.x.x.x:8080\r\n"
-                                      "\r\n",
+                                      "Host: 100.x.x.x:8080",
                                .expected_message = "malformed query parameter"},
         InvalidRequestTestCase{.name = "InvalidPath",
                                .raw = "GET entries HTTP/1.1\r\n"
-                                      "Host: 100.x.x.x:8080\r\n"
-                                      "\r\n",
+                                      "Host: 100.x.x.x:8080",
                                .expected_message = "invalid path"},
-        InvalidRequestTestCase{
-            .name = "MissingSeparator",
-            .raw = "GET / HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080\r\n",
-            .expected_message = "missing header/body separator"},
         InvalidRequestTestCase{.name = "EmptyHeaderValue",
                                .raw = "GET / HTTP/1.1\r\n"
-                                      "Host: \r\n"
-                                      "\r\n",
+                                      "Host: ",
                                .expected_message = "malformed header field"},
         InvalidRequestTestCase{.name = "MalformedHeader",
                                .raw = "GET / HTTP/1.1\r\n"
-                                      "BadHeader\r\n"
-                                      "\r\n",
+                                      "BadHeader",
                                .expected_message = "malformed header field"}),
     [](const TestParamInfo<InvalidRequestTestCase>& info) {
       return info.param.name;
@@ -129,7 +115,7 @@ struct ValidRequestTestCase {
 class ValidRequestTest : public TestWithParam<ValidRequestTestCase> {};
 
 TEST_P(ValidRequestTest, ValidRequest) {
-  Result<Request> request = parse(GetParam().raw);
+  Result<Request> request = parse_header(GetParam().raw);
   EXPECT_TRUE(request.ok()) << request.error().message;
   EXPECT_THAT(*request, Eq(GetParam().expected));
 }
@@ -140,62 +126,49 @@ INSTANTIATE_TEST_SUITE_P(
         ValidRequestTestCase{
             .name = "Request",
             .raw = "GET /entries?month=01 HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080\r\n"
-                   "\r\n"
-                   "{\"cc_bill\": 1}",
+                   "Host: 100.x.x.x:8080",
             .expected = Request{.method = Method::kGet,
                                 .path = "/entries",
                                 .params = {{"month", "01"}},
-                                .headers = {{"Host", "100.x.x.x:8080"}},
-                                .body = "{\"cc_bill\": 1}"}},
+                                .headers = {{"Host", "100.x.x.x:8080"}}}},
         ValidRequestTestCase{
             .name = "GetWithParams",
             .raw = "GET /entries?month=2026-04&limit=10 HTTP/1.1\r\n"
                    "Host: 100.x.x.x:8080\r\n"
-                   "Accept: text/html\r\n"
-                   "\r\n",
+                   "Accept: text/html",
             .expected = Request{.method = Method::kGet,
                                 .path = "/entries",
                                 .params = {{"month", "2026-04"},
                                            {"limit", "10"}},
                                 .headers = {{"Host", "100.x.x.x:8080"},
-                                            {"Accept", "text/html"}},
-                                .body = ""}},
+                                            {"Accept", "text/html"}}}},
         ValidRequestTestCase{
-            .name = "PostWithBody",
+            .name = "Post",
             .raw = "POST /entries HTTP/1.1\r\n"
                    "Host: 100.x.x.x:8080\r\n"
-                   "Content-Type: application/json\r\n"
-                   "\r\n"
-                   "{\"cc_bill\": 6600, \"savings\": 80000}",
-            .expected =
-                Request{.method = Method::kPost,
-                        .path = "/entries",
-                        .params = {},
-                        .headers = {{"Host", "100.x.x.x:8080"},
-                                    {"Content-Type", "application/json"}},
-                        .body = "{\"cc_bill\": 6600, \"savings\": 80000}"}},
-        ValidRequestTestCase{
-            .name = "GetNoParams",
-            .raw = "GET / HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080\r\n"
-                   "\r\n",
-            .expected = Request{.method = Method::kGet,
-                                .path = "/",
-                                .params = {},
-                                .headers = {{"Host", "100.x.x.x:8080"}},
-                                .body = ""}},
-        ValidRequestTestCase{
-            .name = "BodyWithCRLF",
-            .raw = "POST /entries HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080\r\n"
-                   "\r\n"
-                   "{\"note\": \"line1\\r\\nline2\"}",
+                   "Content-Type: application/json",
             .expected = Request{.method = Method::kPost,
                                 .path = "/entries",
                                 .params = {},
-                                .headers = {{"Host", "100.x.x.x:8080"}},
-                                .body = "{\"note\": \"line1\\r\\nline2\"}"}}),
+                                .headers = {{"Host", "100.x.x.x:8080"},
+                                            {"Content-Type",
+                                             "application/json"}}}},
+        ValidRequestTestCase{
+            .name = "GetNoParams",
+            .raw = "GET / HTTP/1.1\r\n"
+                   "Host: 100.x.x.x:8080",
+            .expected = Request{.method = Method::kGet,
+                                .path = "/",
+                                .params = {},
+                                .headers = {{"Host", "100.x.x.x:8080"}}}},
+        ValidRequestTestCase{
+            .name = "BodyWithCRLF",
+            .raw = "POST /entries HTTP/1.1\r\n"
+                   "Host: 100.x.x.x:8080",
+            .expected = Request{.method = Method::kPost,
+                                .path = "/entries",
+                                .params = {},
+                                .headers = {{"Host", "100.x.x.x:8080"}}}}),
     [](const TestParamInfo<ValidRequestTestCase>& info) {
       return info.param.name;
     });

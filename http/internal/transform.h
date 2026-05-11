@@ -19,7 +19,8 @@ namespace pulse::http {
 std::vector<std::string_view> split(std::string_view string,
                                     std::string_view delimiter);
 
-// Parses a raw HTTP/1.1 request into a `Request`. Expects the following format:
+// Parses a raw HTTP/1.1 request header into a `Request`. Expects the following
+// format:
 //
 //   METHOD path(\?key=value(&key=value)*)? HTTP/1.1\r\n
 //   (Header-Key: Header-Value\r\n)*
@@ -35,7 +36,8 @@ std::vector<std::string_view> split(std::string_view string,
 //   * The query parameter(s) are not well-formed.
 //   * The headers are not well-formed.
 //   * The header/body separator is missing.
-Result<Request> parse(std::string_view raw);
+// Returns a `Request` with an empty body otherwise.
+Result<Request> parse_header(std::string_view raw);
 
 // Serializes a `Response` into a raw HTTP/1.1 response.
 std::string to_string(const Response& response);
