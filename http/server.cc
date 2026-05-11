@@ -38,7 +38,7 @@ void Server::run() {
 
       Result<Request> request = parse_header(header);
       if (!request.ok()) {
-        socket->write(to_string(Response{.content_type = "text/html",
+        socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 400,
                                          .body = "<h1>400 Bad Request</h1>"}));
         return;
@@ -46,7 +46,7 @@ void Server::run() {
 
       auto method = router_.find(request->method);
       if (method == router_.end()) {
-        socket->write(to_string(Response{.content_type = "text/html",
+        socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
         return;
@@ -54,7 +54,7 @@ void Server::run() {
 
       auto handler = method->second.find(request->path);
       if (handler == method->second.end()) {
-        socket->write(to_string(Response{.content_type = "text/html",
+        socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
         return;
@@ -65,7 +65,7 @@ void Server::run() {
         request->body = socket->read(std::stoul(it->second));
       }
 
-      socket->write(to_string((*handler->second)(*request)));
+      socket->write(serialize((*handler->second)(*request)));
     });
   }
 }

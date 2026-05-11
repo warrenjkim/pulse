@@ -39,6 +39,6 @@ std::vector<std::string_view> split(std::string_view string,
 Result<Request> parse_header(std::string_view raw);
 
 // Serializes a `Response` into a raw HTTP/1.1 response.
-std::string to_string(const Response& response);
+std::string serialize(const Response& response);
 
 }  // namespace pulse::http
