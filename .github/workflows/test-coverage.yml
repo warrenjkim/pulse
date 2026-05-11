@@ -28,6 +28,6 @@ jobs:
         run: bazel build --verbose_failures //...
 
       - name: Run tests
-        run: bazel test --test_output=all //:all_tests
+        run: bazel test --test_output=all //...
 
       # TODO(add coverage)

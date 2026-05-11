@@ -6,11 +6,3 @@ cc_library(
         "//json",
     ],
 )
-
-test_suite(
-    name = "all_tests",
-    tests = [
-        "//dsa:tests",
-        "//json:tests",
-    ],
-)

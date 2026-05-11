@@ -21,7 +21,7 @@ class Acceptor {
   // Closes the socket if `fd_` is not -1. No-op if construction failed.
   ~Acceptor();
 
-  // Not copyable nor movable
+  // Not copyable or movable
   Acceptor(const Acceptor&) = delete;
   Acceptor& operator=(const Acceptor&) = delete;
 
