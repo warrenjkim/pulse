@@ -9,6 +9,8 @@ struct Response {
   std::string content_type;
   int status;
   std::string body;
+
+  friend bool operator==(const Response&, const Response&) = default;
 };
 
 inline std::string to_string(const Response& res) {
