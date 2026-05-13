@@ -10,6 +10,8 @@ struct Error {
 
   Code code;
   std::string message;
+
+  friend bool operator==(const Error&, const Error&) = default;
 };
 
 inline std::string to_string(const Error::Code& code) {
