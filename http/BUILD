@@ -16,6 +16,7 @@ cc_library(
     include_prefix = "pulse/http",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
+    deps = ["//core:enum_macros"],
 )
 
 cc_library(
