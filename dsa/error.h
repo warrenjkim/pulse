@@ -7,7 +7,9 @@
 
 namespace pulse {
 
-#define ERROR_CODE_TABLE(X) X(kInternal, "INTERNAL")
+#define ERROR_CODE_TABLE(X) \
+  X(kInternal, "INTERNAL")  \
+  X(kNotFound, "NOT_FOUND")
 
 struct Error {
   PULSE_ENUM(Code, ERROR_CODE_TABLE)
