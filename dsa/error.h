@@ -1,12 +1,16 @@
 #pragma once
 
-#include <ostream>
 #include <string>
+
+#include "core/enum_macros.h"
+#include "core/stringify.h"
 
 namespace pulse {
 
+#define ERROR_CODE_TABLE(X) X(kInternal, "INTERNAL")
+
 struct Error {
-  enum class Code { kInternal };
+  PULSE_ENUM(Code, ERROR_CODE_TABLE)
 
   Code code;
   std::string message;
@@ -14,24 +18,14 @@ struct Error {
   friend bool operator==(const Error&, const Error&) = default;
 };
 
-inline std::string to_string(const Error::Code& code) {
-  switch (code) {
-    case Error::Code::kInternal:
-    default:
-      return "kInternal";
-  }
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
-  return os << to_string(code);
-}
-
-inline std::string to_string(const Error& error) {
-  return "[" + to_string(error.code) + "] " + error.message;
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Error& error) {
-  return os << to_string(error);
-}
-
 }  // namespace pulse
+
+PULSE_ENUM_TO_STRING(pulse::Error::Code, ERROR_CODE_TABLE)
+
+template <>
+struct pulse::Stringify<pulse::Error> {
+  static std::string to_string(const pulse::Error& error) {
+    return "[" + pulse::Stringify<pulse::Error::Code>::to_string(error.code) +
+           "] " + error.message;
+  }
+};

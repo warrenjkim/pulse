@@ -6,6 +6,7 @@ cc_library(
     strip_include_prefix = ".",
     visibility = ["//http:__pkg__"],
     deps = [
+        "//core:stringify",
         "//dsa:error",
         "//dsa:result",
         "//http:request",

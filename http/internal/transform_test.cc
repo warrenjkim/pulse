@@ -10,11 +10,6 @@
 
 namespace pulse::http {
 
-void PrintTo(const Request& r, std::ostream* os) {
-  *os << "Request{method=" << static_cast<int>(r.method) << ", path=" << r.path
-      << ", body=" << r.body << "}";
-}
-
 namespace {
 
 using ::testing::Eq;

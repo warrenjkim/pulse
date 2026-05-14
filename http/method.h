@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "core/enum_macros.h"
 
 namespace pulse::http {
@@ -13,6 +11,7 @@ namespace pulse::http {
   X(kDelete, "DELETE")
 
 PULSE_ENUM(Method, METHOD_TABLE);
-PULSE_ENUM_TO_STRING(Method, METHOD_TABLE);
 
 }  // namespace pulse::http
+
+PULSE_ENUM_TO_STRING(pulse::http::Method, METHOD_TABLE);

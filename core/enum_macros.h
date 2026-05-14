@@ -30,19 +30,19 @@
 
 // Specialization of pulse::Stringify for an enum declared with PULSE_ENUM.
 //
-// * Usage:
+// Usage:
 //
 //   PULSE_ENUM_TO_STRING(YourEnumName, YOUR_ENUM_TABLE)
 //
-// * Generates:
+// Generates:
 //
 //   template <>
 //   struct pulse::Stringify<YourEnumName> {
 //     static std::string to_string(const YourEnumName& value);
 //   };
 //
-// * Returns "UNKNOWN" for kUnknown or any unrecognized value.
-// * Must be called in the global namespace.
+// Returns "UNKNOWN" for kUnknown or any unrecognized value.
+// Must be called in the global namespace.
 #define PULSE_ENUM_TO_STRING(EnumName, TABLE)             \
   template <>                                             \
   struct pulse::Stringify<EnumName> {                     \
