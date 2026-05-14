@@ -1,8 +1,9 @@
 #pragma once
 
-#include <ostream>      // IWYU pragma: export
 #include <string>       // IWYU pragma: export
 #include <string_view>  // IWYU pragma: export
+
+#include "core/stringify.h"  // IWYU pragma: export
 
 // Declares an enum class with a kUnknown default value.
 //
@@ -27,33 +28,33 @@
   enum class EnumName { kUnknown, TABLE(PULSE_INTERNAL_DEFINE_ENUM_VALUE) };
 #define PULSE_INTERNAL_DEFINE_ENUM_VALUE(enumerator, string) enumerator,
 
-// Generates to_string() and operator<< for an enum declared with PULSE_ENUM.
+// Specialization of pulse::Stringify for an enum declared with PULSE_ENUM.
 //
-// Usage:
+// * Usage:
 //
 //   PULSE_ENUM_TO_STRING(YourEnumName, YOUR_ENUM_TABLE)
 //
-// Generates:
+// * Generates:
 //
-//   inline std::string to_string(const YourEnumName& value);
+//   template <>
+//   struct pulse::Stringify<YourEnumName> {
+//     static std::string to_string(const YourEnumName& value);
+//   };
 //
-//   inline std::ostream& operator<<(std::ostream& os,
-//                                   const YourEnumName& value);
-//
-// Returns "UNKNOWN" for kUnknown or any unrecognized value.
-// Compatible with pulse::Stringify<T>::to_string() and pulse::to_string().
-#define PULSE_ENUM_TO_STRING(EnumName, TABLE)                                \
-  inline std::string to_string(const EnumName& value) {                      \
-    using _E = EnumName;                                                     \
-    switch (value) {                                                         \
-      case _E::kUnknown:                                                     \
-        return "UNKNOWN";                                                    \
-        TABLE(PULSE_INTERNAL_ENUM_TO_STRING_CASE)                            \
-    }                                                                        \
-  }                                                                          \
-  inline std::ostream& operator<<(std::ostream& os, const EnumName& value) { \
-    return os << to_string(value);                                           \
-  }
+// * Returns "UNKNOWN" for kUnknown or any unrecognized value.
+// * Must be called in the global namespace.
+#define PULSE_ENUM_TO_STRING(EnumName, TABLE)             \
+  template <>                                             \
+  struct pulse::Stringify<EnumName> {                     \
+    static std::string to_string(const EnumName& value) { \
+      using _E = EnumName;                                \
+      switch (value) {                                    \
+        case _E::kUnknown:                                \
+          return "UNKNOWN";                               \
+          TABLE(PULSE_INTERNAL_ENUM_TO_STRING_CASE)       \
+      }                                                   \
+    }                                                     \
+  };
 #define PULSE_INTERNAL_ENUM_TO_STRING_CASE(enumerator, string) \
   case _E::enumerator:                                         \
     return string;
