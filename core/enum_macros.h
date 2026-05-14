@@ -58,8 +58,7 @@
   case _E::enumerator:                                         \
     return string;
 
-// Generates a string -> enum conversion function for an enum declared with
-// PULSE_ENUM.
+// Generates a to_enum() for an enum declared with PULSE_ENUM.
 //
 // Usage:
 //

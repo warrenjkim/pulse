@@ -1,29 +1,18 @@
 #pragma once
 
-#include <ostream>
 #include <string>
+
+#include "core/enum_macros.h"
 
 namespace pulse::http {
 
-enum class Method { kGet, kPost, kPut, kDelete };
+#define METHOD_TABLE(X) \
+  X(kGet, "GET")        \
+  X(kPost, "POST")      \
+  X(kPut, "PUT")        \
+  X(kDelete, "DELETE")
 
-inline std::string to_string(Method method) {
-  switch (method) {
-    case Method::kGet:
-      return "GET";
-    case Method::kPost:
-      return "POST";
-    case Method::kPut:
-      return "PUT";
-    case Method::kDelete:
-      return "DELETE";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-inline std::ostream& operator<<(std::ostream& os, Method method) {
-  return os << to_string(method);
-}
+PULSE_ENUM(Method, METHOD_TABLE);
+PULSE_ENUM_TO_STRING(Method, METHOD_TABLE);
 
 }  // namespace pulse::http
