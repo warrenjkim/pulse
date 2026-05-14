@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 
+#include "core/stringify.h"
 #include "dsa/error.h"
 #include "dsa/result.h"
 #include "http/request.h"
@@ -125,7 +126,7 @@ Result<Request> parse_header(std::string_view raw) {
   }
 
   std::cerr << "[" << __FILE__ << ":" << __LINE__
-            << "] parsed request: " << request << "\n";
+            << "] parsed request: " << pulse::to_string(request) << "\n";
   return request;
 }
 

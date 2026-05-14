@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "concurrent/thread_pool.h"
+#include "core/stringify.h"
 #include "dsa/result.h"
 #include "http/handler.h"
 #include "http/internal/transform.h"
@@ -41,7 +42,7 @@ void Server::run() {
       Result<Request> request = parse_header(header);
       if (!request.ok()) {
         std::cerr << "[" << __FILE__ << ":" << __LINE__
-                  << "] parse error: " << request.error() << "\n";
+                  << "] parse error: " << pulse::to_string(request) << "\n";
         socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 400,
                                          .body = "<h1>400 Bad Request</h1>"}));
@@ -51,7 +52,8 @@ void Server::run() {
       auto method = router_.find(request->method);
       if (method == router_.end()) {
         std::cerr << "[" << __FILE__ << ":" << __LINE__
-                  << "] no routes for method: " << request->method << "\n";
+                  << "] no routes for method: "
+                  << pulse::to_string(request->method) << "\n";
         socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
@@ -61,8 +63,8 @@ void Server::run() {
       auto handler = method->second.find(request->path);
       if (handler == method->second.end()) {
         std::cerr << "[" << __FILE__ << ":" << __LINE__
-                  << "] no handler for: " << request->method << " "
-                  << request->path << "\n";
+                  << "] no handler for: " << pulse::to_string(request->method)
+                  << " " << request->path << "\n";
         socket->write(serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
@@ -75,13 +77,13 @@ void Server::run() {
       }
 
       std::cerr << "[" << __FILE__ << ":" << __LINE__
-                << "] request: " << *request << "\n";
+                << "] request: " << pulse::to_string(request) << "\n";
 
       Response response = (*handler->second)(*request);
       socket->write(serialize(response));
 
       std::cerr << "[" << __FILE__ << ":" << __LINE__
-                << "] response: " << response << "\n";
+                << "] response: " << pulse::to_string(response) << "\n";
     });
   }
 }

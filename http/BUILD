@@ -16,7 +16,10 @@ cc_library(
     include_prefix = "pulse/http",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
-    deps = ["//core:enum_macros"],
+    deps = [
+        "//core:enum_macros",
+        "//core:stringify",
+    ],
 )
 
 cc_library(
@@ -25,7 +28,10 @@ cc_library(
     include_prefix = "pulse/http",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
-    deps = [":method"],
+    deps = [
+        ":method",
+        "//core:stringify",
+    ],
 )
 
 cc_library(
@@ -34,6 +40,7 @@ cc_library(
     include_prefix = "pulse/http",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
+    deps = ["//core:stringify"],
 )
 
 cc_library(
@@ -59,6 +66,7 @@ cc_library(
         ":handler",
         ":method",
         "//concurrent:thread_pool",
+        "//core:stringify",
         "//dsa:result",
         "//http/internal:transform",
         "//net:acceptor",
