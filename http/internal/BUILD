@@ -11,6 +11,7 @@ cc_library(
         "//dsa:result",
         "//http:request",
         "//http:response",
+        "//strings:split",
     ],
 )
 
