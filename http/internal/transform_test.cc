@@ -18,48 +18,6 @@ using ::testing::TestParamInfo;
 using ::testing::TestWithParam;
 using ::testing::Values;
 
-struct SplitTestCase {
-  std::string name;
-  std::string_view input;
-  std::string_view delimiter;
-  std::vector<std::string_view> expected;
-};
-
-class SplitTest : public TestWithParam<SplitTestCase> {};
-
-TEST_P(SplitTest, split) {
-  EXPECT_THAT(split(GetParam().input, GetParam().delimiter),
-              Eq(GetParam().expected));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ParseTest, SplitTest,
-    Values(SplitTestCase{.name = "DoubleSpace",
-                         .input = "a  b c",
-                         .delimiter = " ",
-                         .expected = {"a", "", "b", "c"}},
-           SplitTestCase{.name = "LeadingSpace",
-                         .input = " a  b c",
-                         .delimiter = " ",
-                         .expected = {"", "a", "", "b", "c"}},
-           SplitTestCase{.name = "TrailingSpace",
-                         .input = "a  b c ",
-                         .delimiter = " ",
-                         .expected = {"a", "", "b", "c", ""}},
-           SplitTestCase{.name = "SequenceDelimiter",
-                         .input = "a  b c ",
-                         .delimiter = "  ",
-                         .expected = {"a", "b c "}},
-           SplitTestCase{.name = "TrailingSequenceDelimiter",
-                         .input = "a  b c  ",
-                         .delimiter = "  ",
-                         .expected = {"a", "b c", ""}},
-           SplitTestCase{.name = "SpecialChars",
-                         .input = "a\r\nb\r\n\"c\"",
-                         .delimiter = "\r\n",
-                         .expected = {"a", "b", "\"c\""}}),
-    [](const TestParamInfo<SplitTestCase>& info) { return info.param.name; });
-
 struct InvalidRequestTestCase {
   std::string name;
   std::string_view raw;

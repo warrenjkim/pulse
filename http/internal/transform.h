@@ -1,23 +1,12 @@
 #pragma once
 
 #include <string_view>
-#include <vector>
 
 #include "dsa/result.h"
 #include "http/request.h"
 #include "http/response.h"
 
 namespace pulse::http {
-
-// TODO(might want to move this out into dsa. currently public just to make it
-// easier to test)
-// Splits `string` on each occurrence of `delimiter`, returning a vector of
-// views into `string`. Empty tokens are preserved: i.e. a leading, trailing, or
-// consecutive delimiter produces an empty `std::string_view` at that position.
-//
-// `string` must outlive the returned views.
-std::vector<std::string_view> split(std::string_view string,
-                                    std::string_view delimiter);
 
 // Parses a raw HTTP/1.1 request header into a `Request`. Expects the following
 // format:
