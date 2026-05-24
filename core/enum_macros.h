@@ -25,7 +25,7 @@
 //     ...
 //   };
 #define PULSE_ENUM(EnumName, TABLE) \
-  enum class EnumName { kUnknown, TABLE(PULSE_INTERNAL_DEFINE_ENUM_VALUE) };
+  enum class EnumName { kUnknown, TABLE(PULSE_INTERNAL_DEFINE_ENUM_VALUE) }
 #define PULSE_INTERNAL_DEFINE_ENUM_VALUE(enumerator, string) enumerator,
 
 // Specialization of pulse::Stringify for an enum declared with PULSE_ENUM.
@@ -38,7 +38,7 @@
 //
 //   template <>
 //   struct pulse::Stringify<YourEnumName> {
-//     static std::string to_string(const YourEnumName& value);
+//     static std::string to_string(const YourEnumName& value) { ... }
 //   };
 //
 // Returns "UNKNOWN" for kUnknown or any unrecognized value.
@@ -49,12 +49,12 @@
     static std::string to_string(const EnumName& value) { \
       using _E = EnumName;                                \
       switch (value) {                                    \
-        case _E::kUnknown:                                \
+        TABLE(PULSE_INTERNAL_ENUM_TO_STRING_CASE)         \
+        default:                                          \
           return "UNKNOWN";                               \
-          TABLE(PULSE_INTERNAL_ENUM_TO_STRING_CASE)       \
       }                                                   \
     }                                                     \
-  };
+  }
 #define PULSE_INTERNAL_ENUM_TO_STRING_CASE(enumerator, string) \
   case _E::enumerator:                                         \
     return string;
@@ -75,7 +75,9 @@
     using _E = EnumName;                              \
     TABLE(PULSE_INTERNAL_STRING_TO_ENUM_CHECK)        \
     return _E::kUnknown;                              \
-  }
+  }                                                   \
+  static_assert(true, "")
+
 #define PULSE_INTERNAL_STRING_TO_ENUM_CHECK(enumerator, string) \
   if (value == string) {                                        \
     return _E::enumerator;                                      \
