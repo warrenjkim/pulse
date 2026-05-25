@@ -4,6 +4,7 @@ cc_library(
     deps = [
         ":handler",
         ":method",
+        ":pattern",
         ":request",
         ":response",
         ":server",
@@ -19,6 +20,31 @@ cc_library(
     deps = [
         "//core:enum_macros",
         "//core:stringify",
+    ],
+)
+
+cc_library(
+    name = "pattern",
+    srcs = ["pattern.cc"],
+    hdrs = ["pattern.h"],
+    include_prefix = "pulse/http",
+    strip_include_prefix = ".",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//core:enum_macros",
+        "//core:stringify",
+        "//dsa:result",
+        "//strings:split",
+    ],
+)
+
+cc_test(
+    name = "pattern_test",
+    srcs = ["pattern_test.cc"],
+    deps = [
+        ":pattern",
+        "//dsa:result",
+        "@googletest//:gtest_main",
     ],
 )
 
