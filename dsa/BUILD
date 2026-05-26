@@ -20,6 +20,7 @@ cc_test(
     srcs = ["trie_test.cc"],
     deps = [
         ":trie",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )

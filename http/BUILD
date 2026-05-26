@@ -44,7 +44,9 @@ cc_test(
     srcs = ["pattern_test.cc"],
     deps = [
         ":pattern",
+        "//dsa:error",
         "//dsa:result",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )
@@ -96,8 +98,12 @@ cc_test(
         ":handler",
         ":method",
         ":pattern",
+        ":request",
+        ":response",
         ":router",
+        "//dsa:error",
         "//dsa:result",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )

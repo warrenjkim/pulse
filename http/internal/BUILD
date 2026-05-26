@@ -22,8 +22,10 @@ cc_test(
     deps = [
         ":transform",
         "//dsa:result",
+        "//http:method",
         "//http:request",
         "//http:response",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )
