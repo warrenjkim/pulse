@@ -28,26 +28,35 @@ struct pulse::Stringify<pulse::http::Request> {
     std::string out =
         "Request{\n  method: " +
         pulse::Stringify<pulse::http::Method>::to_string(req.method) +
-        "\n  path: " + req.path + "\n";
+        "\n  path: " + req.path;
+
+    if (!req.path_params.empty()) {
+      out += "\n  path_params: {\n";
+      for (const auto& [k, v] : req.path_params) {
+        out += "    " + k + ": " + v + "\n";
+      }
+
+      out += "  }";
+    }
 
     if (!req.query_params.empty()) {
-      out += "  params: {\n";
+      out += "\n  query_params: {\n";
       for (const auto& [k, v] : req.query_params) {
         out += "    " + k + ": " + v + "\n";
       }
 
-      out += "  }\n";
+      out += "  }";
     }
 
     if (!req.headers.empty()) {
-      out += "  headers: {\n";
+      out += "\n  headers: {\n";
       for (const auto& [k, v] : req.headers) {
         out += "    " + k + ": " + v + "\n";
       }
 
-      out += "  }\n";
+      out += "  }";
     }
 
-    return out + (req.body.empty() ? "" : "  body: " + req.body) + "\n}";
+    return out + (req.body.empty() ? "" : "\n  body: " + req.body) + "\n}";
   }
 };
