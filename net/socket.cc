@@ -1,10 +1,10 @@
 #include "net/socket.h"
 
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <cerrno>
-#include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <string>
@@ -35,7 +35,7 @@ std::string Socket::read(size_t size) {
   std::string buffer(size, '\0');
   size_t actual = 0;
   while (actual < size) {
-    int64_t bytes =
+    ssize_t bytes =
         recv(fd_, buffer.data() + actual, size - actual, /*flags=*/0);
     if (bytes == 0) {
       break;
@@ -58,7 +58,7 @@ std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
   std::string buffer;
   char c;
   while (buffer.size() < max_bytes) {
-    int64_t bytes = recv(fd_, &c, /*size=*/1, /*flags=*/0);
+    ssize_t bytes = recv(fd_, &c, /*size=*/1, /*flags=*/0);
     if (bytes == 0) {
       break;
     }
@@ -81,7 +81,7 @@ std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
 size_t Socket::write(std::string_view data) {
   size_t total = 0;
   while (total < data.size()) {
-    int64_t bytes = send(fd_, data.data() + total, data.size() - total, 0);
+    ssize_t bytes = send(fd_, data.data() + total, data.size() - total, 0);
     if (bytes < 0) {
       std::cerr << "[" << __FILE__ << ":" << __LINE__
                 << "] send() failed: " << strerror(errno) << "\n";

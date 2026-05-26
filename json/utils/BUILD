@@ -44,6 +44,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//json/parse:lexer",
+        "//json/parse:token",
         "//json/value",
     ],
 )
