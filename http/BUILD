@@ -33,6 +33,7 @@ cc_library(
     deps = [
         "//core:enum_macros",
         "//core:stringify",
+        "//dsa:error",
         "//dsa:result",
         "//strings:split",
     ],
@@ -67,6 +68,38 @@ cc_library(
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = ["//core:stringify"],
+)
+
+cc_library(
+    name = "router",
+    srcs = ["router.cc"],
+    hdrs = ["router.h"],
+    include_prefix = "pulse/http",
+    strip_include_prefix = ".",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":handler",
+        ":method",
+        ":pattern",
+        "//core:enum_macros",
+        "//core:stringify",
+        "//dsa:error",
+        "//dsa:result",
+        "//strings:split",
+    ],
+)
+
+cc_test(
+    name = "router_test",
+    srcs = ["router_test.cc"],
+    deps = [
+        ":handler",
+        ":method",
+        ":pattern",
+        ":router",
+        "//dsa:result",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_library(
