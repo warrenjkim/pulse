@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "dsa/error.h"
-#include "dsa/result.h"
+#include "core/error.h"
+#include "core/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "http/handler.h"

@@ -12,6 +12,7 @@ cc_test(
     srcs = ["split_test.cc"],
     deps = [
         ":split",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )

@@ -5,8 +5,8 @@
 #include <utility>
 #include <variant>
 
+#include "core/error.h"
 #include "core/stringify.h"
-#include "dsa/error.h"
 
 namespace pulse {
 

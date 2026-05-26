@@ -20,6 +20,7 @@ cc_test(
     srcs = ["blocking_queue_test.cc"],
     deps = [
         ":blocking_queue",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )
@@ -39,6 +40,7 @@ cc_test(
     srcs = ["thread_pool_test.cc"],
     deps = [
         ":thread_pool",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )

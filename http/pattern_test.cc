@@ -6,8 +6,8 @@
 #include <string_view>
 #include <unordered_map>
 
-#include "dsa/error.h"
-#include "dsa/result.h"
+#include "core/error.h"
+#include "core/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
