@@ -47,3 +47,26 @@ cc_library(
         "//core:stringify",
     ],
 )
+
+cc_library(
+    name = "result_or_die",
+    hdrs = ["result_or_die.h"],
+    include_prefix = "pulse/dsa",
+    strip_include_prefix = ".",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":result",
+    ],
+)
+
+cc_test(
+    name = "result_or_die_test",
+    srcs = ["result_or_die_test.cc"],
+    deps = [
+        ":error",
+        ":result",
+        ":result_or_die",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
