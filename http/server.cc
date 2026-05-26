@@ -4,12 +4,15 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 #include "concurrent/thread_pool.h"
 #include "core/stringify.h"
 #include "dsa/result.h"
 #include "http/handler.h"
 #include "http/internal/transform.h"
+#include "http/request.h"
+#include "http/response.h"
 #include "http/router.h"
 #include "net/acceptor.h"
 #include "net/socket.h"

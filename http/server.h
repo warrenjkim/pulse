@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "concurrent/thread_pool.h"
 #include "http/router.h"
 #include "net/acceptor.h"

@@ -2,9 +2,13 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
+#include "dsa/error.h"
 #include "dsa/result.h"
 #include "http/handler.h"
 #include "http/method.h"
