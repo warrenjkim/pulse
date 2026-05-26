@@ -3,8 +3,10 @@
 #include <string>
 #include <string_view>
 
+#include "dsa/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "http/method.h"
 #include "http/request.h"
 #include "http/response.h"
 

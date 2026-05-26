@@ -1,6 +1,8 @@
 #pragma once
 
 #include <sstream>
+#include <string>
+#include <utility>
 #include <variant>
 
 #include "core/stringify.h"

@@ -1,7 +1,9 @@
 #include "concurrent/blocking_queue.h"
 
+#include <atomic>
 #include <chrono>
 #include <future>
+#include <mutex>
 #include <optional>
 #include <thread>
 #include <vector>

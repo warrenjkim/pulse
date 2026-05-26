@@ -1,5 +1,6 @@
 #include "http/internal/transform.h"
 
+#include <cstddef>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -8,6 +9,7 @@
 #include "core/stringify.h"
 #include "dsa/error.h"
 #include "dsa/result.h"
+#include "http/method.h"
 #include "http/request.h"
 #include "http/response.h"
 #include "strings/split.h"

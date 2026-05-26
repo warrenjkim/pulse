@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "core/enum_macros.h"

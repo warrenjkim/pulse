@@ -1,8 +1,11 @@
 #pragma once
 
+#include <algorithm>
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <span>
 #include <sstream>
 #include <string>

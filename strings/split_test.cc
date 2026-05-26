@@ -11,6 +11,7 @@ namespace pulse::strings {
 
 namespace {
 
+using ::std::vector;
 using ::testing::Eq;
 using ::testing::TestParamInfo;
 using ::testing::TestWithParam;
@@ -20,7 +21,7 @@ struct SplitTestCase {
   std::string name;
   std::string_view input;
   std::string_view delimiter;
-  std::vector<std::string_view> expected;
+  vector<std::string_view> expected;
 };
 
 class SplitTest : public TestWithParam<SplitTestCase> {};

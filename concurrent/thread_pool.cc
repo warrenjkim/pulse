@@ -1,7 +1,11 @@
 #include "concurrent/thread_pool.h"
 
+#include <cstddef>
 #include <functional>
 #include <mutex>
+#include <optional>
+#include <thread>
+#include <utility>
 
 #include "concurrent/blocking_queue.h"
 

@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include "dsa/error.h"
 #include "dsa/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "http/handler.h"
 #include "http/method.h"
+#include "http/pattern.h"
 #include "http/request.h"
 #include "http/response.h"
 
