@@ -9,6 +9,7 @@ cc_library(
         "//core:stringify",
         "//dsa:error",
         "//dsa:result",
+        "//http:method",
         "//http:request",
         "//http:response",
         "//strings:split",
