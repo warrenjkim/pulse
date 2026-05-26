@@ -62,23 +62,24 @@ Result<Request> parse_header(std::string_view raw) {
         .message = "parse_header: invalid method: " + std::string(method)};
   }
 
-  std::vector<std::string_view> path_with_params =
+  std::vector<std::string_view> path_with_query_params =
       strings::split(request_line[1], "?");
-  if (path_with_params.empty() || path_with_params[0].empty() ||
-      path_with_params[0][0] != '/') {
+  if (path_with_query_params.empty() || path_with_query_params[0].empty() ||
+      path_with_query_params[0][0] != '/') {
     std::cerr << "[" << __FILE__ << ":" << __LINE__ << "] invalid path: ["
-              << path_with_params[0] << "]\n";
+              << path_with_query_params[0] << "]\n";
     return Error{.code = Error::Code::kInternal,
                  .message = "parse_header: invalid path" +
-                            std::string(path_with_params[0])};
+                            std::string(path_with_query_params[0])};
   }
 
-  request.path = std::string(path_with_params[0]);
-  if (path_with_params.size() > 1) {
-    for (std::string_view param : strings::split(path_with_params[1], "&")) {
+  request.path = std::string(path_with_query_params[0]);
+  if (path_with_query_params.size() > 1) {
+    for (std::string_view param :
+         strings::split(path_with_query_params[1], "&")) {
       if (size_t i = param.find('=');
           i != std::string::npos && i + 1 < param.size()) {
-        request.params[std::string(param.substr(0, i))] =
+        request.query_params[std::string(param.substr(0, i))] =
             std::string(param.substr(i + 1));
         continue;
       }

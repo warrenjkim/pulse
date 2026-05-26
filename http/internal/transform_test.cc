@@ -82,7 +82,7 @@ INSTANTIATE_TEST_SUITE_P(
                    "Host: 100.x.x.x:8080",
             .expected = Request{.method = Method::kGet,
                                 .path = "/entries",
-                                .params = {{"month", "01"}},
+                                .query_params = {{"month", "01"}},
                                 .headers = {{"Host", "100.x.x.x:8080"}}}},
         ValidRequestTestCase{
             .name = "GetWithParams",
@@ -91,8 +91,8 @@ INSTANTIATE_TEST_SUITE_P(
                    "Accept: text/html",
             .expected = Request{.method = Method::kGet,
                                 .path = "/entries",
-                                .params = {{"month", "2026-04"},
-                                           {"limit", "10"}},
+                                .query_params = {{"month", "2026-04"},
+                                                 {"limit", "10"}},
                                 .headers = {{"Host", "100.x.x.x:8080"},
                                             {"Accept", "text/html"}}}},
         ValidRequestTestCase{
@@ -102,7 +102,7 @@ INSTANTIATE_TEST_SUITE_P(
                    "Content-Type: application/json",
             .expected = Request{.method = Method::kPost,
                                 .path = "/entries",
-                                .params = {},
+                                .query_params = {},
                                 .headers = {{"Host", "100.x.x.x:8080"},
                                             {"Content-Type",
                                              "application/json"}}}},
@@ -112,7 +112,7 @@ INSTANTIATE_TEST_SUITE_P(
                    "Host: 100.x.x.x:8080",
             .expected = Request{.method = Method::kGet,
                                 .path = "/",
-                                .params = {},
+                                .query_params = {},
                                 .headers = {{"Host", "100.x.x.x:8080"}}}}),
     [](const TestParamInfo<ValidRequestTestCase>& info) {
       return info.param.name;

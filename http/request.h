@@ -12,7 +12,8 @@ namespace pulse::http {
 struct Request {
   Method method;
   std::string path;
-  std::unordered_map<std::string, std::string> params;
+  std::unordered_map<std::string, std::string> path_params;
+  std::unordered_map<std::string, std::string> query_params;
   std::unordered_map<std::string, std::string> headers;
   std::string body;
 
@@ -29,9 +30,9 @@ struct pulse::Stringify<pulse::http::Request> {
         pulse::Stringify<pulse::http::Method>::to_string(req.method) +
         "\n  path: " + req.path + "\n";
 
-    if (!req.params.empty()) {
+    if (!req.query_params.empty()) {
       out += "  params: {\n";
-      for (const auto& [k, v] : req.params) {
+      for (const auto& [k, v] : req.query_params) {
         out += "    " + k + ": " + v + "\n";
       }
 
