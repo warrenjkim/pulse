@@ -1,28 +1,23 @@
 #include "http/server.h"
 
 #include <iostream>
-#include <map>
 #include <memory>
-#include <unordered_map>
+#include <optional>
+#include <string>
 
 #include "concurrent/thread_pool.h"
 #include "core/stringify.h"
 #include "dsa/result.h"
 #include "http/handler.h"
 #include "http/internal/transform.h"
-#include "http/method.h"
+#include "http/router.h"
 #include "net/acceptor.h"
 #include "net/socket.h"
 
 namespace pulse::http {
 
-Server::Server(const Server::Options& opts)
-    : pool_(opts.threads), acceptor_(opts.port) {}
-
-void Server::route(Method method, std::string path,
-                   std::unique_ptr<Handler> handler) {
-  router_[method][std::move(path)] = std::move(handler);
-}
+Server::Server(Router router, const Server::Options& opts)
+    : router_(std::move(router)), pool_(opts.threads), acceptor_(opts.port) {}
 
 void Server::run() {
   while (true) {
@@ -49,8 +44,9 @@ void Server::run() {
         return;
       }
 
-      auto method = router_.find(request->method);
-      if (method == router_.end()) {
+      std::optional<Router::Match> match =
+          router_.match(request->method, request->path);
+      if (!match.has_value()) {
         std::cerr << "[" << __FILE__ << ":" << __LINE__
                   << "] no routes for method: "
                   << pulse::to_string(request->method) << "\n";
@@ -60,26 +56,17 @@ void Server::run() {
         return;
       }
 
-      auto handler = method->second.find(request->path);
-      if (handler == method->second.end()) {
-        std::cerr << "[" << __FILE__ << ":" << __LINE__
-                  << "] no handler for: " << pulse::to_string(request->method)
-                  << " " << request->path << "\n";
-        socket->write(serialize(Response{.content_type = "text/html",
-                                         .status = 404,
-                                         .body = "<h1>404 Not Found</h1>"}));
-        return;
-      }
-
+      request->path_params = std::move(match->path_params);
       if (auto it = request->headers.find("Content-Length");
           it != request->headers.end()) {
+        // TODO(write stoul to return success/failure)
         request->body = socket->read(std::stoul(it->second));
       }
 
       std::cerr << "[" << __FILE__ << ":" << __LINE__
                 << "] request: " << pulse::to_string(request) << "\n";
 
-      Response response = (*handler->second)(*request);
+      Response response = (*match->handler)(*request);
       socket->write(serialize(response));
 
       std::cerr << "[" << __FILE__ << ":" << __LINE__

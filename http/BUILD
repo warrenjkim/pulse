@@ -123,9 +123,12 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":handler",
-        ":method",
+        ":request",
+        ":response",
+        ":router",
         "//concurrent:thread_pool",
         "//core:stringify",
+        "//dsa:error",
         "//dsa:result",
         "//http/internal:transform",
         "//net:acceptor",
