@@ -6,9 +6,9 @@
 #include <string_view>
 #include <vector>
 
+#include "core/error.h"
+#include "core/result.h"
 #include "core/stringify.h"
-#include "dsa/error.h"
-#include "dsa/result.h"
 #include "http/method.h"
 #include "http/request.h"
 #include "http/response.h"

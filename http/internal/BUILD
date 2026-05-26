@@ -6,9 +6,9 @@ cc_library(
     strip_include_prefix = ".",
     visibility = ["//http:__pkg__"],
     deps = [
+        "//core:error",
+        "//core:result",
         "//core:stringify",
-        "//dsa:error",
-        "//dsa:result",
         "//http:method",
         "//http:request",
         "//http:response",
@@ -21,7 +21,7 @@ cc_test(
     srcs = ["transform_test.cc"],
     deps = [
         ":transform",
-        "//dsa:result",
+        "//core:result",
         "//http:method",
         "//http:request",
         "//http:response",

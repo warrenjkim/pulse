@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "core/enum_macros.h"
-#include "dsa/result.h"
+#include "core/result.h"
 
 namespace pulse::http {
 
