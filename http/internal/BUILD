@@ -7,6 +7,7 @@ cc_library(
     visibility = ["//http:__pkg__"],
     deps = [
         "//core:error",
+        "//core:log",
         "//core:result",
         "//core:stringify",
         "//http:method",
