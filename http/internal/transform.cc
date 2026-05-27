@@ -12,6 +12,7 @@
 #include "http/method.h"
 #include "http/request.h"
 #include "http/response.h"
+#include "strings/cat.h"
 #include "strings/split.h"
 
 namespace pulse::http {
@@ -59,7 +60,7 @@ Result<Request> parse_header(std::string_view raw) {
     Log() << "invalid method: [" << method << "]";
     return Error{
         .code = Error::Code::kInternal,
-        .message = "parse_header: invalid method: " + std::string(method)};
+        .message = strings::cat("parse_header: invalid method: ", method)};
   }
 
   std::vector<std::string_view> path_with_query_params =
@@ -68,8 +69,8 @@ Result<Request> parse_header(std::string_view raw) {
       path_with_query_params[0][0] != '/') {
     Log() << "invalid path: [" << path_with_query_params[0] << "]";
     return Error{.code = Error::Code::kInternal,
-                 .message = "parse_header: invalid path" +
-                            std::string(path_with_query_params[0])};
+                 .message = strings::cat("parse_header: invalid path",
+                                         path_with_query_params[0])};
   }
 
   request.path = std::string(path_with_query_params[0]);
@@ -85,8 +86,8 @@ Result<Request> parse_header(std::string_view raw) {
 
       Log() << "malformed query parameter: [" << param << "]";
       return Error{.code = Error::Code::kInternal,
-                   .message = "parse_header: malformed query parameter: " +
-                              std::string(param)};
+                   .message = strings::cat(
+                       "parse_header: malformed query parameter: ", param)};
     }
   }
 
@@ -104,8 +105,8 @@ Result<Request> parse_header(std::string_view raw) {
 
     Log() << "malformed header field: [" << header[i] << "]";
     return Error{.code = Error::Code::kInternal,
-                 .message = "parse_header: malformed header field: " +
-                            std::string(header[i])};
+                 .message = strings::cat(
+                     "parse_header: malformed header field: ", header[i])};
   }
 
   Log() << "parsed request: " << pulse::to_string(request);
@@ -113,11 +114,10 @@ Result<Request> parse_header(std::string_view raw) {
 }
 
 std::string serialize(const Response& response) {
-  return "HTTP/1.1 " + std::to_string(response.status) + " " +
-         std::string(reason(response.status)) +
-         "\r\nContent-Type: " + response.content_type +
-         "\r\nContent-Length: " + std::to_string(response.body.size()) +
-         "\r\n\r\n" + response.body;
+  return strings::cat(
+      "HTTP/1.1 ", response.status, " ", reason(response.status),
+      "\r\nContent-Type: ", response.content_type,
+      "\r\nContent-Length: ", response.body.size(), "\r\n\r\n", response.body);
 }
 
 }  // namespace pulse::http

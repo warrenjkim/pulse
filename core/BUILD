@@ -47,6 +47,7 @@ cc_library(
     deps = [
         "//core:enum_macros",
         "//core:stringify",
+        "//strings:cat",
     ],
 )
 
@@ -59,6 +60,7 @@ cc_library(
     deps = [
         ":error",
         "//core:stringify",
+        "//strings:cat",
     ],
 )
 

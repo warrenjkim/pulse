@@ -13,6 +13,7 @@ cc_library(
         "//http:method",
         "//http:request",
         "//http:response",
+        "//strings:cat",
         "//strings:split",
     ],
 )

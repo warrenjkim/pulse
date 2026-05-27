@@ -6,6 +6,7 @@
 
 #include "core/error.h"
 #include "core/stringify.h"
+#include "strings/cat.h"
 
 namespace pulse {
 
@@ -61,11 +62,12 @@ template <typename T>
 struct pulse::Stringify<pulse::Result<T>> {
   static std::string to_string(const pulse::Result<T>& result) {
     if (result.ok()) {
-      return "Result{.value=" + pulse::Stringify<T>::to_string(*result) + "}";
+      return strings::cat(
+          "Result{.value=", pulse::Stringify<T>::to_string(*result), "}");
     }
-
-    return "Result{.error=" +
-           pulse::Stringify<pulse::Error>::to_string(result.error()) + "}";
+    return strings::cat(
+        "Result{.error=",
+        pulse::Stringify<pulse::Error>::to_string(result.error()), "}");
   }
 };
 
@@ -75,8 +77,8 @@ struct pulse::Stringify<pulse::Result<void>> {
     if (result.ok()) {
       return "Result{.value=Ok{}}";
     }
-
-    return "Result{.error=" +
-           pulse::Stringify<pulse::Error>::to_string(result.error()) + "}";
+    return strings::cat(
+        "Result{.error=",
+        pulse::Stringify<pulse::Error>::to_string(result.error()), "}");
   }
 };

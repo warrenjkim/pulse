@@ -12,6 +12,7 @@
 #include "core/enum_macros.h"
 #include "core/result.h"
 #include "core/stringify.h"
+#include "strings/cat.h"
 
 namespace pulse::http {
 
@@ -57,19 +58,23 @@ PULSE_ENUM_TO_STRING(pulse::http::Pattern::Segment::Type,
 template <>
 struct pulse::Stringify<pulse::http::Pattern::Segment> {
   static std::string to_string(const pulse::http::Pattern::Segment& segment) {
-    return "Segment{.type=" +
-           pulse::Stringify<pulse::http::Pattern::Segment::Type>::to_string(
-               segment.type) +
-           ",.token=" + segment.token + "}";
+    return strings::cat(
+        "Segment{.type=",
+        pulse::Stringify<pulse::http::Pattern::Segment::Type>::to_string(
+            segment.type),
+        ",.token=", pulse::Stringify<std::string>::to_string(segment.token),
+        "}");
   }
 };
 
 template <>
 struct pulse::Stringify<pulse::http::Pattern> {
   static std::string to_string(const pulse::http::Pattern& pattern) {
-    return "Pattern{.pattern_=" +
-           pulse::Stringify<std::vector<pulse::http::Pattern::Segment>>::
-               to_string(pattern.pattern_) +
-           ",.captures_=" + std::to_string(pattern.captures_) + "}";
+    return strings::cat(
+        "Pattern{.pattern_=",
+        pulse::Stringify<std::vector<pulse::http::Pattern::Segment>>::to_string(
+            pattern.pattern_),
+        ",.captures_=", pulse::Stringify<int>::to_string(pattern.captures_),
+        "}");
   }
 };

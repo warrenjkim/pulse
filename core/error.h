@@ -4,6 +4,7 @@
 
 #include "core/enum_macros.h"
 #include "core/stringify.h"
+#include "strings/cat.h"
 
 namespace pulse {
 
@@ -32,8 +33,9 @@ PULSE_ENUM_TO_STRING(pulse::Error::Code, ERROR_CODE_TABLE);
 template <>
 struct pulse::Stringify<pulse::Error> {
   static std::string to_string(const pulse::Error& error) {
-    return "Error{.code=" +
-           pulse::Stringify<pulse::Error::Code>::to_string(error.code) +
-           ",.message=" + error.message + "}";
+    return strings::cat(
+        "Error{.code=",
+        pulse::Stringify<pulse::Error::Code>::to_string(error.code),
+        ",.message=", error.message, "}");
   }
 };

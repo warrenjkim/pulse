@@ -35,6 +35,7 @@ cc_library(
         "//core:error",
         "//core:result",
         "//core:stringify",
+        "//strings:cat",
         "//strings:split",
     ],
 )
@@ -60,6 +61,7 @@ cc_library(
     deps = [
         ":method",
         "//core:stringify",
+        "//strings:cat",
     ],
 )
 
@@ -69,7 +71,10 @@ cc_library(
     include_prefix = "pulse/http",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
-    deps = ["//core:stringify"],
+    deps = [
+        "//core:stringify",
+        "//strings:cat",
+    ],
 )
 
 cc_library(
@@ -86,7 +91,7 @@ cc_library(
         "//core:enum_macros",
         "//core:error",
         "//core:result",
-        "//core:stringify",
+        "//strings:cat",
         "//strings:split",
     ],
 )
