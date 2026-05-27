@@ -9,8 +9,8 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 
+#include "core/log.h"
 #include "net/socket.h"
 
 namespace pulse::net {
@@ -18,17 +18,14 @@ namespace pulse::net {
 Acceptor::Acceptor(int port) : fd_(-1) {
   int fd = socket(/*domain=*/AF_INET, /*type=*/SOCK_STREAM, /*protocol=*/0);
   if (fd < 0) {
-    std::cerr << "[" << __FILE__ << ":" << __LINE__
-              << "] socket() failed on port " << port << ": " << strerror(errno)
-              << "\n";
+    Log() << "socket() failed on port " << port << ": " << strerror(errno);
     std::exit(1);
   }
 
   int opt = 1;
   if (setsockopt(fd, /*level=*/SOL_SOCKET, /*option_name=*/SO_REUSEADDR, &opt,
                  sizeof(opt)) < 0) {
-    std::cerr << "[" << __FILE__ << ":" << __LINE__
-              << "] setsockopt() failed: " << strerror(errno) << "\n";
+    Log() << "setsockopt() failed: " << strerror(errno);
     close(fd);
     std::exit(1);
   }
@@ -37,16 +34,13 @@ Acceptor::Acceptor(int port) : fd_(-1) {
                       .sin_port = htons(port),
                       .sin_addr = {.s_addr = INADDR_ANY}};
   if (bind(fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
-    std::cerr << "[" << __FILE__ << ":" << __LINE__
-              << "] bind() failed on port " << port << ": " << strerror(errno)
-              << "\n";
+    Log() << "bind() failed on port " << port << ": " << strerror(errno);
     close(fd);
     std::exit(1);
   }
 
   if (listen(fd, /*backlog=*/128) < 0) {
-    std::cerr << "[" << __FILE__ << ":" << __LINE__
-              << "] listen() failed: " << strerror(errno) << "\n";
+    Log() << "listen() failed: " << strerror(errno);
     close(fd);
     std::exit(1);
   }
@@ -63,8 +57,7 @@ Acceptor::~Acceptor() {
 Socket Acceptor::accept() {
   int fd = ::accept(fd_, /*address=*/nullptr, /*address_len=*/nullptr);
   if (fd < 0) {
-    std::cerr << "[" << __FILE__ << ":" << __LINE__
-              << "] accept() failed: " << strerror(errno) << "\n";
+    Log() << "accept() failed: " << strerror(errno);
     return Socket(-1);
   }
 

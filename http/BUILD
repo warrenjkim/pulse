@@ -134,6 +134,7 @@ cc_library(
         ":router",
         "//concurrent:thread_pool",
         "//core:error",
+        "//core:log",
         "//core:result",
         "//core:stringify",
         "//http/internal:transform",

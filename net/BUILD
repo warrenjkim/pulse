@@ -14,7 +14,10 @@ cc_library(
     include_prefix = "pulse/net",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
-    deps = [":socket"],
+    deps = [
+        ":socket",
+        "//core:log",
+    ],
 )
 
 cc_library(
@@ -24,4 +27,5 @@ cc_library(
     include_prefix = "pulse/net",
     strip_include_prefix = ".",
     visibility = ["//visibility:public"],
+    deps = ["//core:log"],
 )
