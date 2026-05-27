@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "core/container_stringify.h"
 #include "core/stringify.h"
 #include "http/method.h"
 
