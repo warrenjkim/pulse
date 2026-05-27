@@ -2,7 +2,6 @@
 
 #include <concepts>
 #include <string>
-#include <string_view>
 
 namespace pulse {
 
@@ -32,15 +31,19 @@ struct Stringify<T> {
 };
 
 template <>
-struct Stringify<std::string_view> {
-  static std::string to_string(const std::string_view& value) {
-    return std::string(value);
-  }
-};
-
-template <>
 struct Stringify<std::string> {
-  static std::string to_string(const std::string& value) { return value; }
+  static std::string to_string(const std::string& value) {
+    std::string out = "\"";
+    for (char c : value) {
+      if (c == '"' || c == '\\') {
+        out += '\\';
+      }
+
+      out += c;
+    }
+
+    return out + "\"";
+  }
 };
 
 }  // namespace pulse
