@@ -25,38 +25,17 @@ struct Request {
 template <>
 struct pulse::Stringify<pulse::http::Request> {
   static std::string to_string(const pulse::http::Request& req) {
-    std::string out =
-        "Request{\n  method: " +
-        pulse::Stringify<pulse::http::Method>::to_string(req.method) +
-        "\n  path: " + req.path;
-
-    if (!req.path_params.empty()) {
-      out += "\n  path_params: {\n";
-      for (const auto& [k, v] : req.path_params) {
-        out += "    " + k + ": " + v + "\n";
-      }
-
-      out += "  }";
-    }
-
-    if (!req.query_params.empty()) {
-      out += "\n  query_params: {\n";
-      for (const auto& [k, v] : req.query_params) {
-        out += "    " + k + ": " + v + "\n";
-      }
-
-      out += "  }";
-    }
-
-    if (!req.headers.empty()) {
-      out += "\n  headers: {\n";
-      for (const auto& [k, v] : req.headers) {
-        out += "    " + k + ": " + v + "\n";
-      }
-
-      out += "  }";
-    }
-
-    return out + (req.body.empty() ? "" : "\n  body: " + req.body) + "\n}";
+    return "Request{.method=" +
+           pulse::Stringify<pulse::http::Method>::to_string(req.method) +
+           ",.path=" + req.path + ",.path_params=" +
+           pulse::Stringify<std::unordered_map<std::string, std::string>>::
+               to_string(req.path_params) +
+           ",.query_params=" +
+           pulse::Stringify<std::unordered_map<std::string, std::string>>::
+               to_string(req.query_params) +
+           ",.headers=" +
+           pulse::Stringify<std::unordered_map<std::string, std::string>>::
+               to_string(req.headers) +
+           ",.body=" + req.body + "}";
   }
 };

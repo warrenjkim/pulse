@@ -1,6 +1,5 @@
 #pragma once
 
-#include <sstream>
 #include <string>
 #include <utility>
 #include <variant>
@@ -56,19 +55,28 @@ class [[nodiscard]] Result<void> {
   std::variant<Ok, Error> data_;
 };
 
-template <Stringifiable T>
-std::string to_string(const Result<T>& result) {
-  if (result.ok()) {
-    std::ostringstream oss;
-    oss << "Ok(" << to_string(*result) << ")";
-    return oss.str();
-  }
-
-  return "Err(" + to_string(result.error()) + ")";
-}
-
-inline std::string to_string(const Result<void>& result) {
-  return result.ok() ? "Ok" : "Err(" + to_string(result.error()) + ")";
-}
-
 }  // namespace pulse
+
+template <typename T>
+struct pulse::Stringify<pulse::Result<T>> {
+  static std::string to_string(const pulse::Result<T>& result) {
+    if (result.ok()) {
+      return "Result{.value=" + pulse::Stringify<T>::to_string(*result) + "}";
+    }
+
+    return "Result{.error=" +
+           pulse::Stringify<pulse::Error>::to_string(result.error()) + "}";
+  }
+};
+
+template <>
+struct pulse::Stringify<pulse::Result<void>> {
+  static std::string to_string(const pulse::Result<void>& result) {
+    if (result.ok()) {
+      return "Result{.value=Ok{}}";
+    }
+
+    return "Result{.error=" +
+           pulse::Stringify<pulse::Error>::to_string(result.error()) + "}";
+  }
+};
