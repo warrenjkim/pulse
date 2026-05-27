@@ -28,6 +28,14 @@ cc_library(
 )
 
 cc_library(
+    name = "log",
+    hdrs = ["log.h"],
+    include_prefix = "pulse/core",
+    strip_include_prefix = ".",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "error",
     hdrs = ["error.h"],
     include_prefix = "pulse/core",
