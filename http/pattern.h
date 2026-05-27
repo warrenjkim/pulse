@@ -62,7 +62,8 @@ struct pulse::Stringify<pulse::http::Pattern::Segment> {
         "Segment{.type=",
         pulse::Stringify<pulse::http::Pattern::Segment::Type>::to_string(
             segment.type),
-        ",.token=", segment.token, "}");
+        ",.token=", pulse::Stringify<std::string>::to_string(segment.token),
+        "}");
   }
 };
 
@@ -73,6 +74,7 @@ struct pulse::Stringify<pulse::http::Pattern> {
         "Pattern{.pattern_=",
         pulse::Stringify<std::vector<pulse::http::Pattern::Segment>>::to_string(
             pattern.pattern_),
-        ",.captures_=", pattern.captures_, "}");
+        ",.captures_=", pulse::Stringify<int>::to_string(pattern.captures_),
+        "}");
   }
 };

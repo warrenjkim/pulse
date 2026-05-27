@@ -19,7 +19,10 @@ struct Response {
 template <>
 struct pulse::Stringify<pulse::http::Response> {
   static std::string to_string(const pulse::http::Response& res) {
-    return strings::cat("Response{.content_type=", res.content_type,
-                        ",.status=", res.status, ",.body=", res.body, "}");
+    return strings::cat(
+        "Response{.content_type=",
+        pulse::Stringify<std::string>::to_string(res.content_type),
+        ",.status=", pulse::Stringify<int>::to_string(res.status),
+        ",.body=", pulse::Stringify<std::string>::to_string(res.body), "}");
   }
 };
