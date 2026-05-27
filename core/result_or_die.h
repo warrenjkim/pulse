@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstdlib>
-#include <iostream>
 #include <source_location>
 #include <utility>
 
+#include "core/log.h"
 #include "core/result.h"
 
 namespace pulse {
@@ -12,10 +12,9 @@ namespace pulse {
 template <typename T>
 [[nodiscard]] T unwrap_or_die(
     Result<T> value,
-    std::source_location loc_ = std::source_location::current()) {
+    std::source_location loc = std::source_location::current()) {
   if (!value.ok()) {
-    std::cerr << "[" << loc_.file_name() << ":" << loc_.line()
-              << "] unwrap_or_die: " << value.error().message << "\n";
+    Log(loc) << "unwrap_or_die: " << value.error().message;
     std::abort();
   }
 
@@ -24,10 +23,9 @@ template <typename T>
 
 inline void die_if_error(
     Result<void> value,
-    std::source_location loc_ = std::source_location::current()) {
+    std::source_location loc = std::source_location::current()) {
   if (!value.ok()) {
-    std::cerr << "[" << loc_.file_name() << ":" << loc_.line()
-              << "] die_if_error: " << value.error().message << "\n";
+    Log(loc) << "die_if_error: " << value.error().message;
     std::abort();
   }
 }
