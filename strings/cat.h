@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 
+#include "core/container_stringify.h"  // IWYU pragma: export
 #include "core/stringify.h"
 
 namespace pulse::strings {

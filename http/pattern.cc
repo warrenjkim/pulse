@@ -11,6 +11,7 @@
 
 #include "core/error.h"
 #include "core/result.h"
+#include "strings/cat.h"
 #include "strings/split.h"
 
 namespace pulse::http {
@@ -26,9 +27,8 @@ constexpr char kCaptureEnd = '}';
 pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
   if (pattern.empty() || pattern.front() != kDelimiter.front()) {
     return pulse::Error{.code = pulse::Error::Code::kInvalidArgument,
-                        .message = "pattern must start with '" +
-                                   std::string(kDelimiter) +
-                                   "': " + std::string(pattern)};
+                        .message = strings::cat("pattern must start with '",
+                                                kDelimiter, "': ", pattern)};
   }
 
   const std::vector<std::string_view> parts =
@@ -45,15 +45,15 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
       if (name.contains(kCaptureStart) || name.contains(kCaptureEnd)) {
         return pulse::Error{
             .code = pulse::Error::Code::kInvalidArgument,
-            .message = "nested or malformed braces in capture: " +
-                       std::string(pattern)};
+            .message = strings::cat("nested or malformed braces in capture: ",
+                                    pattern)};
       }
 
       if (!captures.insert(name).second) {
         return pulse::Error{
             .code = pulse::Error::Code::kInvalidArgument,
-            .message = "pattern has duplicate capture variable '" +
-                       std::string(name) + "': " + std::string(pattern)};
+            .message = strings::cat("pattern has duplicate capture variable '",
+                                    name, "': ", pattern)};
       }
 
       segments.push_back(
@@ -61,8 +61,8 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
     } else {
       if (part.contains(kCaptureStart) || part.contains(kCaptureEnd)) {
         return pulse::Error{.code = pulse::Error::Code::kInvalidArgument,
-                            .message = "stray brace in literal segment: " +
-                                       std::string(pattern)};
+                            .message = strings::cat(
+                                "stray brace in literal segment: ", pattern)};
       }
 
       segments.push_back(

@@ -13,6 +13,7 @@
 #include "http/handler.h"
 #include "http/method.h"
 #include "http/pattern.h"
+#include "strings/cat.h"
 
 namespace pulse::http {
 
@@ -28,8 +29,8 @@ Result<void> Router::add(Method method, std::string_view raw_pattern,
     if (route.raw_pattern == raw_pattern) {
       return pulse::Error{
           .code = pulse::Error::Code::kAlreadyExists,
-          .message =
-              "raw_pattern '" + std::string(raw_pattern) + "' already exists"};
+          .message = strings::cat("raw_pattern '", std::string(raw_pattern),
+                                  "' already exists")};
     }
   }
 

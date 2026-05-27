@@ -3,9 +3,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "core/container_stringify.h"
 #include "core/stringify.h"
 #include "http/method.h"
+#include "strings/cat.h"
 
 namespace pulse::http {
 
@@ -26,17 +26,9 @@ struct Request {
 template <>
 struct pulse::Stringify<pulse::http::Request> {
   static std::string to_string(const pulse::http::Request& req) {
-    return "Request{.method=" +
-           pulse::Stringify<pulse::http::Method>::to_string(req.method) +
-           ",.path=" + req.path + ",.path_params=" +
-           pulse::Stringify<std::unordered_map<std::string, std::string>>::
-               to_string(req.path_params) +
-           ",.query_params=" +
-           pulse::Stringify<std::unordered_map<std::string, std::string>>::
-               to_string(req.query_params) +
-           ",.headers=" +
-           pulse::Stringify<std::unordered_map<std::string, std::string>>::
-               to_string(req.headers) +
-           ",.body=" + req.body + "}";
+    return strings::cat("Request{.method=", req.method, ",.path=", req.path,
+                        ",.path_params=", req.path_params,
+                        ",.query_params=", req.query_params,
+                        ",.headers=", req.headers, ",.body=", req.body, "}");
   }
 };

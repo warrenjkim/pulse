@@ -3,6 +3,7 @@
 #include <string>
 
 #include "core/stringify.h"
+#include "strings/cat.h"
 
 namespace pulse::http {
 
@@ -18,8 +19,7 @@ struct Response {
 template <>
 struct pulse::Stringify<pulse::http::Response> {
   static std::string to_string(const pulse::http::Response& res) {
-    return "Response{.content_type=" + res.content_type +
-           ",.status=" + pulse::Stringify<int>::to_string(res.status) +
-           ",.body=" + res.body + "}";
+    return strings::cat("Response{.content_type=", res.content_type,
+                        ",.status=", res.status, ",.body=", res.body, "}");
   }
 };
