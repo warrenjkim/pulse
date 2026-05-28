@@ -87,3 +87,21 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "type_map",
+    hdrs = ["type_map.h"],
+    include_prefix = "pulse/core",
+    strip_include_prefix = ".",
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "type_map_test",
+    srcs = ["type_map_test.cc"],
+    deps = [
+        ":type_map",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
