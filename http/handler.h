@@ -12,7 +12,7 @@
 // Declares kPath and kMethod for an HTTP handler.
 #define PULSE_HTTP_ROUTE(path, method)                             \
   [[maybe_unused]] static constexpr std::string_view kPath = path; \
-  [[maybe_unused]] static constexpr Method kMethod = method
+  [[maybe_unused]] static constexpr ::pulse::http::Method kMethod = method
 
 namespace pulse::http {
 
