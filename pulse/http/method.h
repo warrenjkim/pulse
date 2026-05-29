@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/enum_macros.h"
+#include "pulse/core/enum_macros.h"
 
 namespace pulse::http {
 

@@ -1,19 +1,19 @@
-#include "http/internal/transform.h"
+#include "pulse/http/internal/transform.h"
 
 #include <cstddef>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include "core/error.h"
-#include "core/log.h"
-#include "core/result.h"
-#include "core/stringify.h"
-#include "http/method.h"
-#include "http/request.h"
-#include "http/response.h"
-#include "strings/cat.h"
-#include "strings/split.h"
+#include "pulse/core/error.h"
+#include "pulse/core/log.h"
+#include "pulse/core/result.h"
+#include "pulse/core/stringify.h"
+#include "pulse/http/method.h"
+#include "pulse/http/request.h"
+#include "pulse/http/response.h"
+#include "pulse/strings/cat.h"
+#include "pulse/strings/split.h"
 
 namespace pulse::http {
 

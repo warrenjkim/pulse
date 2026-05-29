@@ -1,4 +1,4 @@
-#include "http/pattern.h"
+#include "pulse/http/pattern.h"
 
 #include <cstddef>
 #include <optional>
@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "core/error.h"
-#include "core/result.h"
-#include "strings/cat.h"
-#include "strings/split.h"
+#include "pulse/core/error.h"
+#include "pulse/core/result.h"
+#include "pulse/strings/cat.h"
+#include "pulse/strings/split.h"
 
 namespace pulse::http {
 

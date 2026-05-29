@@ -8,10 +8,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/result.h"
-#include "http/handler.h"
-#include "http/method.h"
-#include "http/pattern.h"
+#include "pulse/core/result.h"
+#include "pulse/http/handler.h"
+#include "pulse/http/method.h"
+#include "pulse/http/pattern.h"
 
 namespace pulse::http {
 

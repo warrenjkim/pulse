@@ -3,9 +3,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "core/stringify.h"
-#include "http/method.h"
-#include "strings/cat.h"
+#include "pulse/core/stringify.h"
+#include "pulse/http/method.h"
+#include "pulse/strings/cat.h"
 
 namespace pulse::http {
 

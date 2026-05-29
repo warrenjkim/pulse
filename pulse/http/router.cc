@@ -1,4 +1,4 @@
-#include "http/router.h"
+#include "pulse/http/router.h"
 
 #include <algorithm>
 #include <memory>
@@ -8,12 +8,12 @@
 #include <utility>
 #include <vector>
 
-#include "core/error.h"
-#include "core/result.h"
-#include "http/handler.h"
-#include "http/method.h"
-#include "http/pattern.h"
-#include "strings/cat.h"
+#include "pulse/core/error.h"
+#include "pulse/core/result.h"
+#include "pulse/http/handler.h"
+#include "pulse/http/method.h"
+#include "pulse/http/pattern.h"
+#include "pulse/strings/cat.h"
 
 namespace pulse::http {
 

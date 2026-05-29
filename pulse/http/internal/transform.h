@@ -3,9 +3,9 @@
 #include <string>
 #include <string_view>
 
-#include "core/result.h"
-#include "http/request.h"
-#include "http/response.h"
+#include "pulse/core/result.h"
+#include "pulse/http/request.h"
+#include "pulse/http/response.h"
 
 namespace pulse::http {
 

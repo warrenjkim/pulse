@@ -4,10 +4,10 @@
 #include <string_view>
 #include <type_traits>
 
-#include "core/type_map.h"
-#include "http/method.h"
-#include "http/request.h"
-#include "http/response.h"
+#include "pulse/core/type_map.h"
+#include "pulse/http/method.h"
+#include "pulse/http/request.h"
+#include "pulse/http/response.h"
 
 // Declares kPath and kMethod for an HTTP handler.
 #define PULSE_HTTP_ROUTE(path, method)                             \

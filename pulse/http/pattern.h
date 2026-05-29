@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "core/container_stringify.h"
-#include "core/enum_macros.h"
-#include "core/result.h"
-#include "core/stringify.h"
-#include "strings/cat.h"
+#include "pulse/core/container_stringify.h"
+#include "pulse/core/enum_macros.h"
+#include "pulse/core/result.h"
+#include "pulse/core/stringify.h"
+#include "pulse/strings/cat.h"
 
 namespace pulse::http {
 

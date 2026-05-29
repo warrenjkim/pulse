@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "core/stringify.h"
-#include "strings/cat.h"
+#include "pulse/core/stringify.h"
+#include "pulse/strings/cat.h"
 
 namespace pulse::http {
 

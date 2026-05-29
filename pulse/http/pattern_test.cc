@@ -1,4 +1,4 @@
-#include "http/pattern.h"
+#include "pulse/http/pattern.h"
 
 #include <cstddef>
 #include <optional>
@@ -6,10 +6,10 @@
 #include <string_view>
 #include <unordered_map>
 
-#include "core/error.h"
-#include "core/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "pulse/core/error.h"
+#include "pulse/core/result.h"
 
 namespace pulse::http {
 

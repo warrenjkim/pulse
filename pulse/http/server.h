@@ -2,9 +2,9 @@
 
 #include <cstddef>
 
-#include "concurrent/thread_pool.h"
-#include "http/router.h"
-#include "net/acceptor.h"
+#include "pulse/concurrent/thread_pool.h"
+#include "pulse/http/router.h"
+#include "pulse/net/acceptor.h"
 
 namespace pulse::http {
 

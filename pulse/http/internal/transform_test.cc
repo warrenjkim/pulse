@@ -1,14 +1,14 @@
-#include "http/internal/transform.h"
+#include "pulse/http/internal/transform.h"
 
 #include <string>
 #include <string_view>
 
-#include "core/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "http/method.h"
-#include "http/request.h"
-#include "http/response.h"
+#include "pulse/core/result.h"
+#include "pulse/http/method.h"
+#include "pulse/http/request.h"
+#include "pulse/http/response.h"
 
 namespace pulse::http {
 

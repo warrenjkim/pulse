@@ -1,4 +1,4 @@
-#include "http/router.h"
+#include "pulse/http/router.h"
 
 #include <memory>
 #include <optional>
@@ -7,15 +7,15 @@
 #include <utility>
 #include <vector>
 
-#include "core/error.h"
-#include "core/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "http/handler.h"
-#include "http/method.h"
-#include "http/pattern.h"
-#include "http/request.h"
-#include "http/response.h"
+#include "pulse/core/error.h"
+#include "pulse/core/result.h"
+#include "pulse/http/handler.h"
+#include "pulse/http/method.h"
+#include "pulse/http/pattern.h"
+#include "pulse/http/request.h"
+#include "pulse/http/response.h"
 
 namespace pulse::http {
 
