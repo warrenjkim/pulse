@@ -9,8 +9,6 @@ cc_library(
 cc_library(
     name = "trie",
     hdrs = ["trie.h"],
-    include_prefix = "pulse/dsa",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
 )
 
