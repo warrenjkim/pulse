@@ -3,10 +3,8 @@ cc_library(
     hdrs = [
         "token.h",
     ],
-    include_prefix = "pulse/json/parse",
-    strip_include_prefix = ".",
     visibility = [
-        "//json:__subpackages__",
+        "//pulse/json:__subpackages__",
     ],
 )
 
@@ -15,10 +13,8 @@ cc_library(
     hdrs = [
         "reader.h",
     ],
-    include_prefix = "pulse/json/parse",
-    strip_include_prefix = ".",
     visibility = [
-        "//json:__subpackages__",
+        "//pulse/json:__subpackages__",
     ],
 )
 
@@ -30,10 +26,8 @@ cc_library(
     hdrs = [
         "lexer.h",
     ],
-    include_prefix = "pulse/json/parse",
-    strip_include_prefix = ".",
     visibility = [
-        "//json:__subpackages__",
+        "//pulse/json:__subpackages__",
     ],
     deps = [
         ":reader",
@@ -45,9 +39,10 @@ cc_test(
     name = "lexer_test",
     srcs = ["lexer_test.cc"],
     deps = [
-        "//json/parse:lexer",
-        "//json/parse:token",
-        "//json/utils:to_string",
+        "//pulse/json/parse:lexer",
+        "//pulse/json/parse:token",
+        "//pulse/json/utils:to_string",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )
@@ -60,17 +55,15 @@ cc_library(
     hdrs = [
         "parser.h",
     ],
-    include_prefix = "pulse/json/parse",
-    strip_include_prefix = ".",
     visibility = [
-        "//json:__subpackages__",
+        "//pulse/json:__subpackages__",
     ],
     deps = [
         ":lexer",
         ":token",
-        "//json/utils:exception",
-        "//json/utils:to_string",
-        "//json/value",
+        "//pulse/json/utils:exception",
+        "//pulse/json/utils:to_string",
+        "//pulse/json/value",
     ],
 )
 
@@ -78,10 +71,11 @@ cc_test(
     name = "parser_test",
     srcs = ["parser_test.cc"],
     deps = [
-        "//json/parse:lexer",
-        "//json/parse:parser",
-        "//json/parse:token",
-        "//json/utils:exception",
+        ":lexer",
+        ":parser",
+        ":token",
+        "//pulse/json/utils:exception",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )

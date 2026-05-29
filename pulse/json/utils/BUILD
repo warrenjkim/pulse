@@ -3,7 +3,6 @@ cc_library(
     hdrs = [
         "exception.h",
     ],
-    include_prefix = "pulse/json/utils",
     visibility = ["//visibility:public"],
 )
 
@@ -12,13 +11,11 @@ cc_library(
     hdrs = [
         "parse.h",
     ],
-    include_prefix = "pulse/json/utils",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [
-        "//json/parse:lexer",
-        "//json/parse:parser",
-        "//json/value",
+        "//pulse/json/parse:lexer",
+        "//pulse/json/parse:parser",
+        "//pulse/json/value",
     ],
 )
 
@@ -26,7 +23,8 @@ cc_test(
     name = "parse_test",
     srcs = ["parse_test.cc"],
     deps = [
-        "//json/utils:parse",
+        ":parse",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )
@@ -39,13 +37,11 @@ cc_library(
     hdrs = [
         "to_string.h",
     ],
-    include_prefix = "pulse/json/utils",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [
-        "//json/parse:lexer",
-        "//json/parse:token",
-        "//json/value",
+        "//pulse/json/parse:lexer",
+        "//pulse/json/parse:token",
+        "//pulse/json/value",
     ],
 )
 
@@ -53,8 +49,9 @@ cc_test(
     name = "to_string_test",
     srcs = ["to_string_test.cc"],
     deps = [
-        "//json/utils:parse",
-        "//json/utils:to_string",
+        ":parse",
+        ":to_string",
+        "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )

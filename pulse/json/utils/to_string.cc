@@ -6,7 +6,7 @@
 
 #include "pulse/json/parse/lexer.h"
 #include "pulse/json/parse/token.h"
-#include "pulse/json/value.h"
+#include "pulse/json/value/value.h"
 
 namespace {
 

@@ -1,14 +1,14 @@
 cc_library(
     name = "json",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
-        "//json/parse:lexer",
-        "//json/parse:parser",
-        "//json/parse:reader",
-        "//json/parse:token",
-        "//json/utils:exception",
-        "//json/utils:parse",
-        "//json/utils:to_string",
-        "//json/value",
+        "//pulse/json/parse:lexer",
+        "//pulse/json/parse:parser",
+        "//pulse/json/parse:reader",
+        "//pulse/json/parse:token",
+        "//pulse/json/utils:exception",
+        "//pulse/json/utils:parse",
+        "//pulse/json/utils:to_string",
+        "//pulse/json/value",
     ],
 )
