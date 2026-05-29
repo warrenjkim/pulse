@@ -1,0 +1,93 @@
+cc_library(
+    name = "core",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":enum_macros",
+        ":error",
+        ":result",
+        ":result_or_die",
+        ":stringify",
+    ],
+)
+
+cc_library(
+    name = "enum_macros",
+    hdrs = ["enum_macros.h"],
+    visibility = ["//visibility:public"],
+    deps = [":stringify"],
+)
+
+cc_library(
+    name = "stringify",
+    hdrs = [
+        "container_stringify.h",
+        "stringify.h",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "log",
+    hdrs = ["log.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "error",
+    hdrs = ["error.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":enum_macros",
+        ":stringify",
+        "//pulse/strings:cat",
+    ],
+)
+
+cc_library(
+    name = "result",
+    hdrs = ["result.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":error",
+        ":stringify",
+        "//pulse/strings:cat",
+    ],
+)
+
+cc_library(
+    name = "result_or_die",
+    hdrs = ["result_or_die.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":log",
+        ":result",
+    ],
+)
+
+cc_test(
+    name = "result_or_die_test",
+    srcs = ["result_or_die_test.cc"],
+    deps = [
+        ":error",
+        ":result",
+        ":result_or_die",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "type_map",
+    hdrs = ["type_map.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "type_map_test",
+    srcs = ["type_map_test.cc"],
+    deps = [
+        ":type_map",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)

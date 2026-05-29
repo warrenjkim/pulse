@@ -1,11 +1,4 @@
-cc_library(
+alias(
     name = "pulse",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//concurrent",
-        "//dsa",
-        "//http",
-        "//json",
-        "//net",
-    ],
+    actual = "//pulse:pulse",
 )
