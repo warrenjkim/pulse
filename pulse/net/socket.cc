@@ -1,4 +1,4 @@
-#include "net/socket.h"
+#include "pulse/net/socket.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-#include "core/log.h"
+#include "pulse/core/log.h"
 
 namespace pulse::net {
 

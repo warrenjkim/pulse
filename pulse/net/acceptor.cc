@@ -1,4 +1,4 @@
-#include "net/acceptor.h"
+#include "pulse/net/acceptor.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -10,8 +10,8 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "core/log.h"
-#include "net/socket.h"
+#include "pulse/core/log.h"
+#include "pulse/net/socket.h"
 
 namespace pulse::net {
 
