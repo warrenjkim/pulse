@@ -1,4 +1,4 @@
-#include "concurrent/thread_pool.h"
+#include "pulse/concurrent/thread_pool.h"
 
 #include <cstddef>
 #include <functional>
@@ -7,7 +7,7 @@
 #include <thread>
 #include <utility>
 
-#include "concurrent/blocking_queue.h"
+#include "pulse/concurrent/blocking_queue.h"
 
 namespace pulse::concurrent {
 

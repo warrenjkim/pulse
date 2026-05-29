@@ -8,7 +8,7 @@
 #include <thread>
 #include <vector>
 
-#include "concurrent/blocking_queue.h"
+#include "pulse/concurrent/blocking_queue.h"
 
 namespace pulse::concurrent {
 
