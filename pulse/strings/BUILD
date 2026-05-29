@@ -10,17 +10,16 @@ cc_library(
 cc_library(
     name = "cat",
     hdrs = ["cat.h"],
-    include_prefix = "pulse/strings",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pulse/core:stringify",
+    ],
 )
 
 cc_library(
     name = "split",
     srcs = ["split.cc"],
     hdrs = ["split.h"],
-    include_prefix = "pulse/strings",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
 )
 
