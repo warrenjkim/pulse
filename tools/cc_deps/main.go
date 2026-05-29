@@ -43,7 +43,10 @@ func isToolchainDep(dep string) bool {
 
 func isFileDep(dep string) bool {
 	ext := filepath.Ext(dep)
-	return ext == ".h" || ext == ".cc" || ext == ".cpp"
+	return ext == ".h" ||
+		ext == ".cc" ||
+		ext == ".cpp" ||
+		ext == ".sql"
 }
 
 func shouldIgnoreDep(dep string) bool {
@@ -63,7 +66,12 @@ func isDepUsed(hdrs []string, includes map[string]bool) bool {
 }
 
 func labelToPath(label string) string {
-	return strings.ReplaceAll(strings.TrimPrefix(label, "//"), ":", "/")
+	// handle external repo labels like @pulse//pulse/core:result.h
+	if idx := strings.Index(label, "//"); idx != -1 {
+		label = label[idx+2:]
+	}
+
+	return strings.ReplaceAll(label, ":", "/")
 }
 
 func extractIncludes(srcs []string) (map[string]bool, error) {
