@@ -91,6 +91,7 @@ cc_library(
         "//core:enum_macros",
         "//core:error",
         "//core:result",
+        "//core:type_map",
         "//strings:cat",
         "//strings:split",
     ],
@@ -122,6 +123,7 @@ cc_library(
     deps = [
         ":request",
         ":response",
+        "//core:type_map",
     ],
 )
 

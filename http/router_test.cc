@@ -26,9 +26,68 @@ using ::testing::TestParamInfo;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
-class NamedHandler final : public Handler {
+class NoDepHandler final : public Handler {
  public:
-  explicit NamedHandler(std::string name) : name_(std::move(name)) {}
+  PULSE_HTTP_ROUTE("/health", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{
+        .content_type = "text/plain", .status = 200, .body = "health"};
+  }
+};
+
+class DepHandler final : public Handler {
+ public:
+  PULSE_HTTP_ROUTE("/name", Method::kGet);
+  using Dependencies = Dependencies<std::string*>;
+
+  explicit DepHandler(std::string* name) : name_(name) {}
+
+  Response operator()(const Request&) const override {
+    return Response{
+        .content_type = "text/plain", .status = 200, .body = *name_};
+  }
+
+ private:
+  std::string* name_;
+};
+
+class DuplicateHandler final : public Handler {
+ public:
+  PULSE_HTTP_ROUTE("/health", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{
+        .content_type = "text/plain", .status = 200, .body = "duplicate"};
+  }
+};
+
+class MixedDepHandler final : public Handler {
+ public:
+  PULSE_HTTP_ROUTE("/mixed", Method::kGet);
+  using Dependencies = Dependencies<std::string*, int>;
+
+  explicit MixedDepHandler(std::string* name, int code)
+      : name_(name), code_(code) {}
+
+  Response operator()(const Request&) const override {
+    return Response{
+        .content_type = "text/plain", .status = code_, .body = *name_};
+  }
+
+ private:
+  std::string* name_;
+  const int code_;
+};
+
+class GetNamedHandler final : public Handler {
+ public:
+  PULSE_HTTP_ROUTE("/named", Method::kGet);
+  using Dependencies = Dependencies<std::string>;
+
+  explicit GetNamedHandler(std::string name) : name_(std::move(name)) {}
 
   Response operator()(const Request&) const override {
     return Response{.content_type = "text/plain", .status = 200, .body = name_};
@@ -38,40 +97,133 @@ class NamedHandler final : public Handler {
   std::string name_;
 };
 
+class PostNamedHandler final : public Handler {
+ public:
+  PULSE_HTTP_ROUTE("/named", Method::kPost);
+  using Dependencies = Dependencies<std::string>;
+
+  explicit PostNamedHandler(std::string name) : name_(std::move(name)) {}
+
+  Response operator()(const Request&) const override {
+    return Response{.content_type = "text/plain", .status = 200, .body = name_};
+  }
+
+ private:
+  std::string name_;
+};
+
+class MalformedHandler final : public Handler {
+ public:
+  PULSE_HTTP_ROUTE("/name/{bad", Method::kGet);
+  using Dependencies = Dependencies<std::string>;
+
+  explicit MalformedHandler(std::string name) : name_(std::move(name)) {}
+
+  Response operator()(const Request&) const override {
+    return Response{.content_type = "text/plain", .status = 200, .body = name_};
+  }
+
+ private:
+  std::string name_;
+};
+
+TEST(RouterTest, MakeWithNoDepHandler) {
+  Result<Router> router = Router::Make<Routes<NoDepHandler>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
+
+  std::optional<Router::Match> match = router->match(Method::kGet, "/health");
+  ASSERT_TRUE(match.has_value());
+  EXPECT_THAT((*match->handler)(Request{}).body, Eq("health"));
+}
+
+TEST(RouterTest, MakeWithDepHandler) {
+  std::string name = "injected";
+  ServerContext<std::string*> ctx;
+  ctx.set(&name);
+
+  Result<Router> router = Router::Make<Routes<DepHandler>>(ctx);
+  ASSERT_TRUE(router.ok());
+
+  std::optional<Router::Match> match = router->match(Method::kGet, "/name");
+  ASSERT_TRUE(match.has_value());
+  EXPECT_THAT((*match->handler)(Request{}).body, Eq("injected"));
+}
+
+TEST(RouterTest, MakeWithMultipleHandlers) {
+  std::string name = "injected";
+  ServerContext<std::string*> ctx;
+  ctx.set(&name);
+
+  Result<Router> router = Router::Make<Routes<NoDepHandler, DepHandler>>(ctx);
+  ASSERT_TRUE(router.ok());
+
+  EXPECT_TRUE(router->match(Method::kGet, "/health").has_value());
+  EXPECT_TRUE(router->match(Method::kGet, "/name").has_value());
+}
+
+TEST(RouterTest, MakeReturnsFirstError) {
+  Result<Router> router =
+      Router::Make<Routes<NoDepHandler, DuplicateHandler>>(ServerContext{});
+  ASSERT_FALSE(router.ok());
+  EXPECT_THAT(router.error().code, Eq(pulse::Error::Code::kAlreadyExists));
+}
+
+TEST(RouterMakeTest, MakeWithMixedDeps) {
+  std::string name = "mixed";
+  int code = 202;
+  ServerContext<std::string*, int> ctx;
+  ctx.set(&name);
+  ctx.set(code);
+
+  Result<Router> router = Router::Make<Routes<MixedDepHandler>>(ctx);
+  ASSERT_TRUE(router.ok());
+
+  std::optional<Router::Match> match = router->match(Method::kGet, "/mixed");
+  ASSERT_TRUE(match.has_value());
+  Response response = (*match->handler)(Request{});
+  EXPECT_THAT(response.body, Eq("mixed"));
+  EXPECT_THAT(response.status, Eq(202));
+
+  // Mutating the pointer dep is visible; mutating the value dep is not.
+  name = "mutated";
+  code = 999;
+  Response response2 = (*match->handler)(Request{});
+  EXPECT_THAT(response2.body, Eq("mutated"));
+  EXPECT_THAT(response2.status, Eq(202));
+}
+
 std::unique_ptr<Handler> MakeNamedHandler(std::string name) {
-  return std::make_unique<NamedHandler>(std::move(name));
+  return std::make_unique<GetNamedHandler>(std::move(name));
 }
 
-TEST(RouterTest, AddAcceptsValidRoute) {
-  Router router;
-  EXPECT_TRUE(
-      router.add(Method::kGet, "/health", MakeNamedHandler("health")).ok());
-}
+TEST(RouterTest, MakeRejectsMalformedPattern) {
+  std::string name = "injected";
+  ServerContext<std::string> ctx;
+  ctx.set(name);
 
-TEST(RouterTest, AddRejectsMalformedPattern) {
-  Router router;
-  Result<void> result =
-      router.add(Method::kGet, "/accounts/{id", MakeNamedHandler("bad"));
+  Result<Router> result = Router::Make<Routes<MalformedHandler>>(ctx);
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(pulse::Error::Code::kInvalidArgument));
 }
 
-TEST(RouterTest, AddRejectsDuplicateRoute) {
-  Router router;
-  ASSERT_TRUE(
-      router.add(Method::kGet, "/accounts", MakeNamedHandler("first")).ok());
-  Result<void> result =
-      router.add(Method::kGet, "/accounts", MakeNamedHandler("second"));
-  ASSERT_FALSE(result.ok());
-  EXPECT_THAT(result.error().code, Eq(pulse::Error::Code::kAlreadyExists));
-}
+TEST(RouterTest, MakeSamePatternDifferentMethodsAllowed) {
+  std::string name = "injected";
+  ServerContext<std::string> ctx;
+  ctx.set(name);
 
-TEST(RouterTest, AddSamePatternDifferentMethodsAllowed) {
-  Router router;
-  EXPECT_TRUE(
-      router.add(Method::kGet, "/accounts", MakeNamedHandler("list")).ok());
-  EXPECT_TRUE(
-      router.add(Method::kPost, "/accounts", MakeNamedHandler("create")).ok());
+  Result<Router> router =
+      Router::Make<Routes<GetNamedHandler, PostNamedHandler>>(ctx);
+  ASSERT_TRUE(router.ok());
+
+  std::optional<Router::Match> get_match =
+      router->match(Method::kGet, "/named");
+  ASSERT_TRUE(get_match.has_value());
+  EXPECT_THAT((*get_match->handler)(Request{}).body, Eq("injected"));
+
+  std::optional<Router::Match> post_match =
+      router->match(Method::kPost, "/named");
+  ASSERT_TRUE(post_match.has_value());
+  EXPECT_THAT((*post_match->handler)(Request{}).body, Eq("injected"));
 }
 
 struct RouteSpec {
