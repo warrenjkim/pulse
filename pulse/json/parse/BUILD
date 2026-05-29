@@ -73,8 +73,6 @@ cc_test(
     deps = [
         ":lexer",
         ":parser",
-        ":token",
-        "//pulse/json/utils:exception",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
