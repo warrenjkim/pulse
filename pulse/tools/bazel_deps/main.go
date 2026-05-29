@@ -14,10 +14,10 @@ var includeRe = regexp.MustCompile(`^\s*#include\s*["<]([^">]+)[">]`)
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: unused-deps <bazel-target>")
+		fmt.Fprintln(os.Stderr, "usage: bazel_deps <bazel-target-or-pattern>")
 		os.Exit(1)
 	}
-	target := os.Args[1]
+	pattern := os.Args[1]
 
 	root, err := workspaceRoot()
 	if err != nil {
@@ -29,41 +29,66 @@ func main() {
 		os.Exit(1)
 	}
 
-	deps, err := bazelQuery(fmt.Sprintf("deps(%s, 1) - %s", target, target))
+	targets, err := bazelQuery(fmt.Sprintf("kind('cc_library|cc_test|cc_binary', %s)", pattern))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error querying deps: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error expanding targets: %v\n", err)
 		os.Exit(1)
 	}
 
-	srcs, err := bazelQuery(fmt.Sprintf("labels(srcs, %s)", target))
+	for _, target := range targets {
+		analyzeTarget(target)
+	}
+}
+
+func analyzeTarget(target string) {
+	if isUmbrellaTarget(target) {
+		return
+	}
+
+	deps, err := bazelQuery(fmt.Sprintf("deps(%s, 1) - %s", target, target))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error querying srcs: %v\n", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "error querying deps for %s: %v\n", target, err)
+		return
+	}
+
+	srcs, err := bazelQuery(fmt.Sprintf("labels(srcs, %s) union labels(hdrs, %s)", target, target))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error querying srcs/hdrs for %s: %v\n", target, err)
+		return
 	}
 
 	includes, err := extractIncludes(srcs)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error extracting includes: %v\n", err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "error extracting includes for %s: %v\n", target, err)
+		return
 	}
 
 	fmt.Printf("%s\n", target)
+	hasUnused := false
 	for _, dep := range deps {
+		if isToolchainDep(dep) || isFileDep(dep) {
+			continue
+		}
 		hdrs, err := bazelQuery(fmt.Sprintf("labels(hdrs, %s)", dep))
 		if err != nil {
 			continue
 		}
 		if !isDepUsed(hdrs, includes) {
 			fmt.Printf("  unused: %s\n", dep)
+			hasUnused = true
 		}
 	}
+	if !hasUnused {
+		fmt.Println("  no unused deps")
+	}
+	fmt.Println()
 }
 
 func workspaceRoot() (string, error) {
 	if dir := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); dir != "" {
 		return dir, nil
 	}
-	return "", fmt.Errorf("BUILD_WORKSPACE_DIRECTORY not set — run via 'bazel run //tools:bazel_deps'")
+	return "", fmt.Errorf("BUILD_WORKSPACE_DIRECTORY not set — run via 'bazel run //pulse/tools:bazel_deps'")
 }
 
 func bazelQuery(query string) ([]string, error) {
@@ -114,8 +139,33 @@ func isDepUsed(hdrs []string, includes map[string]bool) bool {
 	return false
 }
 
+func isToolchainDep(dep string) bool {
+	return strings.HasPrefix(dep, "@bazel_tools//") ||
+		strings.HasPrefix(dep, "@@platforms//") ||
+		strings.HasPrefix(dep, "@googletest//")
+
+}
+
+func isFileDep(dep string) bool {
+	ext := filepath.Ext(dep)
+	return ext == ".h" || ext == ".cc" || ext == ".cpp"
+}
+
 func labelToPath(label string) string {
 	label = strings.TrimPrefix(label, "//")
 	label = strings.ReplaceAll(label, ":", "/")
 	return label
+}
+
+func isUmbrellaTarget(target string) bool {
+	// //pulse/http:http -> package = "pulse/http", name = "http"
+	parts := strings.SplitN(strings.TrimPrefix(target, "//"), ":", 2)
+	if len(parts) != 2 {
+		return false
+	}
+	pkg := parts[0]
+	name := parts[1]
+	// last segment of package matches target name
+	segments := strings.Split(pkg, "/")
+	return segments[len(segments)-1] == name
 }

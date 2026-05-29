@@ -15,10 +15,7 @@ cc_library(
     name = "method",
     hdrs = ["method.h"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//pulse/core:enum_macros",
-        "//pulse/core:stringify",
-    ],
+    deps = ["//pulse/core:enum_macros"],
 )
 
 cc_library(
@@ -78,12 +75,9 @@ cc_library(
         ":handler",
         ":method",
         ":pattern",
-        "//pulse/core:enum_macros",
         "//pulse/core:error",
         "//pulse/core:result",
-        "//pulse/core:type_map",
         "//pulse/strings:cat",
-        "//pulse/strings:split",
     ],
 )
 
@@ -126,7 +120,6 @@ cc_library(
         ":response",
         ":router",
         "//pulse/concurrent:thread_pool",
-        "//pulse/core:error",
         "//pulse/core:log",
         "//pulse/core:result",
         "//pulse/core:stringify",
