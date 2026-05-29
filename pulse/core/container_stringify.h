@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/stringify.h"
+#include "pulse/core/stringify.h"
 
 template <typename T>
 struct pulse::Stringify<std::vector<T>> {

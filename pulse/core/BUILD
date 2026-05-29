@@ -13,8 +13,6 @@ cc_library(
 cc_library(
     name = "enum_macros",
     hdrs = ["enum_macros.h"],
-    include_prefix = "pulse/core",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [":stringify"],
 )
@@ -25,50 +23,40 @@ cc_library(
         "container_stringify.h",
         "stringify.h",
     ],
-    include_prefix = "pulse/core",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "log",
     hdrs = ["log.h"],
-    include_prefix = "pulse/core",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "error",
     hdrs = ["error.h"],
-    include_prefix = "pulse/core",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [
-        "//core:enum_macros",
-        "//core:stringify",
-        "//strings:cat",
+        ":enum_macros",
+        ":stringify",
+        "//pulse/strings:cat",
     ],
 )
 
 cc_library(
     name = "result",
     hdrs = ["result.h"],
-    include_prefix = "pulse/core",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [
         ":error",
-        "//core:stringify",
-        "//strings:cat",
+        ":stringify",
+        "//pulse/strings:cat",
     ],
 )
 
 cc_library(
     name = "result_or_die",
     hdrs = ["result_or_die.h"],
-    include_prefix = "pulse/core",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [
         ":log",
@@ -91,8 +79,6 @@ cc_test(
 cc_library(
     name = "type_map",
     hdrs = ["type_map.h"],
-    include_prefix = "pulse/core",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
 )
 

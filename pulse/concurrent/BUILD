@@ -10,8 +10,6 @@ cc_library(
 cc_library(
     name = "blocking_queue",
     hdrs = ["blocking_queue.h"],
-    include_prefix = "pulse/concurrent",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
 )
 
@@ -29,8 +27,6 @@ cc_library(
     name = "thread_pool",
     srcs = ["thread_pool.cc"],
     hdrs = ["thread_pool.h"],
-    include_prefix = "pulse/concurrent",
-    strip_include_prefix = ".",
     visibility = ["//visibility:public"],
     deps = [":blocking_queue"],
 )

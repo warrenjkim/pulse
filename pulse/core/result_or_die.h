@@ -4,8 +4,8 @@
 #include <source_location>
 #include <utility>
 
-#include "core/log.h"
-#include "core/result.h"
+#include "pulse/core/log.h"
+#include "pulse/core/result.h"
 
 namespace pulse {
 

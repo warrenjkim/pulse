@@ -3,7 +3,7 @@
 #include <string>       // IWYU pragma: export
 #include <string_view>  // IWYU pragma: export
 
-#include "core/stringify.h"  // IWYU pragma: export
+#include "pulse/core/stringify.h"  // IWYU pragma: export
 
 // Declares an enum class with a kUnknown default value.
 //

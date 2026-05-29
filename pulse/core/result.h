@@ -4,9 +4,9 @@
 #include <utility>
 #include <variant>
 
-#include "core/error.h"
-#include "core/stringify.h"
-#include "strings/cat.h"
+#include "pulse/core/error.h"
+#include "pulse/core/stringify.h"
+#include "pulse/strings/cat.h"
 
 namespace pulse {
 

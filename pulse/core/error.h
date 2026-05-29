@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include "core/enum_macros.h"
-#include "core/stringify.h"
-#include "strings/cat.h"
+#include "pulse/core/enum_macros.h"
+#include "pulse/core/stringify.h"
+#include "pulse/strings/cat.h"
 
 namespace pulse {
 

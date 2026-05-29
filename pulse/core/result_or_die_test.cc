@@ -1,12 +1,12 @@
-#include "core/result_or_die.h"
+#include "pulse/core/result_or_die.h"
 
 #include <string>
 #include <utility>
 
-#include "core/error.h"
-#include "core/result.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "pulse/core/error.h"
+#include "pulse/core/result.h"
 
 namespace pulse {
 
