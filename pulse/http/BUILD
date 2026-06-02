@@ -128,3 +128,24 @@ cc_library(
         "//pulse/net:socket",
     ],
 )
+
+cc_library(
+    name = "parameters",
+    hdrs = ["parameters.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":parameter_parser",
+        "//pulse/core:error",
+        "//pulse/core:result",
+    ],
+)
+
+cc_library(
+    name = "parameter_parser",
+    hdrs = ["parameter_parser.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pulse/core:error",
+        "//pulse/core:result",
+    ],
+)
