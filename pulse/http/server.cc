@@ -46,7 +46,7 @@ void Server::run() {
       }
 
       std::optional<Router::Match> match =
-          router_.match(request->method, request->path);
+          router_.match(request->method, request->url);
       if (!match.has_value()) {
         Log() << "no routes for method: " << pulse::to_string(request->method);
         socket->write(serialize(Response{.content_type = "text/html",
@@ -55,7 +55,7 @@ void Server::run() {
         return;
       }
 
-      request->path_params = std::move(match->path_params);
+      request->path = std::move(match->path_params);
       if (auto it = request->headers.find("Content-Length");
           it != request->headers.end()) {
         // TODO(write stoul to return success/failure)

@@ -4,25 +4,38 @@
 #include <cstdio>
 #include <cstdlib>
 #include <functional>
+#include <initializer_list>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 
 #include "pulse/core/error.h"
 #include "pulse/core/result.h"
+#include "pulse/core/stringify.h"
 #include "pulse/http/parameter_parser.h"
+#include "pulse/strings/cat.h"
 
 namespace pulse::http {
 
 class Parameters {
  public:
+  Parameters() = default;
+
+  Parameters(
+      std::initializer_list<std::pair<const std::string, std::string>> init)
+      : map_(init.begin(), init.end()) {}
+
   template <typename T>
   Result<T> get(std::string_view key) const {
     if (auto it = map_.find(key); it != map_.end()) {
-      return ParameterParser<T>::Convert(it->second);
+      return ParameterParser<T>::Parse(it->second);
     }
-
     return Error{.code = Error::Code::kNotFound, .message = ""};
+  }
+
+  std::string& operator[](std::string_view key) {
+    return map_[std::string(key)];
   }
 
   friend bool operator==(const Parameters&, const Parameters&) = default;
@@ -36,8 +49,26 @@ class Parameters {
     }
   };
 
+  friend struct pulse::Stringify<Parameters>;
+
   std::unordered_map<std::string, std::string, StringHash, std::equal_to<>>
       map_;
 };
 
 }  // namespace pulse::http
+
+template <>
+struct pulse::Stringify<pulse::http::Parameters> {
+  static std::string to_string(const pulse::http::Parameters& p) {
+    std::string out = "Parameters{";
+    for (const auto& [key, value] : p.map_) {
+      out += strings::cat("{", key, ",", value, "},");
+    }
+
+    if (!p.map_.empty()) {
+      out.pop_back();
+    }
+
+    return strings::cat(out, "}");
+  }
+};

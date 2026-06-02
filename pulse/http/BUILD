@@ -24,6 +24,7 @@ cc_library(
     hdrs = ["pattern.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":parameters",
         "//pulse/core:enum_macros",
         "//pulse/core:error",
         "//pulse/core:result",
@@ -51,6 +52,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":method",
+        ":parameters",
         "//pulse/core:stringify",
         "//pulse/strings:cat",
     ],
@@ -137,6 +139,8 @@ cc_library(
         ":parameter_parser",
         "//pulse/core:error",
         "//pulse/core:result",
+        "//pulse/core:stringify",
+        "//pulse/strings:cat",
     ],
 )
 

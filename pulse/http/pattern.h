@@ -4,7 +4,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -12,6 +11,7 @@
 #include "pulse/core/enum_macros.h"
 #include "pulse/core/result.h"
 #include "pulse/core/stringify.h"
+#include "pulse/http/parameters.h"
 #include "pulse/strings/cat.h"
 
 namespace pulse::http {
@@ -22,7 +22,7 @@ namespace pulse::http {
 
 class Pattern {
  public:
-  using Captures = std::unordered_map<std::string, std::string>;
+  using Captures = Parameters;
 
   static Result<Pattern> Make(std::string_view pattern);
 
