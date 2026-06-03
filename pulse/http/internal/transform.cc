@@ -69,7 +69,7 @@ Result<Request> parse_header(std::string_view raw) {
       path_with_query_params[0][0] != '/') {
     Log() << "invalid path: [" << path_with_query_params[0] << "]";
     return Error{.code = Error::Code::kInternal,
-                 .message = strings::cat("parse_header: invalid path",
+                 .message = strings::cat("parse_header: invalid url: ",
                                          path_with_query_params[0])};
   }
 
