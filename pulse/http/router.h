@@ -39,14 +39,6 @@ class Router {
     Pattern::Captures path_params;
   };
 
-  // Registers a route. Returns an error if the pattern is malformed or if
-  // (method, pattern) was already registered.
-  //
-  // Deprecated: use Router::Make instead.
-  [[deprecated("use pulse::http::Router::Make instead")]]
-  Result<void> add(Method method, std::string_view raw_pattern,
-                   std::unique_ptr<Handler> handler);
-
   // Matches on a given path. Returns a Match on a matched route, std::nullopt
   // otherwise.
   std::optional<Match> match(Method method, std::string_view path) const;
@@ -60,6 +52,9 @@ class Router {
 
   template <HttpServerContext Ctx, HttpHandler... Hs>
   Result<void> add(const Ctx& ctx);
+
+  Result<void> add(Method method, std::string_view raw_pattern,
+                   std::unique_ptr<Handler> handler);
 
   struct Route {
     Pattern pattern;
@@ -94,12 +89,17 @@ std::unique_ptr<H> Router::make_handler(const Ctx& ctx, Dependencies<Deps...>) {
 
 template <HttpServerContext Ctx, HttpHandler... Hs>
 Result<void> Router::add(const Ctx& ctx) {
+  if constexpr (sizeof...(Hs) == 0) {
+    return {};
+  }
+
   Result<void> result;
   ((result =
         add(Hs::kMethod, Hs::kPath,
             Router::make_handler<Ctx, Hs>(ctx, typename Hs::Dependencies{})))
        .ok() &&
    ...);
+
   return result;
 }
 

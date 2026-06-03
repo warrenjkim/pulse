@@ -22,9 +22,6 @@ namespace pulse::http {
 namespace {
 
 using ::testing::Eq;
-using ::testing::TestParamInfo;
-using ::testing::TestWithParam;
-using ::testing::ValuesIn;
 
 class NoDepHandler final : public Handler {
  public:
@@ -192,10 +189,6 @@ TEST(RouterMakeTest, MakeWithMixedDeps) {
   EXPECT_THAT(response2.status, Eq(202));
 }
 
-std::unique_ptr<Handler> MakeNamedHandler(std::string name) {
-  return std::make_unique<GetNamedHandler>(std::move(name));
-}
-
 TEST(RouterTest, MakeRejectsMalformedPattern) {
   std::string name = "injected";
   ServerContext<std::string> ctx;
@@ -226,176 +219,130 @@ TEST(RouterTest, MakeSamePatternDifferentMethodsAllowed) {
   EXPECT_THAT((*post_match->handler)(Request{}).body, Eq("injected"));
 }
 
-struct RouteSpec {
-  Method method;
-  std::string_view pattern;
-  std::string_view handler_name;
-};
+struct GetItemsHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items", Method::kGet);
+  using Dependencies = Dependencies<>;
 
-struct MatchTestCase {
-  std::string_view name;
-  std::vector<RouteSpec> routes;
-  Method query_method;
-  std::string_view query_path;
-  std::string_view expected_handler;
-  Pattern::Captures expected_params;
-};
-
-class MatchTest : public TestWithParam<MatchTestCase> {};
-
-TEST_P(MatchTest, Match) {
-  const MatchTestCase& params = GetParam();
-
-  Router router;
-  for (const RouteSpec& spec : params.routes) {
-    ASSERT_TRUE(router
-                    .add(spec.method, spec.pattern,
-                         MakeNamedHandler(std::string(spec.handler_name)))
-                    .ok());
+  Response operator()(const Request&) const override {
+    return Response{.body = "get_items"};
   }
+};
+
+struct PostItemsHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items", Method::kPost);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "post_items"};
+  }
+};
+
+struct GetItemByIdHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items/{id}", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "item_by_id"};
+  }
+};
+
+struct GetItemNewHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items/new", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "item_new"};
+  }
+};
+
+struct GetNestedItemHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items/{item_id}/subitems/{subitem_id}", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "nested"};
+  }
+};
+
+TEST(RouterTest, MatchesMethod) {
+  Result<Router> router =
+      Router::Make<Routes<GetItemsHandler, PostItemsHandler>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
+
+  std::optional<Router::Match> get_match =
+      router->match(Method::kGet, "/items");
+  ASSERT_TRUE(get_match.has_value());
+  EXPECT_THAT((*get_match->handler)(Request{}).body, Eq("get_items"));
+
+  std::optional<Router::Match> post_match =
+      router->match(Method::kPost, "/items");
+  ASSERT_TRUE(post_match.has_value());
+  EXPECT_THAT((*post_match->handler)(Request{}).body, Eq("post_items"));
+}
+
+TEST(RouterTest, MatchLiteralBeatsCapture) {
+  Result<Router> router =
+      Router::Make<Routes<GetItemByIdHandler, GetItemNewHandler>>(
+          ServerContext{});
+  ASSERT_TRUE(router.ok());
+
+  std::optional<Router::Match> literal_match =
+      router->match(Method::kGet, "/items/new");
+  ASSERT_TRUE(literal_match.has_value());
+  EXPECT_THAT((*literal_match->handler)(Request{}).body, Eq("item_new"));
+
+  std::optional<Router::Match> capture_match =
+      router->match(Method::kGet, "/items/42");
+  ASSERT_TRUE(capture_match.has_value());
+  EXPECT_THAT((*capture_match->handler)(Request{}).body, Eq("item_by_id"));
+  EXPECT_THAT(capture_match->path_params, Eq(Pattern::Captures{{"id", "42"}}));
+}
+
+TEST(RouterTest, MatchBindsNestedCaptures) {
+  Result<Router> router =
+      Router::Make<Routes<GetNestedItemHandler>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
 
   std::optional<Router::Match> match =
-      router.match(params.query_method, params.query_path);
-
+      router->match(Method::kGet, "/items/1/subitems/2");
   ASSERT_TRUE(match.has_value());
-  EXPECT_THAT((*match->handler)(Request{}).body, Eq(params.expected_handler));
-  EXPECT_THAT(match->path_params, Eq(params.expected_params));
+  EXPECT_THAT(match->path_params,
+              Eq(Pattern::Captures{{"item_id", "1"}, {"subitem_id", "2"}}));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    RouterTest, MatchTest,
-    ValuesIn<MatchTestCase>({
-        {.name = "ExactLiteral",
-         .routes = {{.method = Method::kGet,
-                     .pattern = "/health",
-                     .handler_name = "health"}},
-         .query_method = Method::kGet,
-         .query_path = "/health",
-         .expected_handler = "health",
-         .expected_params = {}},
-        {.name = "CaptureBinds",
-         .routes = {{.method = Method::kGet,
-                     .pattern = "/accounts/{id}",
-                     .handler_name = "get_account"}},
-         .query_method = Method::kGet,
-         .query_path = "/accounts/42",
-         .expected_handler = "get_account",
-         .expected_params = {{"id", "42"}}},
-        {.name = "LiteralBeatsCapture",
-         .routes = {{.method = Method::kGet,
-                     .pattern = "/accounts/{id}",
-                     .handler_name = "by_id"},
-                    {.method = Method::kGet,
-                     .pattern = "/accounts/new",
-                     .handler_name = "new_form"}},
-         .query_method = Method::kGet,
-         .query_path = "/accounts/new",
-         .expected_handler = "new_form",
-         .expected_params = {}},
-        {.name = "CaptureStillMatchesNonLiteralPath",
-         .routes = {{.method = Method::kGet,
-                     .pattern = "/accounts/{id}",
-                     .handler_name = "by_id"},
-                    {.method = Method::kGet,
-                     .pattern = "/accounts/new",
-                     .handler_name = "new_form"}},
-         .query_method = Method::kGet,
-         .query_path = "/accounts/42",
-         .expected_handler = "by_id",
-         .expected_params = {{"id", "42"}}},
-        {.name = "MethodSelectsGet",
-         .routes = {{.method = Method::kGet,
-                     .pattern = "/accounts",
-                     .handler_name = "list"},
-                    {.method = Method::kPost,
-                     .pattern = "/accounts",
-                     .handler_name = "create"}},
-         .query_method = Method::kGet,
-         .query_path = "/accounts",
-         .expected_handler = "list",
-         .expected_params = {}},
-        {.name = "MethodSelectsPost",
-         .routes = {{.method = Method::kGet,
-                     .pattern = "/accounts",
-                     .handler_name = "list"},
-                    {.method = Method::kPost,
-                     .pattern = "/accounts",
-                     .handler_name = "create"}},
-         .query_method = Method::kPost,
-         .query_path = "/accounts",
-         .expected_handler = "create",
-         .expected_params = {}},
-        {.name = "NestedCapturesBind",
-         .routes = {{.method = Method::kGet,
-                     .pattern = "/users/{user_id}/posts/{post_id}",
-                     .handler_name = "user_post"}},
-         .query_method = Method::kGet,
-         .query_path = "/users/42/posts/7",
-         .expected_handler = "user_post",
-         .expected_params = {{"user_id", "42"}, {"post_id", "7"}}},
-    }),
-    [](const TestParamInfo<MatchTestCase>& info) {
-      return std::string(info.param.name);
-    });
-
-struct NoMatchTestCase {
-  std::string_view name;
-  std::vector<RouteSpec> routes;
-  Method query_method;
-  std::string_view query_path;
-};
-
-class NoMatchTest : public TestWithParam<NoMatchTestCase> {};
-
-TEST_P(NoMatchTest, NoMatch) {
-  const NoMatchTestCase& params = GetParam();
-
-  Router router;
-  for (const RouteSpec& spec : params.routes) {
-    ASSERT_TRUE(router
-                    .add(spec.method, spec.pattern,
-                         MakeNamedHandler(std::string(spec.handler_name)))
-                    .ok());
-  }
-
-  EXPECT_FALSE(
-      router.match(params.query_method, params.query_path).has_value());
+TEST(RouterTest, NoMatchUnknownPath) {
+  Result<Router> router =
+      Router::Make<Routes<GetItemByIdHandler>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
+  EXPECT_FALSE(router->match(Method::kGet, "/unknown").has_value());
 }
 
-INSTANTIATE_TEST_SUITE_P(RouterTest, NoMatchTest,
-                         ValuesIn<NoMatchTestCase>({
-                             {.name = "UnknownPath",
-                              .routes = {{.method = Method::kGet,
-                                          .pattern = "/accounts/{id}",
-                                          .handler_name = "get"}},
-                              .query_method = Method::kGet,
-                              .query_path = "/unknown"},
-                             {.name = "TooFewSegments",
-                              .routes = {{.method = Method::kGet,
-                                          .pattern = "/accounts/{id}",
-                                          .handler_name = "get"}},
-                              .query_method = Method::kGet,
-                              .query_path = "/accounts"},
-                             {.name = "TooManySegments",
-                              .routes = {{.method = Method::kGet,
-                                          .pattern = "/accounts/{id}",
-                                          .handler_name = "get"}},
-                              .query_method = Method::kGet,
-                              .query_path = "/accounts/42/extra"},
-                             {.name = "UnregisteredMethod",
-                              .routes = {{.method = Method::kGet,
-                                          .pattern = "/accounts",
-                                          .handler_name = "list"}},
-                              .query_method = Method::kPost,
-                              .query_path = "/accounts"},
-                             {.name = "EmptyRouter",
-                              .routes = {},
-                              .query_method = Method::kGet,
-                              .query_path = "/anything"},
-                         }),
-                         [](const TestParamInfo<NoMatchTestCase>& info) {
-                           return std::string(info.param.name);
-                         });
+TEST(RouterTest, NoMatchTooFewSegments) {
+  Result<Router> router =
+      Router::Make<Routes<GetItemByIdHandler>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
+  EXPECT_FALSE(router->match(Method::kGet, "/items").has_value());
+}
+
+TEST(RouterTest, NoMatchTooManySegments) {
+  Result<Router> router =
+      Router::Make<Routes<GetItemByIdHandler>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
+  EXPECT_FALSE(router->match(Method::kGet, "/items/42/extra").has_value());
+}
+
+TEST(RouterTest, NoMatchWrongMethod) {
+  Result<Router> router =
+      Router::Make<Routes<GetItemsHandler>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
+  EXPECT_FALSE(router->match(Method::kPost, "/items").has_value());
+}
+
+TEST(RouterTest, NoMatchEmptyRouter) {
+  Result<Router> router = Router::Make<Routes<>>(ServerContext{});
+  ASSERT_TRUE(router.ok());
+  EXPECT_FALSE(router->match(Method::kGet, "/items").has_value());
+}
 
 }  // namespace
 
