@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -t 1 ]]; then
+  RED='\033[0;31m'
+  GREEN='\033[0;32m'
+  BOLD='\033[1m'
+  RESET='\033[0m'
+else
+  RED=''
+  GREEN=''
+  BOLD=''
+  RESET=''
+fi
+
+step() { echo -e "\n${BOLD}> $1${RESET}"; }
+ok()   { echo -e "${GREEN}$1 OK${RESET}"; }
+fail() { echo -e "${RED}$1 FAIL${RESET}"; }
+
+tmpfiles=()
+
+cleanup() {
+  rm -f "${tmpfiles[@]}"
+  echo -e "\nSIGINT: exiting"
+  exit 1
+}
+
+trap cleanup INT TERM
+
+BAZEL_TARGET=$(git config hooks.bazeltarget || true)
+if [[ -z "$BAZEL_TARGET" ]]; then
+  echo "hooks.bazeltarget not set — run: git config hooks.bazeltarget <pattern>"
+  exit 1
+fi
+
+mapfile -t cc_files < <(git ls-files '*.cc' '*.h')
+
+BAZEL_FLAGS=(
+  --ui_event_filters=-info,-debug
+  --noshow_progress
+)
+
+bazel_capture() {
+  local out stderr ret=0
+  out=$(mktemp)
+  stderr=$(mktemp)
+  tmpfiles+=("$out" "$stderr")
+  if ! "$@" 1>"$out" 2>"$stderr"; then
+    ret=1
+    cat "$out"
+    cat "$stderr" >&2
+  fi
+  rm -f "$out" "$stderr"
+  return $ret
+}
+
+CHECKS_DIR="$(dirname "$0")/checks"
+for check in "$CHECKS_DIR"/*.sh; do
+  source "$check"
+done
