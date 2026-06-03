@@ -4,13 +4,13 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "pulse/core/error.h"
 #include "pulse/core/result.h"
+#include "pulse/http/parameters.h"
 #include "pulse/strings/cat.h"
 #include "pulse/strings/split.h"
 
@@ -74,7 +74,7 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
 }
 
 std::optional<Pattern::Captures> Pattern::match(std::string_view path) const {
-  std::unordered_map<std::string, std::string> captures;
+  Parameters captures;
   const std::vector<std::string_view> parts = strings::split(path, kDelimiter);
   if (parts.size() != pattern_.size()) {
     return std::nullopt;

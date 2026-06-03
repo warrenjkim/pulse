@@ -48,7 +48,7 @@ INSTANTIATE_TEST_SUITE_P(
         InvalidRequestTestCase{.name = "InvalidPath",
                                .raw = "GET entries HTTP/1.1\r\n"
                                       "Host: 100.x.x.x:8080",
-                               .expected_message = "invalid path"},
+                               .expected_message = "invalid url"},
         InvalidRequestTestCase{.name = "EmptyHeaderValue",
                                .raw = "GET / HTTP/1.1\r\n"
                                       "Host: ",
@@ -83,8 +83,8 @@ INSTANTIATE_TEST_SUITE_P(
             .raw = "GET /entries?month=01 HTTP/1.1\r\n"
                    "Host: 100.x.x.x:8080",
             .expected = Request{.method = Method::kGet,
-                                .path = "/entries",
-                                .query_params = {{"month", "01"}},
+                                .url = "/entries",
+                                .query = {{"month", "01"}},
                                 .headers = {{"Host", "100.x.x.x:8080"}}}},
         ValidRequestTestCase{
             .name = "GetWithParams",
@@ -92,9 +92,9 @@ INSTANTIATE_TEST_SUITE_P(
                    "Host: 100.x.x.x:8080\r\n"
                    "Accept: text/html",
             .expected = Request{.method = Method::kGet,
-                                .path = "/entries",
-                                .query_params = {{"month", "2026-04"},
-                                                 {"limit", "10"}},
+                                .url = "/entries",
+                                .query = {{"month", "2026-04"},
+                                          {"limit", "10"}},
                                 .headers = {{"Host", "100.x.x.x:8080"},
                                             {"Accept", "text/html"}}}},
         ValidRequestTestCase{
@@ -103,8 +103,8 @@ INSTANTIATE_TEST_SUITE_P(
                    "Host: 100.x.x.x:8080\r\n"
                    "Content-Type: application/json",
             .expected = Request{.method = Method::kPost,
-                                .path = "/entries",
-                                .query_params = {},
+                                .url = "/entries",
+                                .query = {},
                                 .headers = {{"Host", "100.x.x.x:8080"},
                                             {"Content-Type",
                                              "application/json"}}}},
@@ -113,8 +113,8 @@ INSTANTIATE_TEST_SUITE_P(
             .raw = "GET / HTTP/1.1\r\n"
                    "Host: 100.x.x.x:8080",
             .expected = Request{.method = Method::kGet,
-                                .path = "/",
-                                .query_params = {},
+                                .url = "/",
+                                .query = {},
                                 .headers = {{"Host", "100.x.x.x:8080"}}}}),
     [](const TestParamInfo<ValidRequestTestCase>& info) {
       return info.param.name;

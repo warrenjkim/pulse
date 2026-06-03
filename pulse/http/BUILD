@@ -24,6 +24,7 @@ cc_library(
     hdrs = ["pattern.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":parameters",
         "//pulse/core:enum_macros",
         "//pulse/core:error",
         "//pulse/core:result",
@@ -51,6 +52,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":method",
+        ":parameters",
         "//pulse/core:stringify",
         "//pulse/strings:cat",
     ],
@@ -126,5 +128,40 @@ cc_library(
         "//pulse/http/internal:transform",
         "//pulse/net:acceptor",
         "//pulse/net:socket",
+    ],
+)
+
+cc_library(
+    name = "parameters",
+    hdrs = ["parameters.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":parameter_parser",
+        "//pulse/core:error",
+        "//pulse/core:result",
+        "//pulse/core:stringify",
+        "//pulse/strings:cat",
+    ],
+)
+
+cc_test(
+    name = "parameters_test",
+    srcs = ["parameters_test.cc"],
+    deps = [
+        ":parameters",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//pulse/core:error",
+        "//pulse/core:result",
+    ],
+)
+
+cc_library(
+    name = "parameter_parser",
+    hdrs = ["parameter_parser.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pulse/core:error",
+        "//pulse/core:result",
     ],
 )

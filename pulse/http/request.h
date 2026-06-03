@@ -5,6 +5,7 @@
 
 #include "pulse/core/stringify.h"
 #include "pulse/http/method.h"
+#include "pulse/http/parameters.h"
 #include "pulse/strings/cat.h"
 
 namespace pulse::http {
@@ -12,9 +13,9 @@ namespace pulse::http {
 // TODO(store version number)
 struct Request {
   Method method;
-  std::string path;
-  std::unordered_map<std::string, std::string> path_params;
-  std::unordered_map<std::string, std::string> query_params;
+  std::string url;
+  Parameters path;
+  Parameters query;
   std::unordered_map<std::string, std::string> headers;
   std::string body;
 
@@ -29,13 +30,10 @@ struct pulse::Stringify<pulse::http::Request> {
     return strings::cat(
         "Request{.method=",
         pulse::Stringify<pulse::http::Method>::to_string(req.method),
-        ",.path=", pulse::Stringify<std::string>::to_string(req.path),
-        ",.path_params=",
-        pulse::Stringify<std::unordered_map<std::string, std::string>>::
-            to_string(req.path_params),
-        ",.query_params=",
-        pulse::Stringify<std::unordered_map<std::string, std::string>>::
-            to_string(req.query_params),
+        ",.url=", pulse::Stringify<std::string>::to_string(req.url), ",.path=",
+        pulse::Stringify<pulse::http::Parameters>::to_string(req.path),
+        ",.query=",
+        pulse::Stringify<pulse::http::Parameters>::to_string(req.query),
         ",.headers=",
         pulse::Stringify<std::unordered_map<std::string, std::string>>::
             to_string(req.headers),

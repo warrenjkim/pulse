@@ -69,18 +69,17 @@ Result<Request> parse_header(std::string_view raw) {
       path_with_query_params[0][0] != '/') {
     Log() << "invalid path: [" << path_with_query_params[0] << "]";
     return Error{.code = Error::Code::kInternal,
-                 .message = strings::cat("parse_header: invalid path",
+                 .message = strings::cat("parse_header: invalid url: ",
                                          path_with_query_params[0])};
   }
 
-  request.path = std::string(path_with_query_params[0]);
+  request.url = std::string(path_with_query_params[0]);
   if (path_with_query_params.size() > 1) {
     for (std::string_view param :
          strings::split(path_with_query_params[1], "&")) {
       if (size_t i = param.find('=');
           i != std::string::npos && i + 1 < param.size()) {
-        request.query_params[std::string(param.substr(0, i))] =
-            std::string(param.substr(i + 1));
+        request.query[param.substr(0, i)] = std::string(param.substr(i + 1));
         continue;
       }
 
