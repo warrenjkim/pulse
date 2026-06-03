@@ -94,7 +94,7 @@ INSTANTIATE_TEST_SUITE_P(
             .expected = Request{.method = Method::kGet,
                                 .url = "/entries",
                                 .query = {{"month", "2026-04"},
-                                                 {"limit", "10"}},
+                                          {"limit", "10"}},
                                 .headers = {{"Host", "100.x.x.x:8080"},
                                             {"Accept", "text/html"}}}},
         ValidRequestTestCase{
