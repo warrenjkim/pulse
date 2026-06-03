@@ -131,9 +131,9 @@ func buildozerRemove(dep string, target string) error {
 	return nil
 }
 
-func analyzeTarget(target string) {
+func analyzeTarget(target string) bool {
 	if isUmbrellaTarget(target) {
-		return
+		return false
 	}
 
 	var errs []string
@@ -141,19 +141,19 @@ func analyzeTarget(target string) {
 	deps, err := bazelQuery(fmt.Sprintf("deps(%s, 1) - %s", target, target))
 	if err != nil {
 		fmt.Printf("%s\n  error: %v\n\n", target, err)
-		return
+		return false
 	}
 
 	srcs, err := bazelQuery(fmt.Sprintf("labels(srcs, %s) union labels(hdrs, %s)", target, target))
 	if err != nil {
 		fmt.Printf("%s\n  error: %v\n\n", target, err)
-		return
+		return false
 	}
 
 	includes, err := extractIncludes(srcs)
 	if err != nil {
 		fmt.Printf("%s\n  error: %v\n\n", target, err)
-		return
+		return false
 	}
 
 	var unused []string
@@ -175,7 +175,7 @@ func analyzeTarget(target string) {
 
 	if len(unused) == 0 && len(errs) == 0 {
 		fmt.Printf("%s -- OK\n", target)
-		return
+		return false
 	}
 
 	fmt.Printf("%s\n", target)
@@ -199,6 +199,8 @@ func analyzeTarget(target string) {
 	}
 
 	fmt.Println()
+
+	return len(unused) == 0
 }
 
 var fix = flag.Bool("fix", false, "automatically remove unused deps using buildozer")
@@ -221,7 +223,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	unused := false
 	for _, target := range targets {
-		analyzeTarget(target)
+		unused = unused || analyzeTarget(target)
+	}
+
+	if unused {
+		os.Exit(1)
 	}
 }
