@@ -31,6 +31,7 @@ class Parameters {
     if (auto it = map_.find(key); it != map_.end()) {
       return ParameterParser<T>::Parse(it->second);
     }
+
     return Error{.code = Error::Code::kNotFound, .message = ""};
   }
 
