@@ -23,6 +23,7 @@ std::string cat_piece(const T& value) {
 
 }  // namespace internal
 
+// TODO(should be Stringifiable)
 template <typename... Args>
 std::string cat(const Args&... args) {
   std::string out;
