@@ -17,6 +17,23 @@
 
 namespace pulse::http {
 
+std::optional<Router::Match> Router::match(Method method,
+                                           std::string_view path) const {
+  const auto it = routes_.find(method);
+  if (it == routes_.end()) {
+    return std::nullopt;
+  }
+
+  for (const Route& route : it->second) {
+    if (std::optional<Pattern::Captures> captures = route.pattern.match(path)) {
+      return Router::Match{.handler = route.handler.get(),
+                           .path_params = *std::move(captures)};
+    }
+  }
+
+  return std::nullopt;
+}
+
 Result<void> Router::add(Method method, std::string_view raw_pattern,
                          std::unique_ptr<Handler> handler) {
   Result<Pattern> pattern = Pattern::Make(raw_pattern);
@@ -43,23 +60,6 @@ Result<void> Router::add(Method method, std::string_view raw_pattern,
             });
 
   return Result<void>{};
-}
-
-std::optional<Router::Match> Router::match(Method method,
-                                           std::string_view path) const {
-  const auto it = routes_.find(method);
-  if (it == routes_.end()) {
-    return std::nullopt;
-  }
-
-  for (const Route& route : it->second) {
-    if (std::optional<Pattern::Captures> captures = route.pattern.match(path)) {
-      return Router::Match{.handler = route.handler.get(),
-                           .path_params = *std::move(captures)};
-    }
-  }
-
-  return std::nullopt;
 }
 
 }  // namespace pulse::http
