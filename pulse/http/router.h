@@ -89,12 +89,17 @@ std::unique_ptr<H> Router::make_handler(const Ctx& ctx, Dependencies<Deps...>) {
 
 template <HttpServerContext Ctx, HttpHandler... Hs>
 Result<void> Router::add(const Ctx& ctx) {
+  if constexpr (sizeof...(Hs) == 0) {
+    return {};
+  }
+
   Result<void> result;
   ((result =
         add(Hs::kMethod, Hs::kPath,
             Router::make_handler<Ctx, Hs>(ctx, typename Hs::Dependencies{})))
        .ok() &&
    ...);
+
   return result;
 }
 
