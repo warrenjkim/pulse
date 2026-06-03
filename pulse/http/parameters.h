@@ -26,13 +26,14 @@ class Parameters {
       std::initializer_list<std::pair<const std::string, std::string>> init)
       : map_(init.begin(), init.end()) {}
 
-  template <typename T>
+  template <Parseable T>
   Result<T> get(std::string_view key) const {
     if (auto it = map_.find(key); it != map_.end()) {
       return ParameterParser<T>::Parse(it->second);
     }
 
-    return Error{.code = Error::Code::kNotFound, .message = ""};
+    return Error{.code = Error::Code::kNotFound,
+                 .message = strings::cat("parameter not found: ", key)};
   }
 
   std::string& operator[](std::string_view key) {

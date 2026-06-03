@@ -144,6 +144,18 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "parameters_test",
+    srcs = ["parameters_test.cc"],
+    deps = [
+        ":parameters",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "//pulse/core:error",
+        "//pulse/core:result",
+    ],
+)
+
 cc_library(
     name = "parameter_parser",
     hdrs = ["parameter_parser.h"],
