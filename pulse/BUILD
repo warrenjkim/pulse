@@ -4,6 +4,7 @@ cc_library(
     deps = [
         "//pulse/concurrent",
         "//pulse/dsa",
+        "//pulse/html",
         "//pulse/http",
         "//pulse/json",
         "//pulse/net",
