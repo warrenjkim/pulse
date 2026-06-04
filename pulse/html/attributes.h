@@ -3,6 +3,8 @@
 #include <concepts>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 
 namespace pulse::html {
 
@@ -16,8 +18,26 @@ concept AttributeType = requires {
   { T::kKey } -> std::convertible_to<std::string_view>;
 } && std::convertible_to<T, Attribute>;
 
+template <AttributeType... Attrs>
+struct Attributes {
+  Attributes(Attrs... attrs) : attrs(std::move(attrs)...) {}
+
+  std::tuple<Attrs...> attrs;
+};
+
 template <AttributeType... T>
-struct Attributes {};
+struct AttributeList {};
+
+template <typename Tag, typename List>
+struct Contains {};
+
+template <typename T, typename... List>
+struct Contains<T, AttributeList<List...>>
+    : std::bool_constant<(std::same_as<T, List> || ...)> {};
+
+template <typename Attr, typename Tag>
+concept AttributeAllowed =
+    Contains<Attr, typename Tag::AllowedAttributes>::value;
 
 struct Class {
   static constexpr std::string_view kKey = "class";

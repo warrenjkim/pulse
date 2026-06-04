@@ -15,13 +15,6 @@ cc_library(
 )
 
 cc_library(
-    name = "constraints",
-    hdrs = ["constraints.h"],
-    visibility = ["//visibility:public"],
-    deps = [":attributes"],
-)
-
-cc_library(
     name = "tags",
     hdrs = ["tags.h"],
     visibility = ["//visibility:public"],
