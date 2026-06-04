@@ -2,15 +2,15 @@ cc_library(
     name = "html",
     visibility = ["//visibility:public"],
     deps = [
-        ":attribute",
+        ":attributes",
         ":tags",
         ":text",
     ],
 )
 
 cc_library(
-    name = "attribute",
-    hdrs = ["attribute.h"],
+    name = "attributes",
+    hdrs = ["attributes.h"],
     visibility = ["//visibility:public"],
 )
 
