@@ -9,41 +9,41 @@ namespace pulse::html {
 
 namespace {
 
-using ::testing::Eq;
+using ::testing::StrEq;
 
 TEST(RenderTest, TextOnly) {
-  EXPECT_THAT(render(Make<P>("hello")), Eq("<p>hello</p>"));
+  EXPECT_THAT(render(Make<P>("hello")), StrEq("<p>hello</p>"));
 }
 
 TEST(RenderTest, EmptyElement) {
-  EXPECT_THAT(render(Make<Div>()), Eq("<div></div>"));
+  EXPECT_THAT(render(Make<Div>()), StrEq("<div></div>"));
 }
 
 TEST(RenderTest, SingleAttribute) {
   EXPECT_THAT(render(Make<Div>(Attributes{Class{"card"}})),
-              Eq("<div class=\"card\"></div>"));
+              StrEq("<div class=\"card\"></div>"));
 }
 
 TEST(RenderTest, MultipleAttributes) {
   EXPECT_THAT(render(Make<Div>(Attributes{Class{"card"}, Id{"main"}})),
-              Eq("<div class=\"card\" id=\"main\"></div>"));
+              StrEq("<div class=\"card\" id=\"main\"></div>"));
 }
 
 TEST(RenderTest, NestedElements) {
   EXPECT_THAT(render(Make<Div>(Make<P>("hello"))),
-              Eq("<div><p>hello</p></div>"));
+              StrEq("<div><p>hello</p></div>"));
 }
 
 TEST(RenderTest, AttributesAndChildren) {
   EXPECT_THAT(render(Make<Div>(Attributes{Class{"card"}}, Make<P>("hello"))),
-              Eq("<div class=\"card\"><p>hello</p></div>"));
+              StrEq("<div class=\"card\"><p>hello</p></div>"));
 }
 
 TEST(RenderTest, DeeplyNested) {
   EXPECT_THAT(
       render(Make<Div>(Attributes{Class{"card"}}, Make<H1>("heading 1"),
                        Make<P>("paragraph"))),
-      Eq("<div class=\"card\"><h1>heading 1</h1><p>paragraph</p></div>"));
+      StrEq("<div class=\"card\"><h1>heading 1</h1><p>paragraph</p></div>"));
 }
 
 TEST(RenderTest, AllTags) {
@@ -58,28 +58,28 @@ TEST(RenderTest, AllTags) {
                   Make<Thead>(Make<Tr>(Make<Th>("th"), Make<Th>("th"))),
                   Make<Tbody>(Make<Tr>(Make<Td>("td"), Make<Td>("td")),
                               Make<Tr>(Make<Td>("td"), Make<Td>("td"))))))))),
-      Eq("<html>"
-         "<head><title>title</title></head>"
-         "<body>"
-         "<h1>heading 1</h1>"
-         "<h2>heading 2</h2>"
-         "<h3>heading 3</h3>"
-         "<p>paragraph</p>"
-         "<span>span</span>"
-         "<a href=\"/link\">anchor</a>"
-         "<div>"
-         "<table>"
-         "<thead>"
-         "<tr><th>th</th><th>th</th></tr>"
-         "</thead>"
-         "<tbody>"
-         "<tr><td>td</td><td>td</td></tr>"
-         "<tr><td>td</td><td>td</td></tr>"
-         "</tbody>"
-         "</table>"
-         "</div>"
-         "</body>"
-         "</html>"));
+      StrEq("<html>"
+            "<head><title>title</title></head>"
+            "<body>"
+            "<h1>heading 1</h1>"
+            "<h2>heading 2</h2>"
+            "<h3>heading 3</h3>"
+            "<p>paragraph</p>"
+            "<span>span</span>"
+            "<a href=\"/link\">anchor</a>"
+            "<div>"
+            "<table>"
+            "<thead>"
+            "<tr><th>th</th><th>th</th></tr>"
+            "</thead>"
+            "<tbody>"
+            "<tr><td>td</td><td>td</td></tr>"
+            "<tr><td>td</td><td>td</td></tr>"
+            "</tbody>"
+            "</table>"
+            "</div>"
+            "</body>"
+            "</html>"));
 }
 
 }  // namespace
