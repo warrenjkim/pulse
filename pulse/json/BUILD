@@ -12,3 +12,30 @@ cc_library(
         "//pulse/json/value",
     ],
 )
+
+cc_library(
+    name = "value",
+    hdrs = ["value.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pulse/core:error",
+        "//pulse/core:result",
+        "//pulse/core:stringify",
+        "//pulse/strings:cat",
+    ],
+)
+
+cc_test(
+    name = "value_test",
+    srcs = ["value_test.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":value",
+        "//pulse/core:error",
+        "//pulse/core:result",
+        "//pulse/core:stringify",
+        "//pulse/strings:cat",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
