@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <variant>
@@ -35,6 +36,27 @@ class [[nodiscard]] Result {
 
  private:
   std::variant<T, Error> data_;
+};
+
+template <typename T>
+class [[nodiscard]] Result<T&> {
+ public:
+  Result(T& value) : data_(std::addressof(value)) {}
+
+  Result(Error error) : data_(std::move(error)) {}
+
+  bool ok() const { return std::holds_alternative<T*>(data_); }
+
+  const Error& error() const& { return std::get<Error>(data_); }
+
+  Error&& error() && { return std::get<Error>(std::move(data_)); }
+
+  T& operator*() const { return *std::get<T*>(data_); }
+
+  T* operator->() const { return std::get<T*>(data_); }
+
+ private:
+  std::variant<T*, Error> data_;
 };
 
 template <>
