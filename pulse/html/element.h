@@ -81,16 +81,6 @@ std::string render(const Element& html);
 
 }  // namespace pulse::html
 
-// TODO(move to pulse/strings/append.h and actually append)
-namespace pulse::strings {
-
-template <typename... Args>
-void append(std::string* dest, const Args&... args) {
-  ((*dest += internal::cat_piece(args)), ...);
-}
-
-}  // namespace pulse::strings
-
 template <>
 struct pulse::Stringify<pulse::html::Element> {
   static std::string to_string(const pulse::html::Element& html) {
