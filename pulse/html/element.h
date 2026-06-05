@@ -9,6 +9,7 @@
 #include <variant>
 #include <vector>
 
+#include "pulse/core/overload.h"
 #include "pulse/core/stringify.h"
 #include "pulse/html/attributes.h"
 #include "pulse/html/tags.h"
@@ -89,16 +90,6 @@ void append(std::string* dest, const Args&... args) {
 }
 
 }  // namespace pulse::strings
-
-// TODO(move to pulse/core/overload.h)
-namespace pulse {
-
-template <typename... Ts>
-struct Overload : Ts... {
-  using Ts::operator()...;
-};
-
-}  // namespace pulse
 
 template <>
 struct pulse::Stringify<pulse::html::Element> {

@@ -44,6 +44,12 @@ cc_library(
 )
 
 cc_library(
+    name = "overload",
+    hdrs = ["overload.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "result",
     hdrs = ["result.h"],
     visibility = ["//visibility:public"],
