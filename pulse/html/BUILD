@@ -37,6 +37,7 @@ cc_library(
         ":attributes",
         ":tags",
         ":text",
+        "//pulse/core:overload",
         "//pulse/core:stringify",
         "//pulse/strings:cat",
     ],

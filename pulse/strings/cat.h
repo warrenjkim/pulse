@@ -23,6 +23,11 @@ std::string cat_piece(const T& value) {
 
 }  // namespace internal
 
+template <typename... Args>
+void append(std::string* dest, const Args&... args) {
+  ((*dest += internal::cat_piece(args)), ...);
+}
+
 // TODO(should be Stringifiable)
 template <typename... Args>
 std::string cat(const Args&... args) {
