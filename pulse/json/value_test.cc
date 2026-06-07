@@ -7,8 +7,6 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "pulse/core/error.h"
-#include "pulse/core/result.h"
 #include "pulse/core/stringify.h"
 
 namespace pulse::json {
@@ -16,7 +14,6 @@ namespace pulse::json {
 namespace {
 
 using ::testing::Eq;
-using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::Ne;
 using ::testing::StrEq;
@@ -92,44 +89,6 @@ TEST(ValueTest, Reassignment) {
   EXPECT_THAT(v, Eq(true));
   v = nullptr;
   EXPECT_THAT(v.is<nullptr_t>(), IsTrue());
-}
-
-TEST(ValueTest, GetBool) {
-  Result<bool&> result = value(true).get<bool>();
-  ASSERT_THAT(result.ok(), IsTrue());
-  EXPECT_THAT(*result, IsTrue());
-}
-
-TEST(ValueTest, GetInt) {
-  Result<int64_t&> result = value(42).get<int64_t>();
-  ASSERT_THAT(result.ok(), IsTrue());
-  EXPECT_THAT(*result, Eq(42));
-}
-
-TEST(ValueTest, GetDouble) {
-  Result<double&> result = value(3.14).get<double>();
-  ASSERT_THAT(result.ok(), IsTrue());
-  EXPECT_THAT(*result, Eq(3.14));
-}
-
-TEST(ValueTest, GetString) {
-  Result<std::string&> result = value("hello").get<std::string>();
-  ASSERT_THAT(result.ok(), IsTrue());
-  EXPECT_THAT(*result, Eq("hello"));
-}
-
-TEST(ValueTest, GetTypeMismatch) {
-  Result<int64_t&> result = value("hello").get<int64_t>();
-  EXPECT_THAT(result.ok(), IsFalse());
-  EXPECT_THAT(result.error().code, Eq(pulse::Error::Code::kFailedPrecondition));
-}
-
-TEST(ValueTest, GetMutates) {
-  value v = "hello";
-  Result<std::string&> result = v.get<std::string>();
-  ASSERT_THAT(result.ok(), IsTrue());
-  *result = "world";
-  EXPECT_THAT(v, Eq(std::string("world")));
 }
 
 TEST(ValueTest, ObjectImplicitPromotion) {

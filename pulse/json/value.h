@@ -13,8 +13,6 @@
 #include <variant>
 #include <vector>
 
-#include "pulse/core/error.h"
-#include "pulse/core/result.h"
 #include "pulse/core/stringify.h"
 #include "pulse/strings/cat.h"
 
@@ -89,19 +87,13 @@ class value {
   value& operator[](const T& key);
 
   template <JsonType T>
+  bool is() const noexcept;
+
+  template <JsonType T>
   T& as();
 
   template <JsonType T>
   const T& as() const;
-
-  template <JsonType T>
-  pulse::Result<T&> get();
-
-  template <JsonType T>
-  pulse::Result<const T&> get() const;
-
-  template <JsonType T>
-  bool is() const noexcept;
 
   friend bool operator==(const value&, const value&) = default;
 
@@ -151,6 +143,11 @@ value& value::operator[](const T& key) {
 }
 
 template <JsonType T>
+bool value::is() const noexcept {
+  return std::holds_alternative<T>(value_);
+}
+
+template <JsonType T>
 T& value::as() {
   return std::get<T>(value_);
 }
@@ -158,33 +155,6 @@ T& value::as() {
 template <JsonType T>
 const T& value::as() const {
   return std::get<T>(value_);
-}
-
-template <JsonType T>
-pulse::Result<T&> value::get() {
-  if (!std::holds_alternative<T>(value_)) [[unlikely]] {
-    return pulse::Error{.code = pulse::Error::Code::kFailedPrecondition,
-                        .message = strings::cat("expected ", type_name<T>(),
-                                                ", got ", type_name())};
-  }
-
-  return std::get<T>(value_);
-}
-
-template <JsonType T>
-pulse::Result<const T&> value::get() const {
-  if (!std::holds_alternative<T>(value_)) [[unlikely]] {
-    return pulse::Error{.code = pulse::Error::Code::kFailedPrecondition,
-                        .message = strings::cat("expected ", type_name<T>(),
-                                                ", got ", type_name())};
-  }
-
-  return std::get<T>(value_);
-}
-
-template <JsonType T>
-bool value::is() const noexcept {
-  return std::holds_alternative<T>(value_);
 }
 
 template <JsonType T>
