@@ -2,8 +2,35 @@ cc_library(
     name = "json",
     visibility = ["//visibility:public"],
     deps = [
+        ":bind",
         ":parse",
         ":value",
+    ],
+)
+
+cc_library(
+    name = "bind",
+    hdrs = ["bind.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":value",
+        "@pulse//pulse/core:error",
+        "@pulse//pulse/core:result",
+        "@pulse//pulse/strings:cat",
+    ],
+)
+
+cc_test(
+    name = "bind_test",
+    srcs = ["bind_test.cc"],
+    deps = [
+        ":bind",
+        ":parse",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "@pulse//pulse/core:error",
+        "@pulse//pulse/core:result",
+        "@pulse//pulse/core:result_or_die",
     ],
 )
 
