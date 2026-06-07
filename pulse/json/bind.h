@@ -38,7 +38,7 @@ concept Bindable = requires { StructType::schema(); };
 //
 // NOTE: Extra fields in the JSON object are ignored.
 template <Bindable StructType>
-Result<StructType> bind(value input);
+Result<StructType> Bind(value input);
 
 namespace internal {
 
@@ -52,11 +52,11 @@ struct Field {
 }  // namespace internal
 
 // Describes the mapping from a `json::value` object to a C++ struct. Fields are
-// registered via `Schema::field()`, which accepts a JSON key name and a
+// registered via `Schema::Field()`, which accepts a JSON key name and a
 // pointer-to-member. Required vs. optional is inferred from the member type.
 // `std::optional<T>` members are optional, all others are required.
 //
-// `Schema` should not be constructed directly. Use `Schema<T>{}.field(...)` to
+// `Schema` should not be constructed directly. Use `Schema<T>{}.Field(...)` to
 // build one. It is intended to be returned from a `static schema()` method on a
 // `Bindable` type.
 template <typename StructType, typename... Fields>
@@ -67,7 +67,7 @@ class Schema {
   template <typename FieldType>
   constexpr Schema<StructType, Fields...,
                    internal::Field<StructType, FieldType>>
-  field(std::string_view name, FieldType StructType::*member) {
+  Field(std::string_view name, FieldType StructType::*member) {
     return Schema<StructType, Fields...,
                   internal::Field<StructType, FieldType>>(std::tuple_cat(
         fields_, std::tuple<internal::Field<StructType, FieldType>>{
@@ -79,7 +79,7 @@ class Schema {
   friend class Schema;
 
   template <Bindable T>
-  friend Result<T> bind(value input);
+  friend Result<T> Bind(value input);
 
   constexpr explicit Schema(std::tuple<Fields...> fields)
       : fields_(std::move(fields)) {}
@@ -96,8 +96,8 @@ concept Optional = requires { typename T::value_type; } &&
                    std::same_as<T, std::optional<typename T::value_type>>;
 
 template <typename StructType, typename FieldType>
-Result<void> bind_field(const object_t& object, StructType* result,
-                        const Field<StructType, FieldType>& field) {
+Result<void> BindField(const object_t& object, StructType* result,
+                       const Field<StructType, FieldType>& field) {
   if (auto it = object.find(field.key); it != object.end()) {
     if constexpr (Optional<FieldType>) {
       using ValueType = typename FieldType::value_type;
@@ -133,7 +133,7 @@ Result<void> bind_field(const object_t& object, StructType* result,
 }  // namespace internal
 
 template <Bindable StructType>
-Result<StructType> bind(value input) {
+Result<StructType> Bind(value input) {
   if (!input.is<object_t>()) {
     return Error{.code = Error::Code::kInvalidArgument,
                  .message = "expected object"};
@@ -144,7 +144,7 @@ Result<StructType> bind(value input) {
   Result<void> err;
   if (!std::apply(
           [&object, &result, &err](const auto&... fields) {
-            return ((err = internal::bind_field(object, &result, fields),
+            return ((err = internal::BindField(object, &result, fields),
                      err.ok()) &&
                     ...);
           },
