@@ -3,8 +3,8 @@ common --color=yes
 common --curses=yes
 common --check_direct_dependencies=warning
 
-build:base --linkopt=-mmacosx-version-min=13.3
-build:base --cxxopt=-mmacosx-version-min=13.3
+build:base --linkopt=-mmacosx-version-min=26.0
+build:base --cxxopt=-mmacosx-version-min=26.0
 build:base --features=layering_check
 build:base --cxxopt=-std=gnu++23
 build:base --cxxopt=-Wall

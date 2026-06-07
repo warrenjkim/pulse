@@ -3,4 +3,4 @@ Diagnostics:
   UnusedIncludes: Strict
 
 CompileFlags:
-  Add: [-mmacosx-version-min=13.3]
+  Add: [-mmacosx-version-min=26.0]
