@@ -12,9 +12,31 @@
 
 namespace pulse::json {
 
+// A type satisfies `Bindable` if it defines a `Schema` describing how to
+// deserialize a `pulse::json::value` into that type. Example:
+//
+//   struct MyStruct {
+//     std::string str;
+//     double dbl;
+//     std::optional<std::string> optional_str;
+//
+//     static auto schema() {
+//       return pulse::json::Schema<MyStruct>{}
+//           .field("string", &MyStruct::str)
+//           .field("double", &MyStruct::dbl)
+//           .field("optional_string", &MyStruct::optional_str);
+//     }
+//   };
 template <typename StructType>
 concept Bindable = requires { StructType::schema(); };
 
+// Deserializes a `json::value` into `StructType` using the schema defined
+// by StructType::schema(). Returns an error if:
+//   - `input` is not a JSON object
+//   - A required field is missing
+//   - A field value has the wrong type
+//
+// NOTE: Extra fields in the JSON object are ignored.
 template <Bindable StructType>
 Result<StructType> bind(value input);
 
@@ -29,6 +51,14 @@ struct Field {
 
 }  // namespace internal
 
+// Describes the mapping from a `json::value` object to a C++ struct. Fields are
+// registered via `Schema::field()`, which accepts a JSON key name and a
+// pointer-to-member. Required vs. optional is inferred from the member type.
+// `std::optional<T>` members are optional, all others are required.
+//
+// `Schema` should not be constructed directly. Use `Schema<T>{}.field(...)` to
+// build one. It is intended to be returned from a `static schema()` method on a
+// `Bindable` type.
 template <typename StructType, typename... Fields>
 class Schema {
  public:
