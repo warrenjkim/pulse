@@ -1,11 +1,9 @@
 #include "pulse/http/router.h"
 
-#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -124,6 +122,51 @@ class MalformedHandler final : public Handler {
   std::string name_;
 };
 
+struct GetItemsHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "get_items"};
+  }
+};
+
+struct PostItemsHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items", Method::kPost);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "post_items"};
+  }
+};
+
+struct GetItemByIdHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items/{id}", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "item_by_id"};
+  }
+};
+
+struct GetItemNewHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items/new", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "item_new"};
+  }
+};
+
+struct GetNestedItemHandler final : public Handler {
+  PULSE_HTTP_ROUTE("/items/{item_id}/subitems/{subitem_id}", Method::kGet);
+  using Dependencies = Dependencies<>;
+
+  Response operator()(const Request&) const override {
+    return Response{.body = "nested"};
+  }
+};
+
 TEST(RouterTest, MakeWithNoDepHandler) {
   Result<Router> router = Router::Make<Routes<NoDepHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
@@ -156,6 +199,33 @@ TEST(RouterTest, MakeWithMultipleHandlers) {
 
   EXPECT_TRUE(router->match(Method::kGet, "/health").has_value());
   EXPECT_TRUE(router->match(Method::kGet, "/name").has_value());
+}
+
+TEST(RouterTest, MakeWithNestedRoutes) {
+  Result<Router> router = Router::Make<
+      Routes<NoDepHandler, Routes<GetItemsHandler, PostItemsHandler>>>(
+      ServerContext{});
+  ASSERT_TRUE(router.ok());
+
+  EXPECT_TRUE(router->match(Method::kGet, "/health").has_value());
+  EXPECT_TRUE(router->match(Method::kGet, "/items").has_value());
+  EXPECT_TRUE(router->match(Method::kPost, "/items").has_value());
+}
+
+TEST(RouterTest, MakeWithNestedRoutesAndDeps) {
+  std::string name = "injected";
+  ServerContext<std::string, std::string*> ctx;
+  ctx.set(name);
+  ctx.set(&name);
+
+  Result<Router> router =
+      Router::Make<Routes<NoDepHandler, Routes<DepHandler, GetNamedHandler>>>(
+          ctx);
+  ASSERT_TRUE(router.ok());
+
+  EXPECT_TRUE(router->match(Method::kGet, "/health").has_value());
+  EXPECT_TRUE(router->match(Method::kGet, "/name").has_value());
+  EXPECT_TRUE(router->match(Method::kGet, "/named").has_value());
 }
 
 TEST(RouterTest, MakeReturnsFirstError) {
@@ -218,51 +288,6 @@ TEST(RouterTest, MakeSamePatternDifferentMethodsAllowed) {
   ASSERT_TRUE(post_match.has_value());
   EXPECT_THAT((*post_match->handler)(Request{}).body, Eq("injected"));
 }
-
-struct GetItemsHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items", Method::kGet);
-  using Dependencies = Dependencies<>;
-
-  Response operator()(const Request&) const override {
-    return Response{.body = "get_items"};
-  }
-};
-
-struct PostItemsHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items", Method::kPost);
-  using Dependencies = Dependencies<>;
-
-  Response operator()(const Request&) const override {
-    return Response{.body = "post_items"};
-  }
-};
-
-struct GetItemByIdHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items/{id}", Method::kGet);
-  using Dependencies = Dependencies<>;
-
-  Response operator()(const Request&) const override {
-    return Response{.body = "item_by_id"};
-  }
-};
-
-struct GetItemNewHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items/new", Method::kGet);
-  using Dependencies = Dependencies<>;
-
-  Response operator()(const Request&) const override {
-    return Response{.body = "item_new"};
-  }
-};
-
-struct GetNestedItemHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items/{item_id}/subitems/{subitem_id}", Method::kGet);
-  using Dependencies = Dependencies<>;
-
-  Response operator()(const Request&) const override {
-    return Response{.body = "nested"};
-  }
-};
 
 TEST(RouterTest, MatchesMethod) {
   Result<Router> router =
