@@ -38,8 +38,6 @@ cc_library(
     hdrs = ["value.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//pulse/core:error",
-        "//pulse/core:result",
         "//pulse/core:stringify",
         "//pulse/strings:cat",
     ],
@@ -51,10 +49,7 @@ cc_test(
     visibility = ["//visibility:public"],
     deps = [
         ":value",
-        "//pulse/core:error",
-        "//pulse/core:result",
         "//pulse/core:stringify",
-        "//pulse/strings:cat",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
