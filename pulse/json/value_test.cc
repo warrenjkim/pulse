@@ -168,41 +168,41 @@ TEST(ValueTest, EqualityValue) {
 
 struct StringifyTestCase {
   std::string_view name;
-  value value;
+  value input;
   std::string_view expected;
 };
 
 class StringifyTest : public TestWithParam<StringifyTestCase> {};
 
 TEST_P(StringifyTest, Stringify) {
-  EXPECT_THAT(pulse::to_string(GetParam().value), StrEq(GetParam().expected));
+  EXPECT_THAT(pulse::to_string(GetParam().input), StrEq(GetParam().expected));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ValueTest, StringifyTest,
     ValuesIn<StringifyTestCase>({
-        {.name = "Null", .value = value(), .expected = "null"},
-        {.name = "BoolTrue", .value = value(true), .expected = "true"},
-        {.name = "BoolFalse", .value = value(false), .expected = "false"},
-        {.name = "Int", .value = value(42), .expected = "42"},
-        {.name = "Double", .value = value(3.14), .expected = "3.14"},
-        {.name = "String", .value = value("hello"), .expected = "\"hello\""},
-        {.name = "EmptyArray", .value = value(array_t{}), .expected = "[]"},
-        {.name = "EmptyObject", .value = value(object_t{}), .expected = "{}"},
+        {.name = "Null", .input = value(), .expected = "null"},
+        {.name = "BoolTrue", .input = value(true), .expected = "true"},
+        {.name = "BoolFalse", .input = value(false), .expected = "false"},
+        {.name = "Int", .input = value(42), .expected = "42"},
+        {.name = "Double", .input = value(3.14), .expected = "3.14"},
+        {.name = "String", .input = value("hello"), .expected = "\"hello\""},
+        {.name = "EmptyArray", .input = value(array_t{}), .expected = "[]"},
+        {.name = "EmptyObject", .input = value(object_t{}), .expected = "{}"},
         {.name = "Array",
-         .value = value(array_t{1, "two", 3.0}),
+         .input = value(array_t{1, "two", 3.0}),
          .expected = "[1,\"two\",3]"},
         {.name = "AllTypesInArray",
-         .value = value(array_t{nullptr, true, 42, 3.14, "hello",
+         .input = value(array_t{nullptr, true, 42, 3.14, "hello",
                                 array_t{1, "two", 3.0},
                                 object_t{{"key", "val"}}}),
          .expected =
              "[null,true,42,3.14,\"hello\",[1,\"two\",3],{\"key\":\"val\"}]"},
         {.name = "Object",
-         .value = value(object_t{{"a", 1}, {"b", "two"}}),
+         .input = value(object_t{{"a", 1}, {"b", "two"}}),
          .expected = "{\"a\":1,\"b\":\"two\"}"},
         {.name = "AllTypesInObject",
-         .value = value(object_t{{"null", nullptr},
+         .input = value(object_t{{"null", nullptr},
                                  {"bool", true},
                                  {"int", 42},
                                  {"double", 3.14},
