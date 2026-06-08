@@ -205,10 +205,54 @@ constexpr std::string_view value::type_name() noexcept {
 }  // namespace pulse::json
 
 template <>
+struct pulse::Stringify<pulse::json::array_t> {
+  static std::string to_string(const pulse::json::array_t& array) {
+    std::string out;
+    pulse::Stringify<pulse::json::array_t>::to_string(array, &out);
+    return out;
+  }
+
+  static void to_string(const pulse::json::array_t& v, std::string* out) {
+    pulse::strings::append(out, "[");
+    for (const auto& v : v) {
+      pulse::strings::append(out, v, ",");
+    }
+
+    if (out->back() == ',') {
+      out->pop_back();
+    }
+
+    pulse::strings::append(out, "]");
+  }
+};
+
+template <>
+struct pulse::Stringify<pulse::json::object_t> {
+  static std::string to_string(const pulse::json::object_t& object) {
+    std::string out;
+    pulse::Stringify<pulse::json::object_t>::to_string(object, &out);
+    return out;
+  }
+
+  static void to_string(const pulse::json::object_t& v, std::string* out) {
+    pulse::strings::append(out, "{");
+    for (const auto& [k, v] : v) {
+      pulse::strings::append(out, "\"", k, "\"", ":", v, ",");
+    }
+
+    if (out->back() == ',') {
+      out->pop_back();
+    }
+
+    pulse::strings::append(out, "}");
+  }
+};
+
+template <>
 struct pulse::Stringify<pulse::json::value> {
   static std::string to_string(const pulse::json::value& v) {
     std::string out;
-    to_string(v, &out);
+    pulse::Stringify<pulse::json::value>::to_string(v, &out);
     return out;
   }
 
@@ -232,27 +276,9 @@ struct pulse::Stringify<pulse::json::value> {
           } else if constexpr (std::same_as<T, std::string>) {
             pulse::strings::append(out, "\"", v, "\"");
           } else if constexpr (std::same_as<T, pulse::json::array_t>) {
-            pulse::strings::append(out, "[");
-            for (const auto& v : v) {
-              pulse::strings::append(out, v, ",");
-            }
-
-            if (out->back() == ',') {
-              out->pop_back();
-            }
-
-            pulse::strings::append(out, "]");
+            pulse::Stringify<pulse::json::array_t>::to_string(v, out);
           } else if constexpr (std::same_as<T, pulse::json::object_t>) {
-            pulse::strings::append(out, "{");
-            for (const auto& [k, v] : v) {
-              pulse::strings::append(out, "\"", k, "\"", ":", v, ",");
-            }
-
-            if (out->back() == ',') {
-              out->pop_back();
-            }
-
-            pulse::strings::append(out, "}");
+            pulse::Stringify<pulse::json::object_t>::to_string(v, out);
           }
         },
         v.value_);
