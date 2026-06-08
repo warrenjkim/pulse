@@ -15,7 +15,7 @@
 
 namespace pulse::http {
 
-template <HttpHandler... Handlers>
+template <typename... T>
 struct Routes {};
 
 template <typename T>
@@ -27,10 +27,46 @@ struct is_handler_list<Routes<Handlers...>> : std::true_type {};
 template <typename T>
 concept HttpHandlers = is_handler_list<T>::value;
 
+namespace internal {
+
+template <typename Accumulator, typename... Rest>
+struct Flatten;
+
+template <typename... Accumulator>
+struct Flatten<Routes<Accumulator...>> {
+  using type = Routes<Accumulator...>;
+};
+
+template <typename... Accumulator, HttpHandler Handler, typename... Rest>
+struct Flatten<Routes<Accumulator...>, Handler, Rest...> {
+  using type = typename Flatten<Routes<Accumulator..., Handler>, Rest...>::type;
+};
+
+template <typename... Accumulator, typename... Nested, typename... Rest>
+struct Flatten<Routes<Accumulator...>, Routes<Nested...>, Rest...> {
+  using type =
+      typename Flatten<Routes<Accumulator...>, Nested..., Rest...>::type;
+};
+
+}  // namespace internal
+
 class Router {
  public:
-  // Constructs a Router with the given handlers, using ctx to inject
-  // dependencies into each handler's constructor.
+  // Constructs a `Router` from `Hs`. `Hs` can be either `HttpHandler` or nested
+  // `Routes<>`. Each handler is constructed using `ctx` to inject dependencies.
+  //
+  // Nesting is particularly useful for grouping related handlers:
+  //
+  //   using GroupA = Routes<HandlerB, HandlerC>;
+  //   using GroupB = Routes<HandlerD, HandlerE>;
+  //
+  // Example Usage:
+  //
+  //   // flat list of handlers
+  //   Router::Make<Routes<HandlerA, HandlerB, HandlerC, HandlerD>>(ctx);
+  //
+  //   // nested list of handlers
+  //   Router::Make<Routes<HandlerA, GroupA, GroupB>>(ctx);
   template <HttpHandlers Hs, HttpServerContext Ctx>
   static Result<Router> Make(const Ctx& ctx);
 
@@ -39,7 +75,7 @@ class Router {
     Pattern::Captures path_params;
   };
 
-  // Matches on a given path. Returns a Match on a matched route, std::nullopt
+  // Matches on a given path. Returns a Match on a matched route, `std::nullopt`
   // otherwise.
   std::optional<Match> match(Method method, std::string_view path) const;
 
@@ -50,26 +86,26 @@ class Router {
   template <HttpServerContext Ctx, HttpHandler H, typename... Deps>
   static std::unique_ptr<H> make_handler(const Ctx& ctx, Dependencies<Deps...>);
 
-  template <HttpServerContext Ctx, HttpHandler... Hs>
-  Result<void> add(const Ctx& ctx);
-
-  Result<void> add(Method method, std::string_view raw_pattern,
-                   std::unique_ptr<Handler> handler);
-
   struct Route {
     Pattern pattern;
     std::string raw_pattern;
     std::unique_ptr<Handler> handler;
   };
 
+  template <HttpServerContext Ctx, HttpHandler... Hs>
+  Result<void> add(const Ctx& ctx);
+
+  Result<void> add(Method method, std::string_view raw_pattern,
+                   std::unique_ptr<Handler> handler);
+
   std::unordered_map<Method, std::vector<Route>> routes_;
 };
 
 // Implementation details below;
 
-template <HttpHandlers H, HttpServerContext Ctx>
+template <HttpHandlers Hs, HttpServerContext Ctx>
 Result<Router> Router::Make(const Ctx& ctx) {
-  return Router::make(ctx, H{});
+  return Router::make(ctx, typename internal::Flatten<Routes<>, Hs>::type{});
 }
 
 template <HttpServerContext Ctx, HttpHandler... Hs>
