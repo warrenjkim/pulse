@@ -98,4 +98,35 @@ struct Title {
   using AllowedAttributes = AttributeList<>;
 };
 
+struct Form {
+  static constexpr std::string_view kTag = "form";
+  using AllowedAttributes = AttributeList<Class, Id, Action, Method>;
+};
+
+struct Input {
+  static constexpr std::string_view kTag = "input";
+  using AllowedAttributes =
+      AttributeList<Class, Id, Type, Name, Value, Placeholder>;
+};
+
+struct Select {
+  static constexpr std::string_view kTag = "select";
+  using AllowedAttributes = AttributeList<Class, Id, Name>;
+};
+
+struct Option {
+  static constexpr std::string_view kTag = "option";
+  using AllowedAttributes = AttributeList<Value>;
+};
+
+struct Label {
+  static constexpr std::string_view kTag = "label";
+  using AllowedAttributes = AttributeList<Class, Id, For>;
+};
+
+struct Button {
+  static constexpr std::string_view kTag = "button";
+  using AllowedAttributes = AttributeList<Class, Id, Type>;
+};
+
 }  // namespace pulse::html

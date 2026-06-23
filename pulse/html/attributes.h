@@ -74,4 +74,46 @@ struct ColSpan {
   operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
 };
 
+struct Action {
+  static constexpr std::string_view kKey = "action";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
+struct Method {
+  static constexpr std::string_view kKey = "method";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
+struct Type {
+  static constexpr std::string_view kKey = "type";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
+struct Name {
+  static constexpr std::string_view kKey = "name";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
+struct Value {
+  static constexpr std::string_view kKey = "value";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
+struct Placeholder {
+  static constexpr std::string_view kKey = "placeholder";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
+struct For {
+  static constexpr std::string_view kKey = "for";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
 }  // namespace pulse::html
