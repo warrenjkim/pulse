@@ -8,7 +8,8 @@ namespace pulse::http {
   X(kGet, "GET")        \
   X(kPost, "POST")      \
   X(kPut, "PUT")        \
-  X(kDelete, "DELETE")
+  X(kDelete, "DELETE")  \
+  X(kOptions, "OPTIONS")
 
 PULSE_ENUM(Method, METHOD_TABLE);
 

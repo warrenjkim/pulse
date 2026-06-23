@@ -1,4 +1,27 @@
 cc_library(
+    name = "cors",
+    srcs = ["cors.cc"],
+    hdrs = ["cors.h"],
+    visibility = ["//pulse/http:__pkg__"],
+    deps = [
+        "//pulse/http:request",
+        "//pulse/http:response",
+    ],
+)
+
+cc_test(
+    name = "cors_test",
+    srcs = ["cors_test.cc"],
+    deps = [
+        ":cors",
+        "//pulse/http:request",
+        "//pulse/http:response",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "transform",
     srcs = ["transform.cc"],
     hdrs = ["transform.h"],

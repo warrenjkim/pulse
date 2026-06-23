@@ -56,6 +56,8 @@ Result<Request> parse_header(std::string_view raw) {
     request.method = Method::kPut;
   } else if (method == "DELETE") {
     request.method = Method::kDelete;
+  } else if (method == "OPTIONS") {
+    request.method = Method::kOptions;
   } else {
     Log() << "invalid method: [" << method << "]";
     return Error{
@@ -113,10 +115,18 @@ Result<Request> parse_header(std::string_view raw) {
 }
 
 std::string serialize(const Response& response) {
-  return strings::cat(
-      "HTTP/1.1 ", response.status, " ", reason(response.status),
-      "\r\nContent-Type: ", response.content_type,
-      "\r\nContent-Length: ", response.body.size(), "\r\n\r\n", response.body);
+  std::string out = strings::cat("HTTP/1.1 ", response.status, " ",
+                                 reason(response.status), "\r\n");
+  if (!response.content_type.empty()) {
+    strings::append(&out, "Content-Type: ", response.content_type, "\r\n");
+  }
+
+  strings::append(&out, "Content-Length: ", response.body.size(), "\r\n");
+  for (const auto& [key, value] : response.headers) {
+    strings::append(&out, key, ": ", value, "\r\n");
+  }
+
+  return strings::cat(out, "\r\n", response.body);
 }
 
 }  // namespace pulse::http

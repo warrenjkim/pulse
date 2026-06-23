@@ -10,7 +10,9 @@
 #include "pulse/core/result.h"
 #include "pulse/core/stringify.h"
 #include "pulse/http/handler.h"
+#include "pulse/http/internal/cors.h"
 #include "pulse/http/internal/transform.h"
+#include "pulse/http/method.h"
 #include "pulse/http/request.h"
 #include "pulse/http/response.h"
 #include "pulse/http/router.h"
@@ -45,6 +47,11 @@ void Server::run() {
         return;
       }
 
+      if (request->method == Method::kOptions) {
+        socket->write(serialize(cors_preflight(*request)));
+        return;
+      }
+
       std::optional<Router::Match> match =
           router_.match(request->method, request->url);
       if (!match.has_value()) {
@@ -64,6 +71,7 @@ void Server::run() {
 
       Log() << "request: " << pulse::to_string(*request);
       Response response = (*match->handler)(*request);
+      add_cors_headers(&response);
       socket->write(serialize(response));
       Log() << "response: " << pulse::to_string(response);
     });
