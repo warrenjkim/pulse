@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 
 #include "pulse/core/stringify.h"
 #include "pulse/strings/cat.h"
@@ -8,6 +9,7 @@
 namespace pulse::http {
 
 struct Response {
+  std::unordered_map<std::string, std::string> headers;
   std::string content_type;
   int status;
   std::string body;

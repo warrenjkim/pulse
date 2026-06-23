@@ -21,7 +21,7 @@ namespace pulse::http {
 //
 // Returns an `Error` if:
 //   * The request line is malformed.
-//   * The method is not one of `GET`, `POST`, `PUT`, `DELETE`.
+//   * The method is not one of `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`.
 //   * The path does not begin with '/'.
 //   * The query parameter(s) are not well-formed.
 //   * The headers are not well-formed.
