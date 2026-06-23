@@ -82,6 +82,37 @@ TEST(RenderTest, AllTags) {
             "</html>"));
 }
 
+TEST(RenderTest, FormTags) {
+  EXPECT_THAT(render(Make<Html>(
+                  Make<Head>(Make<Title>("form")),
+                  Make<Body>(Make<Form>(
+                      Attributes{Action{"/submit"}, Method{"post"}},
+                      Make<Label>(Attributes{For{"field"}}, "field"),
+                      Make<Input>(Attributes{Type{"text"}, Name{"field"},
+                                             Placeholder{"enter value"}}),
+                      Make<Label>(Attributes{For{"choice"}}, "choice"),
+                      Make<Select>(Attributes{Name{"choice"}},
+                                   Make<Option>(Attributes{Value{"a"}}, "a"),
+                                   Make<Option>(Attributes{Value{"b"}}, "b")),
+                      Make<Button>(Attributes{Type{"submit"}}, "submit"))))),
+              StrEq("<html>"
+                    "<head><title>form</title></head>"
+                    "<body>"
+                    "<form action=\"/submit\" method=\"post\">"
+                    "<label for=\"field\">field</label>"
+                    "<input type=\"text\" name=\"field\" placeholder=\"enter "
+                    "value\"></input>"
+                    "<label for=\"choice\">choice</label>"
+                    "<select name=\"choice\">"
+                    "<option value=\"a\">a</option>"
+                    "<option value=\"b\">b</option>"
+                    "</select>"
+                    "<button type=\"submit\">submit</button>"
+                    "</form>"
+                    "</body>"
+                    "</html>"));
+}
+
 }  // namespace
 
 }  // namespace pulse::html
