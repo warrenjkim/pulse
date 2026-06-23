@@ -115,10 +115,13 @@ Result<Request> parse_header(std::string_view raw) {
 }
 
 std::string serialize(const Response& response) {
-  std::string out =
-      strings::cat("HTTP/1.1 ", response.status, " ", reason(response.status),
-                   "\r\nContent-Type: ", response.content_type,
-                   "\r\nContent-Length: ", response.body.size(), "\r\n");
+  std::string out = strings::cat("HTTP/1.1 ", response.status, " ",
+                                 reason(response.status), "\r\n");
+  if (!response.content_type.empty()) {
+    strings::append(&out, "Content-Type: ", response.content_type, "\r\n");
+  }
+
+  strings::append(&out, "Content-Length: ", response.body.size(), "\r\n");
   for (const auto& [key, value] : response.headers) {
     strings::append(&out, key, ": ", value, "\r\n");
   }

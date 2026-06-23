@@ -118,6 +118,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":handler",
+        ":method",
         ":request",
         ":response",
         ":router",
@@ -125,6 +126,7 @@ cc_library(
         "//pulse/core:log",
         "//pulse/core:result",
         "//pulse/core:stringify",
+        "//pulse/http/internal:cors",
         "//pulse/http/internal:transform",
         "//pulse/net:acceptor",
         "//pulse/net:socket",
@@ -149,10 +151,10 @@ cc_test(
     srcs = ["parameters_test.cc"],
     deps = [
         ":parameters",
-        "@googletest//:gtest",
-        "@googletest//:gtest_main",
         "//pulse/core:error",
         "//pulse/core:result",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

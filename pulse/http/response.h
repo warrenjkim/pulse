@@ -18,6 +18,7 @@ struct Response {
 
 }  // namespace pulse::http
 
+// TODO(remove unnecessary calls to Stringify)
 template <>
 struct pulse::Stringify<pulse::http::Response> {
   static std::string to_string(const pulse::http::Response& res) {
