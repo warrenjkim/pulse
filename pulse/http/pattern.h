@@ -58,23 +58,18 @@ PULSE_ENUM_TO_STRING(pulse::http::Pattern::Segment::Type,
 template <>
 struct pulse::Stringify<pulse::http::Pattern::Segment> {
   static std::string to_string(const pulse::http::Pattern::Segment& segment) {
-    return strings::cat(
-        "Segment{.type=",
-        pulse::Stringify<pulse::http::Pattern::Segment::Type>::to_string(
-            segment.type),
-        ",.token=", pulse::Stringify<std::string>::to_string(segment.token),
-        "}");
+    return strings::Cat("Segment{.type=", segment.type,
+                        ",.token=", segment.token, "}");
   }
 };
 
 template <>
 struct pulse::Stringify<pulse::http::Pattern> {
   static std::string to_string(const pulse::http::Pattern& pattern) {
-    return strings::cat(
+    return strings::Cat(
         "Pattern{.pattern_=",
         pulse::Stringify<std::vector<pulse::http::Pattern::Segment>>::ToString(
             pattern.pattern_),
-        ",.captures_=", pulse::Stringify<int>::to_string(pattern.captures_),
-        "}");
+        ",.captures_=", pattern.captures_, "}");
   }
 };

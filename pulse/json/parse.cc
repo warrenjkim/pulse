@@ -151,7 +151,7 @@ class Lexer {
         return Token{.type = TokenType::kComma, .value = reader_.take()};
       default:
         return Error{.code = Error::Code::kInvalidArgument,
-                     .message = strings::cat("unknown token at position ",
+                     .message = strings::Cat("unknown token at position ",
                                              reader_.tell())};
     }
   }
@@ -162,7 +162,7 @@ class Lexer {
       if (reader_.eof() || !reader_.Expect(c)) {
         return Error{
             .code = Error::Code::kInvalidArgument,
-            .message = strings::cat("invalid literal at position ", start,
+            .message = strings::Cat("invalid literal at position ", start,
                                     ": expected '", literal, "'")};
       }
     }
@@ -176,7 +176,7 @@ class Lexer {
     if (!reader_.Expect('"')) {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("expected '\"' at position ", start)};
+          .message = strings::Cat("expected '\"' at position ", start)};
     }
 
     size_t content_start = reader_.tell();
@@ -185,7 +185,7 @@ class Lexer {
         if (!LexCtrl()) {
           return Error{
               .code = Error::Code::kInvalidArgument,
-              .message = strings::cat("invalid control character at position ",
+              .message = strings::Cat("invalid control character at position ",
                                       reader_.tell())};
         }
 
@@ -203,7 +203,7 @@ class Lexer {
 
     return Error{
         .code = Error::Code::kInvalidArgument,
-        .message = strings::cat("unterminated string at position ", start)};
+        .message = strings::Cat("unterminated string at position ", start)};
   }
 
   bool LexCtrl() {
@@ -265,12 +265,12 @@ class Lexer {
     if (reader_.eof() || !isdigit(reader_.peek())) {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("invalid integer at position ", start)};
+          .message = strings::Cat("invalid integer at position ", start)};
     }
 
     if (reader_.get() == '0' && !reader_.eof() && isdigit(reader_.peek())) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid integer at position ",
+                   .message = strings::Cat("invalid integer at position ",
                                            start, ": leading zero")};
     }
 
@@ -287,7 +287,7 @@ class Lexer {
 
     if (reader_.eof() || !isdigit(reader_.peek())) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid fraction at position ",
+                   .message = strings::Cat("invalid fraction at position ",
                                            reader_.tell())};
     }
 
@@ -309,7 +309,7 @@ class Lexer {
 
     if (reader_.eof() || !isdigit(reader_.peek())) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid exponent at position ",
+                   .message = strings::Cat("invalid exponent at position ",
                                            reader_.tell())};
     }
 
@@ -362,7 +362,7 @@ Result<uint32_t> MakeSurrogatePair(std::string_view s, size_t* j) {
   if (*j + 5 >= s.length() || s[*j] != '\\' || s[*j + 1] != 'u') {
     return Error{
         .code = Error::Code::kInvalidArgument,
-        .message = strings::cat("expected low surrogate after high surrogate: ",
+        .message = strings::Cat("expected low surrogate after high surrogate: ",
                                 s.substr(*j - 6, 6))};
   }
 
@@ -372,7 +372,7 @@ Result<uint32_t> MakeSurrogatePair(std::string_view s, size_t* j) {
       MakeCodePoint(s[*j - 4], s[*j - 3], s[*j - 2], s[*j - 1]);
   if (!(0xDC00 <= low_surrogate && low_surrogate <= 0xDFFF)) {
     return Error{.code = Error::Code::kInvalidArgument,
-                 .message = strings::cat(
+                 .message = strings::Cat(
                      "invalid low surrogate ", s.substr(*j - 6, 6),
                      " after high surrogate: ", s.substr(*j - 12, 6))};
   }
@@ -439,7 +439,7 @@ Result<void> EmbedCtrl(char c, std::string* res) {
       break;
     default:
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid escape character: ", c)};
+                   .message = strings::Cat("invalid escape character: ", c)};
   }
 
   return Result<void>{};
@@ -494,7 +494,7 @@ Result<int64_t> ParseInt(std::string_view s) {
       std::from_chars(s.data(), s.data() + s.size(), result);
   if (ec != std::errc{}) {
     return Error{.code = Error::Code::kInvalidArgument,
-                 .message = strings::cat("invalid integer: ", s)};
+                 .message = strings::Cat("invalid integer: ", s)};
   }
 
   return result;
@@ -506,15 +506,15 @@ Result<double> ParseDouble(std::string_view s) {
       std::from_chars(s.data(), s.data() + s.size(), result);
   if (ec != std::errc{}) {
     return Error{.code = Error::Code::kInvalidArgument,
-                 .message = strings::cat("invalid double: ", s)};
+                 .message = strings::Cat("invalid double: ", s)};
   }
 
   return result;
 }
 
 Result<void> ParseArray(Lexer* lexer, Value* out) {
-  *out = array_t{};
-  array_t* array = &(out->as<array_t>());
+  *out = Array{};
+  Array* array = &(out->as<Array>());
   if (!(++(*lexer)).ok()) {
     return lexer->error();
   }
@@ -552,7 +552,7 @@ Result<void> ParseArray(Lexer* lexer, Value* out) {
 
     if ((*lexer)->type != Lexer::TokenType::kComma) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("expected ',' or ']', got '",
+                   .message = strings::Cat("expected ',' or ']', got '",
                                            (*lexer)->value, "'")};
     }
 
@@ -563,8 +563,8 @@ Result<void> ParseArray(Lexer* lexer, Value* out) {
 }
 
 Result<void> ParseObject(Lexer* lexer, Value* out) {
-  *out = object_t{};
-  object_t* object = &(out->as<object_t>());
+  *out = Object{};
+  Object* object = &(out->as<Object>());
   if (!(++(*lexer)).ok()) {
     return lexer->error();
   }
@@ -584,7 +584,7 @@ Result<void> ParseObject(Lexer* lexer, Value* out) {
 
     if ((*lexer)->type != Lexer::TokenType::kString) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("expected string key, got '",
+                   .message = strings::Cat("expected string key, got '",
                                            (*lexer)->value, "'")};
     }
 
@@ -601,7 +601,7 @@ Result<void> ParseObject(Lexer* lexer, Value* out) {
     if ((*lexer)->type != Lexer::TokenType::kColon) {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("expected ':', got '", (*lexer)->value, "'")};
+          .message = strings::Cat("expected ':', got '", (*lexer)->value, "'")};
     }
 
     if (!(++(*lexer)).ok()) {
@@ -629,7 +629,7 @@ Result<void> ParseObject(Lexer* lexer, Value* out) {
 
     if ((*lexer)->type != Lexer::TokenType::kComma) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("expected ',' or '}', got '",
+                   .message = strings::Cat("expected ',' or '}', got '",
                                            (*lexer)->value, "'")};
     }
 
@@ -678,7 +678,7 @@ Result<void> ParseValue(Lexer* lexer, Value* value) {
     default: {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("unexpected token: '", (*lexer)->value, "'")};
+          .message = strings::Cat("unexpected token: '", (*lexer)->value, "'")};
     }
   }
 
@@ -708,7 +708,7 @@ Result<Value> Parse(std::string_view json) {
   if (!lexer.eof()) {
     return Error{
         .code = Error::Code::kInvalidArgument,
-        .message = strings::cat("unexpected token: '", lexer->value, "'")};
+        .message = strings::Cat("unexpected token: '", lexer->value, "'")};
   }
 
   return out;

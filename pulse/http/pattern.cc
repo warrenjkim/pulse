@@ -27,12 +27,12 @@ constexpr char kCaptureEnd = '}';
 pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
   if (pattern.empty() || pattern.front() != kDelimiter.front()) {
     return pulse::Error{.code = pulse::Error::Code::kInvalidArgument,
-                        .message = strings::cat("pattern must start with '",
+                        .message = strings::Cat("pattern must start with '",
                                                 kDelimiter, "': ", pattern)};
   }
 
   const std::vector<std::string_view> parts =
-      strings::split(pattern, kDelimiter);
+      strings::Split(pattern, kDelimiter);
 
   std::unordered_set<std::string_view> captures;
   std::vector<Segment> segments;
@@ -45,14 +45,14 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
       if (name.contains(kCaptureStart) || name.contains(kCaptureEnd)) {
         return pulse::Error{
             .code = pulse::Error::Code::kInvalidArgument,
-            .message = strings::cat("nested or malformed braces in capture: ",
+            .message = strings::Cat("nested or malformed braces in capture: ",
                                     pattern)};
       }
 
       if (!captures.insert(name).second) {
         return pulse::Error{
             .code = pulse::Error::Code::kInvalidArgument,
-            .message = strings::cat("pattern has duplicate capture variable '",
+            .message = strings::Cat("pattern has duplicate capture variable '",
                                     name, "': ", pattern)};
       }
 
@@ -61,7 +61,7 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
     } else {
       if (part.contains(kCaptureStart) || part.contains(kCaptureEnd)) {
         return pulse::Error{.code = pulse::Error::Code::kInvalidArgument,
-                            .message = strings::cat(
+                            .message = strings::Cat(
                                 "stray brace in literal segment: ", pattern)};
       }
 
@@ -75,7 +75,7 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
 
 std::optional<Pattern::Captures> Pattern::Match(std::string_view path) const {
   Parameters captures;
-  const std::vector<std::string_view> parts = strings::split(path, kDelimiter);
+  const std::vector<std::string_view> parts = strings::Split(path, kDelimiter);
   if (parts.size() != pattern_.size()) {
     return std::nullopt;
   }

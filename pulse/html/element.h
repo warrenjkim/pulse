@@ -91,18 +91,18 @@ struct pulse::Stringify<pulse::html::Element> {
 
  private:
   static void ToString(const pulse::html::Element& html, std::string* out) {
-    pulse::strings::append(out, "<", html.tag_);
+    pulse::strings::Append(out, "<", html.tag_);
     for (const pulse::html::Attribute& attribute : html.attributes_) {
-      pulse::strings::append(out, " ", attribute.key, "=\"", attribute.value,
+      pulse::strings::Append(out, " ", attribute.key, "=\"", attribute.value,
                              "\"");
     }
 
-    pulse::strings::append(out, ">");
+    pulse::strings::Append(out, ">");
     for (const pulse::html::Element::Node& child : html.children_) {
       std::visit(
           pulse::Overload{
               [out](const pulse::html::Text& text) {
-                pulse::strings::append(out, text);
+                pulse::strings::Append(out, text);
               },
               [out](const std::unique_ptr<pulse::html::Element>& element) {
                 pulse::Stringify<pulse::html::Element>::ToString(*element, out);
@@ -110,6 +110,6 @@ struct pulse::Stringify<pulse::html::Element> {
           child);
     }
 
-    pulse::strings::append(out, "</", html.tag_, ">");
+    pulse::strings::Append(out, "</", html.tag_, ">");
   }
 };

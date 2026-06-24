@@ -46,7 +46,7 @@ Result<void> Router::Add(Method method, std::string_view raw_pattern,
     if (route.raw_pattern == raw_pattern) {
       return pulse::Error{
           .code = pulse::Error::Code::kAlreadyExists,
-          .message = strings::cat("raw_pattern '", std::string(raw_pattern),
+          .message = strings::Cat("raw_pattern '", std::string(raw_pattern),
                                   "' already exists")};
     }
   }
