@@ -38,7 +38,7 @@ concept Bindable = requires { StructType::schema(); };
 //
 // NOTE: Extra fields in the JSON object are ignored.
 template <Bindable StructType>
-Result<StructType> Bind(value input);
+Result<StructType> Bind(Value input);
 
 namespace internal {
 
@@ -79,7 +79,7 @@ class Schema {
   friend class Schema;
 
   template <Bindable T>
-  friend Result<T> Bind(value input);
+  friend Result<T> Bind(Value input);
 
   constexpr explicit Schema(std::tuple<Fields...> fields)
       : fields_(std::move(fields)) {}
@@ -133,7 +133,7 @@ Result<void> BindField(const object_t& object, StructType* result,
 }  // namespace internal
 
 template <Bindable StructType>
-Result<StructType> Bind(value input) {
+Result<StructType> Bind(Value input) {
   if (!input.is<object_t>()) {
     return Error{.code = Error::Code::kInvalidArgument,
                  .message = "expected object"};

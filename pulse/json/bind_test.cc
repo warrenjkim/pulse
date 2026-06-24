@@ -42,7 +42,7 @@ struct WithOptional {
 
 TEST(BindTest, BindsRequiredFields) {
   Result<Simple> result = Bind<Simple>(
-      pulse::unwrap_or_die(parse(R"({"name": "checking", "amount": 100.0})")));
+      pulse::UnwrapOrDie(Parse(R"({"name": "checking", "amount": 100.0})")));
   ASSERT_TRUE(result.ok());
   EXPECT_THAT(result->name, StrEq("checking"));
   EXPECT_THAT(result->amount, Eq(100.0));
@@ -50,49 +50,49 @@ TEST(BindTest, BindsRequiredFields) {
 
 TEST(BindTest, MissingRequiredField) {
   Result<Simple> result =
-      Bind<Simple>(pulse::unwrap_or_die(parse(R"({"name": "checking"})")));
+      Bind<Simple>(pulse::UnwrapOrDie(Parse(R"({"name": "checking"})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, WrongFieldType) {
-  Result<Simple> result = Bind<Simple>(pulse::unwrap_or_die(
-      parse(R"({"name": "checking", "amount": "not_a_number"})")));
+  Result<Simple> result = Bind<Simple>(pulse::UnwrapOrDie(
+      Parse(R"({"name": "checking", "amount": "not_a_number"})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, OptionalFieldPresent) {
-  Result<WithOptional> result = Bind<WithOptional>(pulse::unwrap_or_die(
-      parse(R"({"name": "checking", "description": "paycheck"})")));
+  Result<WithOptional> result = Bind<WithOptional>(pulse::UnwrapOrDie(
+      Parse(R"({"name": "checking", "description": "paycheck"})")));
   ASSERT_TRUE(result.ok());
   EXPECT_THAT(result->description, Optional(StrEq("paycheck")));
 }
 
 TEST(BindTest, OptionalFieldAbsent) {
   Result<WithOptional> result = Bind<WithOptional>(
-      pulse::unwrap_or_die(parse(R"({"name": "checking"})")));
+      pulse::UnwrapOrDie(Parse(R"({"name": "checking"})")));
   ASSERT_TRUE(result.ok());
   EXPECT_THAT(result->description, Eq(std::nullopt));
 }
 
 TEST(BindTest, OptionalFieldWrongType) {
-  Result<WithOptional> result = Bind<WithOptional>(pulse::unwrap_or_die(
-      parse(R"({"name": "checking", "description": 123})")));
+  Result<WithOptional> result = Bind<WithOptional>(pulse::UnwrapOrDie(
+      Parse(R"({"name": "checking", "description": 123})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, NotAnObject) {
   Result<Simple> result =
-      Bind<Simple>(pulse::unwrap_or_die(parse(R"([1, 2, 3])")));
+      Bind<Simple>(pulse::UnwrapOrDie(Parse(R"([1, 2, 3])")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, ExtraFieldsIgnored) {
-  Result<Simple> result = Bind<Simple>(pulse::unwrap_or_die(
-      parse(R"({"name": "checking", "amount": 100.0, "extra": "ignored"})")));
+  Result<Simple> result = Bind<Simple>(pulse::UnwrapOrDie(
+      Parse(R"({"name": "checking", "amount": 100.0, "extra": "ignored"})")));
   ASSERT_TRUE(result.ok());
   EXPECT_THAT(result->name, StrEq("checking"));
   EXPECT_THAT(result->amount, Eq(100.0));
@@ -100,34 +100,34 @@ TEST(BindTest, ExtraFieldsIgnored) {
 
 TEST(BindTest, IntegerAmountInsteadOfDouble) {
   Result<Simple> result = Bind<Simple>(
-      pulse::unwrap_or_die(parse(R"({"name": "checking", "amount": 100})")));
+      pulse::UnwrapOrDie(Parse(R"({"name": "checking", "amount": 100})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, EmptyObject) {
-  Result<Simple> result = Bind<Simple>(pulse::unwrap_or_die(parse(R"({})")));
+  Result<Simple> result = Bind<Simple>(pulse::UnwrapOrDie(Parse(R"({})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, NullRequiredField) {
   Result<Simple> result = Bind<Simple>(
-      pulse::unwrap_or_die(parse(R"({"name": null, "amount": 100.0})")));
+      pulse::UnwrapOrDie(Parse(R"({"name": null, "amount": 100.0})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, NullOptionalField) {
-  Result<WithOptional> result = Bind<WithOptional>(pulse::unwrap_or_die(
-      parse(R"({"name": "checking", "description": null})")));
+  Result<WithOptional> result = Bind<WithOptional>(pulse::UnwrapOrDie(
+      Parse(R"({"name": "checking", "description": null})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }
 
 TEST(BindTest, EmptyStringField) {
   Result<Simple> result = Bind<Simple>(
-      pulse::unwrap_or_die(parse(R"({"name": "", "amount": 100.0})")));
+      pulse::UnwrapOrDie(Parse(R"({"name": "", "amount": 100.0})")));
   ASSERT_TRUE(result.ok());
   EXPECT_THAT(result->name, StrEq(""));
 }
