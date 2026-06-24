@@ -213,16 +213,16 @@ struct pulse::Stringify<pulse::json::Array> {
   }
 
   static void ToString(const pulse::json::Array& v, std::string* out) {
-    pulse::strings::append(out, "[");
+    pulse::strings::Append(out, "[");
     for (const auto& v : v) {
-      pulse::strings::append(out, v, ",");
+      pulse::strings::Append(out, v, ",");
     }
 
     if (out->back() == ',') {
       out->pop_back();
     }
 
-    pulse::strings::append(out, "]");
+    pulse::strings::Append(out, "]");
   }
 };
 
@@ -235,16 +235,16 @@ struct pulse::Stringify<pulse::json::Object> {
   }
 
   static void ToString(const pulse::json::Object& v, std::string* out) {
-    pulse::strings::append(out, "{");
+    pulse::strings::Append(out, "{");
     for (const auto& [k, v] : v) {
-      pulse::strings::append(out, "\"", k, "\"", ":", v, ",");
+      pulse::strings::Append(out, "\"", k, "\"", ":", v, ",");
     }
 
     if (out->back() == ',') {
       out->pop_back();
     }
 
-    pulse::strings::append(out, "}");
+    pulse::strings::Append(out, "}");
   }
 };
 
@@ -262,19 +262,19 @@ struct pulse::Stringify<pulse::json::Value> {
         [out](const auto& v) {
           using T = std::decay_t<decltype(v)>;
           if constexpr (std::same_as<T, std::nullptr_t>) {
-            pulse::strings::append(out, "null");
+            pulse::strings::Append(out, "null");
           } else if constexpr (std::same_as<T, bool>) {
-            pulse::strings::append(out, v ? "true" : "false");
+            pulse::strings::Append(out, v ? "true" : "false");
           } else if constexpr (std::same_as<T, int64_t>) {
-            pulse::strings::append(out, v);
+            pulse::strings::Append(out, v);
           } else if constexpr (std::same_as<T, double>) {
             char buffer[32];
             auto [ptr, unused_ec] = std::to_chars(
                 buffer, buffer + sizeof(buffer), v, std::chars_format::general);
             *ptr = '\0';
-            pulse::strings::append(out, buffer);
+            pulse::strings::Append(out, buffer);
           } else if constexpr (std::same_as<T, std::string>) {
-            pulse::strings::append(out, "\"", v, "\"");
+            pulse::strings::Append(out, "\"", v, "\"");
           } else if constexpr (std::same_as<T, pulse::json::Array>) {
             pulse::Stringify<pulse::json::Array>::ToString(v, out);
           } else if constexpr (std::same_as<T, pulse::json::Object>) {

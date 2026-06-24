@@ -10,7 +10,7 @@ namespace pulse::strings {
 // consecutive delimiter produces an empty `std::string_view` at that position.
 //
 // NOTE: `string` must outlive the returned views.
-std::vector<std::string_view> split(std::string_view string,
+std::vector<std::string_view> Split(std::string_view string,
                                     std::string_view delimiter);
 
 }  // namespace pulse::strings
