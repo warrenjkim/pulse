@@ -12,14 +12,14 @@ namespace {
 using ::testing::Eq;
 
 TEST(CorsPreflightTest, MissingRequestHeaders) {
-  Response response = cors_preflight(Request{});
+  Response response = CorsPreflight(Request{});
   EXPECT_THAT(response.status, Eq(400));
 }
 
 TEST(CorsPreflightTest, EchosRequestHeaders) {
   Request request{
       .headers = {{"Access-Control-Request-Headers", "Content-Type"}}};
-  Response response = cors_preflight(request);
+  Response response = CorsPreflight(request);
   EXPECT_THAT(response.status, Eq(200));
   EXPECT_THAT(response.headers.at("Access-Control-Allow-Headers"),
               Eq("Content-Type"));

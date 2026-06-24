@@ -73,7 +73,7 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
   return Pattern(std::move(segments), static_cast<int>(captures.size()));
 }
 
-std::optional<Pattern::Captures> Pattern::match(std::string_view path) const {
+std::optional<Pattern::Captures> Pattern::Match(std::string_view path) const {
   Parameters captures;
   const std::vector<std::string_view> parts = strings::split(path, kDelimiter);
   if (parts.size() != pattern_.size()) {

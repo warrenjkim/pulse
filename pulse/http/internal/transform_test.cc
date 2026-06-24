@@ -29,7 +29,7 @@ struct InvalidRequestTestCase {
 class InvalidRequestTest : public TestWithParam<InvalidRequestTestCase> {};
 
 TEST_P(InvalidRequestTest, InvalidRequest) {
-  Result<Request> request = parse_header(GetParam().raw);
+  Result<Request> request = ParseHeader(GetParam().raw);
   EXPECT_FALSE(request.ok());
   EXPECT_THAT(request.error().message, HasSubstr(GetParam().expected_message));
 }
@@ -70,7 +70,7 @@ struct ValidRequestTestCase {
 class ValidRequestTest : public TestWithParam<ValidRequestTestCase> {};
 
 TEST_P(ValidRequestTest, ValidRequest) {
-  Result<Request> request = parse_header(GetParam().raw);
+  Result<Request> request = ParseHeader(GetParam().raw);
   EXPECT_TRUE(request.ok()) << request.error().message;
   EXPECT_THAT(*request, Eq(GetParam().expected));
 }
@@ -129,7 +129,7 @@ struct SerializeTestCase {
 class SerializeTest : public TestWithParam<SerializeTestCase> {};
 
 TEST_P(SerializeTest, Serialize) {
-  EXPECT_THAT(serialize(GetParam().response), Eq(GetParam().expected));
+  EXPECT_THAT(Serialize(GetParam().response), Eq(GetParam().expected));
 }
 
 INSTANTIATE_TEST_SUITE_P(

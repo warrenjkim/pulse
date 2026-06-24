@@ -70,21 +70,21 @@ class Router {
   template <HttpHandlers Hs, HttpServerContext Ctx>
   static Result<Router> Make(const Ctx& ctx);
 
-  struct Match {
+  struct RouteMatch {
     const Handler* handler;
     Pattern::Captures path_params;
   };
 
-  // Matches on a given path. Returns a Match on a matched route, `std::nullopt`
-  // otherwise.
-  std::optional<Match> match(Method method, std::string_view path) const;
+  // Matches on a given path. Returns a RouteMatch on a matched route,
+  // `std::nullopt` otherwise.
+  std::optional<RouteMatch> Match(Method method, std::string_view path) const;
 
  private:
   template <HttpServerContext Ctx, HttpHandler... Hs>
-  static Result<Router> make(const Ctx& ctx, Routes<Hs...>);
+  static Result<Router> Make(const Ctx& ctx, Routes<Hs...>);
 
   template <HttpServerContext Ctx, HttpHandler H, typename... Deps>
-  static std::unique_ptr<H> make_handler(const Ctx& ctx, Dependencies<Deps...>);
+  static std::unique_ptr<H> MakeHandler(const Ctx& ctx, Dependencies<Deps...>);
 
   struct Route {
     Pattern pattern;
@@ -93,9 +93,9 @@ class Router {
   };
 
   template <HttpServerContext Ctx, HttpHandler... Hs>
-  Result<void> add(const Ctx& ctx);
+  Result<void> Add(const Ctx& ctx);
 
-  Result<void> add(Method method, std::string_view raw_pattern,
+  Result<void> Add(Method method, std::string_view raw_pattern,
                    std::unique_ptr<Handler> handler);
 
   std::unordered_map<Method, std::vector<Route>> routes_;
@@ -105,13 +105,13 @@ class Router {
 
 template <HttpHandlers Hs, HttpServerContext Ctx>
 Result<Router> Router::Make(const Ctx& ctx) {
-  return Router::make(ctx, typename internal::Flatten<Routes<>, Hs>::type{});
+  return Router::Make(ctx, typename internal::Flatten<Routes<>, Hs>::type{});
 }
 
 template <HttpServerContext Ctx, HttpHandler... Hs>
-Result<Router> Router::make(const Ctx& ctx, Routes<Hs...>) {
+Result<Router> Router::Make(const Ctx& ctx, Routes<Hs...>) {
   Router router;
-  Result<void> result = router.add<Ctx, Hs...>(ctx);
+  Result<void> result = router.Add<Ctx, Hs...>(ctx);
   if (!result.ok()) {
     return result.error();
   }
@@ -119,20 +119,20 @@ Result<Router> Router::make(const Ctx& ctx, Routes<Hs...>) {
 }
 
 template <HttpServerContext Ctx, HttpHandler H, typename... Deps>
-std::unique_ptr<H> Router::make_handler(const Ctx& ctx, Dependencies<Deps...>) {
+std::unique_ptr<H> Router::MakeHandler(const Ctx& ctx, Dependencies<Deps...>) {
   return std::make_unique<H>(ctx.template get<Deps>()...);
 }
 
 template <HttpServerContext Ctx, HttpHandler... Hs>
-Result<void> Router::add(const Ctx& ctx) {
+Result<void> Router::Add(const Ctx& ctx) {
   if constexpr (sizeof...(Hs) == 0) {
     return {};
   }
 
   Result<void> result;
   ((result =
-        add(Hs::kMethod, Hs::kPath,
-            Router::make_handler<Ctx, Hs>(ctx, typename Hs::Dependencies{})))
+        Add(Hs::kMethod, Hs::kPath,
+            Router::MakeHandler<Ctx, Hs>(ctx, typename Hs::Dependencies{})))
        .ok() &&
    ...);
 

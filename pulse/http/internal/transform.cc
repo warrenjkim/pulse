@@ -19,7 +19,7 @@ namespace pulse::http {
 
 namespace {
 
-constexpr std::string_view reason(int status) {
+constexpr std::string_view Reason(int status) {
   switch (status) {
     case 200:
       return "OK";
@@ -38,7 +38,7 @@ constexpr std::string_view reason(int status) {
 }  // namespace
 
 // TODO(store version number)
-Result<Request> parse_header(std::string_view raw) {
+Result<Request> ParseHeader(std::string_view raw) {
   Request request;
   std::vector<std::string_view> header = strings::split(raw, "\r\n");
   std::vector<std::string_view> request_line = strings::split(header[0], " ");
@@ -114,9 +114,9 @@ Result<Request> parse_header(std::string_view raw) {
   return request;
 }
 
-std::string serialize(const Response& response) {
+std::string Serialize(const Response& response) {
   std::string out = strings::cat("HTTP/1.1 ", response.status, " ",
-                                 reason(response.status), "\r\n");
+                                 Reason(response.status), "\r\n");
   if (!response.content_type.empty()) {
     strings::append(&out, "Content-Type: ", response.content_type, "\r\n");
   }

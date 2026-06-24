@@ -27,7 +27,7 @@ class Parameters {
       : map_(init.begin(), init.end()) {}
 
   template <Parseable T>
-  Result<T> get(std::string_view key) const {
+  Result<T> Get(std::string_view key) const {
     if (auto it = map_.find(key); it != map_.end()) {
       return ParameterParser<T>::Parse(it->second);
     }

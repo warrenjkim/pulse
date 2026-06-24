@@ -26,7 +26,7 @@ class Pattern {
 
   static Result<Pattern> Make(std::string_view pattern);
 
-  std::optional<Captures> match(std::string_view path) const;
+  std::optional<Captures> Match(std::string_view path) const;
 
   size_t segments() const { return pattern_.size(); }
 

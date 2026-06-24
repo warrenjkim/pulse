@@ -22,7 +22,7 @@ constexpr std::string_view kMaxAgeValue = "86400";
 
 }  // namespace
 
-Response cors_preflight(const Request& request) {
+Response CorsPreflight(const Request& request) {
   auto it = request.headers.find(std::string(kRequestHeaders));
   if (it == request.headers.end()) {
     return Response{.status = 400};
@@ -38,7 +38,7 @@ Response cors_preflight(const Request& request) {
                   .status = 200};
 }
 
-void add_cors_headers(Response* response) {
+void AddCorsHeaders(Response* response) {
   response->headers[std::string(kAllowOrigin)] = std::string(kOrigin);
 }
 
