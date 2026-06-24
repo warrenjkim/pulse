@@ -59,11 +59,11 @@
   case _E::enumerator:                                         \
     return string;
 
-// Generates a to_enum() for an enum declared with PULSE_ENUM.
+// Generates a ToEnum() for an enum declared with PULSE_ENUM.
 //
 // Usage:
 //
-//   PULSE_STRING_TO_ENUM(YourEnumName, to_your_enum, YOUR_ENUM_TABLE)
+//   PULSE_STRING_TO_ENUM(YourEnumName, ToYourEnum, YOUR_ENUM_TABLE)
 //
 // Generates:
 //

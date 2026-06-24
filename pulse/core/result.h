@@ -82,10 +82,9 @@ class [[nodiscard]] Result<void> {
 
 template <typename T>
 struct pulse::Stringify<pulse::Result<T>> {
-  static std::string to_string(const pulse::Result<T>& result) {
+  static std::string ToString(const pulse::Result<T>& result) {
     if (result.ok()) {
-      return strings::Cat(
-          "Result{.value=", pulse::Stringify<T>::to_string(*result), "}");
+      return strings::Cat("Result{.value=", *result, "}");
     }
 
     return strings::Cat("Result{.error=", result.error(), "}");
@@ -94,7 +93,7 @@ struct pulse::Stringify<pulse::Result<T>> {
 
 template <>
 struct pulse::Stringify<pulse::Result<void>> {
-  static std::string to_string(const pulse::Result<void>& result) {
+  static std::string ToString(const pulse::Result<void>& result) {
     if (result.ok()) {
       return "Result{.value=Ok{}}";
     }
