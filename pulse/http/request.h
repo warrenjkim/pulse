@@ -36,7 +36,7 @@ struct pulse::Stringify<pulse::http::Request> {
         pulse::Stringify<pulse::http::Parameters>::to_string(req.query),
         ",.headers=",
         pulse::Stringify<std::unordered_map<std::string, std::string>>::
-            to_string(req.headers),
+            ToString(req.headers),
         ",.body=", pulse::Stringify<std::string>::to_string(req.body), "}");
   }
 };

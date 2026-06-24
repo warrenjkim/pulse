@@ -38,22 +38,22 @@
 //
 //   template <>
 //   struct pulse::Stringify<YourEnumName> {
-//     static std::string to_string(const YourEnumName& value) { ... }
+//     static std::string ToString(const YourEnumName& value) { ... }
 //   };
 //
 // Returns "UNKNOWN" for kUnknown or any unrecognized value.
 // Must be called in the global namespace.
-#define PULSE_ENUM_TO_STRING(EnumName, TABLE)             \
-  template <>                                             \
-  struct pulse::Stringify<EnumName> {                     \
-    static std::string to_string(const EnumName& value) { \
-      using _E = EnumName;                                \
-      switch (value) {                                    \
-        TABLE(PULSE_INTERNAL_ENUM_TO_STRING_CASE)         \
-        default:                                          \
-          return "UNKNOWN";                               \
-      }                                                   \
-    }                                                     \
+#define PULSE_ENUM_TO_STRING(EnumName, TABLE)            \
+  template <>                                            \
+  struct pulse::Stringify<EnumName> {                    \
+    static std::string ToString(const EnumName& value) { \
+      using _E = EnumName;                               \
+      switch (value) {                                   \
+        TABLE(PULSE_INTERNAL_ENUM_TO_STRING_CASE)        \
+        default:                                         \
+          return "UNKNOWN";                              \
+      }                                                  \
+    }                                                    \
   }
 #define PULSE_INTERNAL_ENUM_TO_STRING_CASE(enumerator, string) \
   case _E::enumerator:                                         \

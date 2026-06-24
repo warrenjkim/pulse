@@ -72,7 +72,7 @@ struct pulse::Stringify<pulse::http::Pattern> {
   static std::string to_string(const pulse::http::Pattern& pattern) {
     return strings::cat(
         "Pattern{.pattern_=",
-        pulse::Stringify<std::vector<pulse::http::Pattern::Segment>>::to_string(
+        pulse::Stringify<std::vector<pulse::http::Pattern::Segment>>::ToString(
             pattern.pattern_),
         ",.captures_=", pulse::Stringify<int>::to_string(pattern.captures_),
         "}");
