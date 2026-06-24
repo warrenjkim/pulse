@@ -28,18 +28,18 @@ TEST(UnwrapOrDieTest, ReturnsMovableValue) {
 TEST(UnwrapOrDieDeathTest, AbortsOnError) {
   Result<int> err =
       pulse::Error{.code = pulse::Error::Code::kInternal, .message = "boom"};
-  EXPECT_DEATH((void)UnwrapOrDie(std::move(err)), "unwrap_or_die: boom");
+  EXPECT_DEATH((void)UnwrapOrDie(std::move(err)), "UnwrapOrDie: boom");
 }
 
 TEST(DieIfErrorTest, NoOpOnSuccess) {
   DieIfError(Result<void>{});
-  SUCCEED() << "die_if_error returned normally on an ok Result";
+  SUCCEED() << "DieIfError returned normally on an ok Result";
 }
 
 TEST(DieIfErrorDeathTest, AbortsOnError) {
   Result<void> err =
       pulse::Error{.code = pulse::Error::Code::kInternal, .message = "boom"};
-  EXPECT_DEATH(DieIfError(std::move(err)), "die_if_error: boom");
+  EXPECT_DEATH(DieIfError(std::move(err)), "DieIfError: boom");
 }
 
 }  // namespace
