@@ -28,7 +28,7 @@ class Acceptor {
   // Blocks until an incoming connection is available, then returns a `Socket`
   // owning that connection. The caller is responsible for validating, reading
   // from, and writing to the returned `Socket`.
-  Socket accept();
+  Socket Accept();
 
  private:
   int fd_;

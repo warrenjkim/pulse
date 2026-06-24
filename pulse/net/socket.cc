@@ -32,7 +32,7 @@ Socket& Socket::operator=(Socket&& other) {
   return *this;
 }
 
-std::string Socket::read(size_t size) {
+std::string Socket::Read(size_t size) {
   std::string buffer(size, '\0');
   size_t actual = 0;
   while (actual < size) {
@@ -54,7 +54,7 @@ std::string Socket::read(size_t size) {
   return buffer;
 }
 
-std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
+std::string Socket::ReadUntil(std::string_view delimiter, size_t max_bytes) {
   std::string buffer;
   char c;
   while (buffer.size() < max_bytes) {
@@ -77,7 +77,7 @@ std::string Socket::read_until(std::string_view delimiter, size_t max_bytes) {
   return buffer;
 }
 
-size_t Socket::write(std::string_view data) {
+size_t Socket::Write(std::string_view data) {
   size_t total = 0;
   while (total < data.size()) {
     ssize_t bytes = send(fd_, data.data() + total, data.size() - total, 0);

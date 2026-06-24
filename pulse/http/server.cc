@@ -26,13 +26,13 @@ Server::Server(Router router, const Server::Options& opts)
 
 void Server::Run() {
   while (true) {
-    net::Socket s = acceptor_.accept();
+    net::Socket s = acceptor_.Accept();
     if (!s.ok()) {
       continue;
     }
     // TODO(use move-only functions)
     pool_.submit([this, socket = std::make_shared<net::Socket>(std::move(s))] {
-      std::string header = socket->read_until("\r\n\r\n");
+      std::string header = socket->ReadUntil("\r\n\r\n");
       if (header.empty()) {
         Log() << "empty header";
         return;
@@ -41,14 +41,14 @@ void Server::Run() {
       Result<Request> request = ParseHeader(header);
       if (!request.ok()) {
         Log() << "parse error: " << request.error().message;
-        socket->write(Serialize(Response{.content_type = "text/html",
+        socket->Write(Serialize(Response{.content_type = "text/html",
                                          .status = 400,
                                          .body = "<h1>400 Bad Request</h1>"}));
         return;
       }
 
       if (request->method == Method::kOptions) {
-        socket->write(Serialize(CorsPreflight(*request)));
+        socket->Write(Serialize(CorsPreflight(*request)));
         return;
       }
 
@@ -56,7 +56,7 @@ void Server::Run() {
           router_.Match(request->method, request->url);
       if (!match.has_value()) {
         Log() << "no routes for method: " << pulse::to_string(request->method);
-        socket->write(Serialize(Response{.content_type = "text/html",
+        socket->Write(Serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
         return;
@@ -66,13 +66,13 @@ void Server::Run() {
       if (auto it = request->headers.find("Content-Length");
           it != request->headers.end()) {
         // TODO(write stoul to return success/failure)
-        request->body = socket->read(std::stoul(it->second));
+        request->body = socket->Read(std::stoul(it->second));
       }
 
       Log() << "request: " << pulse::to_string(*request);
       Response response = (*match->handler)(*request);
       AddCorsHeaders(&response);
-      socket->write(Serialize(response));
+      socket->Write(Serialize(response));
       Log() << "response: " << pulse::to_string(response);
     });
   }
