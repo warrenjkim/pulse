@@ -70,15 +70,15 @@ TEST(BindTest, OptionalFieldPresent) {
 }
 
 TEST(BindTest, OptionalFieldAbsent) {
-  Result<WithOptional> result = Bind<WithOptional>(
-      pulse::UnwrapOrDie(Parse(R"({"name": "checking"})")));
+  Result<WithOptional> result =
+      Bind<WithOptional>(pulse::UnwrapOrDie(Parse(R"({"name": "checking"})")));
   ASSERT_TRUE(result.ok());
   EXPECT_THAT(result->description, Eq(std::nullopt));
 }
 
 TEST(BindTest, OptionalFieldWrongType) {
-  Result<WithOptional> result = Bind<WithOptional>(pulse::UnwrapOrDie(
-      Parse(R"({"name": "checking", "description": 123})")));
+  Result<WithOptional> result = Bind<WithOptional>(
+      pulse::UnwrapOrDie(Parse(R"({"name": "checking", "description": 123})")));
   ASSERT_FALSE(result.ok());
   EXPECT_THAT(result.error().code, Eq(Error::Code::kInvalidArgument));
 }

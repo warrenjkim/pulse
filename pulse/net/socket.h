@@ -45,7 +45,7 @@ class Socket {
   // This call is blocking. Returns an empty string if reading failed. The
   // caller should treat this as a signal to close the connection.
   std::string ReadUntil(std::string_view delimiter,
-                         size_t max_bytes = kMaxRequestBytes);
+                        size_t max_bytes = kMaxRequestBytes);
 
   // Writes `data` to the socket. This call is blocking.
   //
