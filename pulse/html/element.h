@@ -30,13 +30,13 @@ class Element {
       : tag_(Tag::kTag) {
     std::apply(
         [this](auto&&... attrs) {
-          (this->add_attribute<Tag>(
+          (this->AddAttribute<Tag>(
                std::forward<std::decay_t<decltype(attrs)>>(attrs)),
            ...);
         },
         attributes.attrs);
 
-    (add_child(std::forward<Children>(children)), ...);
+    (AddChild(std::forward<Children>(children)), ...);
   }
 
  private:
@@ -45,14 +45,14 @@ class Element {
   using Node = std::variant<std::unique_ptr<Element>, Text>;
 
   template <TagType Tag, AttributeType Attr>
-  void add_attribute(Attr&& attr) {
+  void AddAttribute(Attr&& attr) {
     static_assert(AttributeAllowed<std::decay_t<Attr>, Tag>,
                   "attribute not allowed on this tag");
     attributes_.push_back(static_cast<Attribute>(std::forward<Attr>(attr)));
   }
 
   template <ChildType Child>
-  void add_child(Child&& child) {
+  void AddChild(Child&& child) {
     if constexpr (std::same_as<std::decay_t<Child>, Element>) {
       children_.push_back(
           std::make_unique<Element>(std::forward<Child>(child)));
@@ -77,20 +77,20 @@ Element Make(Attributes<Attrs...> attributes, Children&&... children) {
                  std::forward<Children>(children)...);
 }
 
-std::string render(const Element& html);
+std::string Render(const Element& html);
 
 }  // namespace pulse::html
 
 template <>
 struct pulse::Stringify<pulse::html::Element> {
-  static std::string to_string(const pulse::html::Element& html) {
+  static std::string ToString(const pulse::html::Element& html) {
     std::string out;
-    to_string(html, &out);
+    ToString(html, &out);
     return out;
   }
 
  private:
-  static void to_string(const pulse::html::Element& html, std::string* out) {
+  static void ToString(const pulse::html::Element& html, std::string* out) {
     pulse::strings::append(out, "<", html.tag_);
     for (const pulse::html::Attribute& attribute : html.attributes_) {
       pulse::strings::append(out, " ", attribute.key, "=\"", attribute.value,
@@ -105,8 +105,7 @@ struct pulse::Stringify<pulse::html::Element> {
                 pulse::strings::append(out, text);
               },
               [out](const std::unique_ptr<pulse::html::Element>& element) {
-                pulse::Stringify<pulse::html::Element>::to_string(*element,
-                                                                  out);
+                pulse::Stringify<pulse::html::Element>::ToString(*element, out);
               }},
           child);
     }
