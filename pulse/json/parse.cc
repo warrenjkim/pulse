@@ -32,21 +32,21 @@ class Reader {
 
   char get() { return json_[pos_++]; }
 
-  std::string_view take() { return substr(pos_++, 1); }
+  std::string_view take() { return Substr(pos_++, 1); }
 
-  bool expect(char c) { return json_[pos_] == c && ++pos_; }
+  bool Expect(char c) { return json_[pos_] == c && ++pos_; }
 
   template <std::predicate<char> Pred>
-  bool expect(Pred pred) {
+  bool Expect(Pred pred) {
     return pred(json_[pos_]) && ++pos_;
   }
 
-  bool expect_any_of(std::string_view chars) {
-    return expect(
+  bool ExpectAnyOf(std::string_view chars) {
+    return Expect(
         [chars](char c) { return chars.find(c) != std::string_view::npos; });
   }
 
-  std::string_view substr(size_t start,
+  std::string_view Substr(size_t start,
                           std::optional<size_t> length = std::nullopt) const {
     return json_.substr(start,
                         length.has_value() ? *length : std::string::npos);
@@ -93,7 +93,7 @@ class Lexer {
   Lexer& operator=(const Lexer&) = delete;
 
   Lexer& operator++() {
-    curr_ = next_token();
+    curr_ = NextToken();
     return *this;
   }
 
@@ -110,21 +110,21 @@ class Lexer {
   }
 
  private:
-  Result<Token> next_token() {
-    strip_whitespace();
+  Result<Token> NextToken() {
+    StripWhitespace();
     if (reader_.eof()) {
       return Token{.type = TokenType::kEof, .value = ""};
     }
 
     switch (reader_.peek()) {
       case 'n':
-        return lex_literal("null", TokenType::kNull);
+        return LexLiteral("null", TokenType::kNull);
       case 't':
-        return lex_literal("true", TokenType::kBoolean);
+        return LexLiteral("true", TokenType::kBoolean);
       case 'f':
-        return lex_literal("false", TokenType::kBoolean);
+        return LexLiteral("false", TokenType::kBoolean);
       case '"':
-        return lex_string();
+        return LexString();
       case '-':
       case '0':
       case '1':
@@ -136,7 +136,7 @@ class Lexer {
       case '7':
       case '8':
       case '9':
-        return lex_number();
+        return LexNumber();
       case '[':
         return Token{.type = TokenType::kArrayStart, .value = reader_.take()};
       case ']':
@@ -151,50 +151,50 @@ class Lexer {
         return Token{.type = TokenType::kComma, .value = reader_.take()};
       default:
         return Error{.code = Error::Code::kInvalidArgument,
-                     .message = strings::cat("unknown token at position ",
+                     .message = strings::Cat("unknown token at position ",
                                              reader_.tell())};
     }
   }
 
-  Result<Token> lex_literal(std::string_view literal, TokenType type) {
+  Result<Token> LexLiteral(std::string_view literal, TokenType type) {
     size_t start = reader_.tell();
     for (char c : literal) {
-      if (reader_.eof() || !reader_.expect(c)) {
+      if (reader_.eof() || !reader_.Expect(c)) {
         return Error{
             .code = Error::Code::kInvalidArgument,
-            .message = strings::cat("invalid literal at position ", start,
+            .message = strings::Cat("invalid literal at position ", start,
                                     ": expected '", literal, "'")};
       }
     }
 
     return Token{.type = type,
-                 .value = reader_.substr(start, reader_.tell() - start)};
+                 .value = reader_.Substr(start, reader_.tell() - start)};
   }
 
-  Result<Token> lex_string() {
+  Result<Token> LexString() {
     size_t start = reader_.tell();
-    if (!reader_.expect('"')) {
+    if (!reader_.Expect('"')) {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("expected '\"' at position ", start)};
+          .message = strings::Cat("expected '\"' at position ", start)};
     }
 
     size_t content_start = reader_.tell();
     while (!reader_.eof()) {
       if (reader_.peek() == '\\') {
-        if (!lex_ctrl()) {
+        if (!LexCtrl()) {
           return Error{
               .code = Error::Code::kInvalidArgument,
-              .message = strings::cat("invalid control character at position ",
+              .message = strings::Cat("invalid control character at position ",
                                       reader_.tell())};
         }
 
         continue;
       }
 
-      if (reader_.expect('"')) {
+      if (reader_.Expect('"')) {
         return Token{.type = TokenType::kString,
-                     .value = reader_.substr(
+                     .value = reader_.Substr(
                          content_start, reader_.tell() - content_start - 1)};
       }
 
@@ -203,18 +203,18 @@ class Lexer {
 
     return Error{
         .code = Error::Code::kInvalidArgument,
-        .message = strings::cat("unterminated string at position ", start)};
+        .message = strings::Cat("unterminated string at position ", start)};
   }
 
-  bool lex_ctrl() {
-    if (!reader_.expect('\\') || reader_.eof()) {
+  bool LexCtrl() {
+    if (!reader_.Expect('\\') || reader_.eof()) {
       return false;
     }
 
     switch (reader_.get()) {
       case 'u': {
         for (size_t i = 0; i < 4; i++) {
-          if (reader_.eof() || !reader_.expect(isxdigit)) {
+          if (reader_.eof() || !reader_.Expect(isxdigit)) {
             return false;
           }
         }
@@ -235,20 +235,20 @@ class Lexer {
     }
   }
 
-  Result<Token> lex_number() {
+  Result<Token> LexNumber() {
     size_t start = reader_.tell();
 
-    Result<Token> integer = lex_integer();
+    Result<Token> integer = LexInteger();
     if (!integer.ok()) {
       return integer.error();
     }
 
-    Result<Token> fraction = lex_fraction();
+    Result<Token> fraction = LexFraction();
     if (!fraction.ok()) {
       return fraction.error();
     }
 
-    Result<Token> exponent = lex_exponent();
+    Result<Token> exponent = LexExponent();
     if (!exponent.ok()) {
       return exponent.error();
     }
@@ -256,77 +256,77 @@ class Lexer {
     return Token{.type = (!fraction->value.empty() || !exponent->value.empty())
                              ? TokenType::kDouble
                              : TokenType::kIntegral,
-                 .value = reader_.substr(start, reader_.tell() - start)};
+                 .value = reader_.Substr(start, reader_.tell() - start)};
   }
 
-  Result<Token> lex_integer() {
+  Result<Token> LexInteger() {
     size_t start = reader_.tell();
-    reader_.expect('-');
+    reader_.Expect('-');
     if (reader_.eof() || !isdigit(reader_.peek())) {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("invalid integer at position ", start)};
+          .message = strings::Cat("invalid integer at position ", start)};
     }
 
     if (reader_.get() == '0' && !reader_.eof() && isdigit(reader_.peek())) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid integer at position ",
+                   .message = strings::Cat("invalid integer at position ",
                                            start, ": leading zero")};
     }
 
-    while (!reader_.eof() && reader_.expect(isdigit));
+    while (!reader_.eof() && reader_.Expect(isdigit));
     return Token{.type = TokenType::kIntegral,
-                 .value = reader_.substr(start, reader_.tell() - start)};
+                 .value = reader_.Substr(start, reader_.tell() - start)};
   }
 
-  Result<Token> lex_fraction() {
+  Result<Token> LexFraction() {
     size_t start = reader_.tell();
-    if (reader_.eof() || !reader_.expect('.')) {
+    if (reader_.eof() || !reader_.Expect('.')) {
       return Token{.type = TokenType::kIntegral, .value = ""};
     }
 
     if (reader_.eof() || !isdigit(reader_.peek())) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid fraction at position ",
+                   .message = strings::Cat("invalid fraction at position ",
                                            reader_.tell())};
     }
 
-    while (!reader_.eof() && reader_.expect(isdigit));
+    while (!reader_.eof() && reader_.Expect(isdigit));
 
     return Token{.type = TokenType::kDouble,
-                 .value = reader_.substr(start, reader_.tell() - start)};
+                 .value = reader_.Substr(start, reader_.tell() - start)};
   }
 
-  Result<Token> lex_exponent() {
+  Result<Token> LexExponent() {
     size_t start = reader_.tell();
-    if (reader_.eof() || !reader_.expect_any_of("eE")) {
+    if (reader_.eof() || !reader_.ExpectAnyOf("eE")) {
       return Token{.type = TokenType::kIntegral, .value = ""};
     }
 
     if (!reader_.eof()) {
-      reader_.expect([](char c) { return c == '+' || c == '-'; });
+      reader_.Expect([](char c) { return c == '+' || c == '-'; });
     }
 
     if (reader_.eof() || !isdigit(reader_.peek())) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid exponent at position ",
+                   .message = strings::Cat("invalid exponent at position ",
                                            reader_.tell())};
     }
 
-    while (!reader_.eof() && reader_.expect(isdigit));
+    while (!reader_.eof() && reader_.Expect(isdigit));
 
     return Token{.type = TokenType::kIntegral,
-                 .value = reader_.substr(start, reader_.tell() - start)};
+                 .value = reader_.Substr(start, reader_.tell() - start)};
   }
 
-  void strip_whitespace() { while (!reader_.eof() && reader_.expect(isspace)); }
+  void StripWhitespace() { while (!reader_.eof() && reader_.Expect(isspace)); }
 
   Reader reader_;
   Result<Token> curr_;
 };
 
-uint32_t make_code_point(const char c1, const char c2, const char c3,
-                         const char c4) {
+uint32_t MakeCodePoint(const char c1, const char c2, const char c3,
+                       const char c4) {
   auto to_uint32 = [](const char c) -> uint32_t {
     if (c >= '0' && c <= '9') {
       return uint32_t(c - '0');
@@ -350,11 +350,11 @@ uint32_t make_code_point(const char c1, const char c2, const char c3,
 
 // Section 3.8 Surrogates
 // https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf
-Result<uint32_t> make_surrogate_pair(std::string_view s, size_t* j) {
+Result<uint32_t> MakeSurrogatePair(std::string_view s, size_t* j) {
   *j += 6;
   // 0xD800 <= high-surrogate code point <= 0xDBFF
   uint32_t high_surrogate =
-      make_code_point(s[*j - 4], s[*j - 3], s[*j - 2], s[*j - 1]);
+      MakeCodePoint(s[*j - 4], s[*j - 3], s[*j - 2], s[*j - 1]);
   if (0xD800 > high_surrogate || high_surrogate > 0xDBFF) {
     return high_surrogate;
   }
@@ -362,17 +362,17 @@ Result<uint32_t> make_surrogate_pair(std::string_view s, size_t* j) {
   if (*j + 5 >= s.length() || s[*j] != '\\' || s[*j + 1] != 'u') {
     return Error{
         .code = Error::Code::kInvalidArgument,
-        .message = strings::cat("expected low surrogate after high surrogate: ",
+        .message = strings::Cat("expected low surrogate after high surrogate: ",
                                 s.substr(*j - 6, 6))};
   }
 
   *j += 6;
   // 0xDC00 <= low-surrogate code point <= 0xDFFF
   uint32_t low_surrogate =
-      make_code_point(s[*j - 4], s[*j - 3], s[*j - 2], s[*j - 1]);
+      MakeCodePoint(s[*j - 4], s[*j - 3], s[*j - 2], s[*j - 1]);
   if (!(0xDC00 <= low_surrogate && low_surrogate <= 0xDFFF)) {
     return Error{.code = Error::Code::kInvalidArgument,
-                 .message = strings::cat(
+                 .message = strings::Cat(
                      "invalid low surrogate ", s.substr(*j - 6, 6),
                      " after high surrogate: ", s.substr(*j - 12, 6))};
   }
@@ -381,7 +381,7 @@ Result<uint32_t> make_surrogate_pair(std::string_view s, size_t* j) {
 }
 
 // https://www.ietf.org/rfc/rfc3629.txt
-Result<void> embed_utf8(uint32_t code_point, std::string* res) {
+Result<void> EmbedUtf8(uint32_t code_point, std::string* res) {
   if (code_point > 0x10FFFF) {
     return Error{.code = Error::Code::kInvalidArgument,
                  .message = "code point out of unicode range (> 0x10FFFF)"};
@@ -411,7 +411,7 @@ Result<void> embed_utf8(uint32_t code_point, std::string* res) {
   return Result<void>{};
 }
 
-Result<void> embed_ctrl(char c, std::string* res) {
+Result<void> EmbedCtrl(char c, std::string* res) {
   switch (c) {
     case '"':
       *res += '"';
@@ -439,13 +439,13 @@ Result<void> embed_ctrl(char c, std::string* res) {
       break;
     default:
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("invalid escape character: ", c)};
+                   .message = strings::Cat("invalid escape character: ", c)};
   }
 
   return Result<void>{};
 }
 
-Result<void> resolve_escape_sequences(std::string_view s, value* value) {
+Result<void> ResolveEscapeSequences(std::string_view s, Value* value) {
   *value = std::string{};
   std::string* const res = &(value->as<std::string>());
   res->reserve(s.length());
@@ -459,19 +459,19 @@ Result<void> resolve_escape_sequences(std::string_view s, value* value) {
 
     if (s[j + 1] == 'u') {
       res->append(s, i, j - i);
-      Result<uint32_t> code_point = make_surrogate_pair(s, &j);
+      Result<uint32_t> code_point = MakeSurrogatePair(s, &j);
       if (!code_point.ok()) {
         return code_point.error();
       }
 
-      if (Result<void> err = embed_utf8(*code_point, res); !err.ok()) {
+      if (Result<void> err = EmbedUtf8(*code_point, res); !err.ok()) {
         return err;
       }
 
       i = j;
     } else {
       res->append(s, i, j - i);
-      if (Result<void> err = embed_ctrl(s[++j], res); !err.ok()) {
+      if (Result<void> err = EmbedCtrl(s[++j], res); !err.ok()) {
         return err;
       }
 
@@ -486,35 +486,35 @@ Result<void> resolve_escape_sequences(std::string_view s, value* value) {
   return Result<void>{};
 }
 
-Result<void> parse_value(Lexer* lexer, value* out);
+Result<void> ParseValue(Lexer* lexer, Value* out);
 
-Result<int64_t> parse_int(std::string_view s) {
+Result<int64_t> ParseInt(std::string_view s) {
   int64_t result;
   auto [unused_ptr, ec] =
       std::from_chars(s.data(), s.data() + s.size(), result);
   if (ec != std::errc{}) {
     return Error{.code = Error::Code::kInvalidArgument,
-                 .message = strings::cat("invalid integer: ", s)};
+                 .message = strings::Cat("invalid integer: ", s)};
   }
 
   return result;
 }
 
-Result<double> parse_double(std::string_view s) {
+Result<double> ParseDouble(std::string_view s) {
   double result;
   auto [unused_ptr, ec] =
       std::from_chars(s.data(), s.data() + s.size(), result);
   if (ec != std::errc{}) {
     return Error{.code = Error::Code::kInvalidArgument,
-                 .message = strings::cat("invalid double: ", s)};
+                 .message = strings::Cat("invalid double: ", s)};
   }
 
   return result;
 }
 
-Result<void> parse_array(Lexer* lexer, value* out) {
-  *out = array_t{};
-  array_t* array = &(out->as<array_t>());
+Result<void> ParseArray(Lexer* lexer, Value* out) {
+  *out = Array{};
+  Array* array = &(out->as<Array>());
   if (!(++(*lexer)).ok()) {
     return lexer->error();
   }
@@ -533,7 +533,7 @@ Result<void> parse_array(Lexer* lexer, value* out) {
                    .message = "unterminated array"};
     }
 
-    if (Result<void> err = parse_value(lexer, &(array->emplace_back()));
+    if (Result<void> err = ParseValue(lexer, &(array->emplace_back()));
         !err.ok()) {
       return err;
     }
@@ -552,7 +552,7 @@ Result<void> parse_array(Lexer* lexer, value* out) {
 
     if ((*lexer)->type != Lexer::TokenType::kComma) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("expected ',' or ']', got '",
+                   .message = strings::Cat("expected ',' or ']', got '",
                                            (*lexer)->value, "'")};
     }
 
@@ -562,9 +562,9 @@ Result<void> parse_array(Lexer* lexer, value* out) {
   }
 }
 
-Result<void> parse_object(Lexer* lexer, value* out) {
-  *out = object_t{};
-  object_t* object = &(out->as<object_t>());
+Result<void> ParseObject(Lexer* lexer, Value* out) {
+  *out = Object{};
+  Object* object = &(out->as<Object>());
   if (!(++(*lexer)).ok()) {
     return lexer->error();
   }
@@ -584,12 +584,12 @@ Result<void> parse_object(Lexer* lexer, value* out) {
 
     if ((*lexer)->type != Lexer::TokenType::kString) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("expected string key, got '",
+                   .message = strings::Cat("expected string key, got '",
                                            (*lexer)->value, "'")};
     }
 
-    value key;
-    if (Result<void> err = resolve_escape_sequences((*lexer)->value, &key);
+    Value key;
+    if (Result<void> err = ResolveEscapeSequences((*lexer)->value, &key);
         !err.ok()) {
       return err;
     }
@@ -601,7 +601,7 @@ Result<void> parse_object(Lexer* lexer, value* out) {
     if ((*lexer)->type != Lexer::TokenType::kColon) {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("expected ':', got '", (*lexer)->value, "'")};
+          .message = strings::Cat("expected ':', got '", (*lexer)->value, "'")};
     }
 
     if (!(++(*lexer)).ok()) {
@@ -609,7 +609,7 @@ Result<void> parse_object(Lexer* lexer, value* out) {
     }
 
     if (Result<void> err =
-            parse_value(lexer, &((*object)[std::move(key.as<std::string>())]));
+            ParseValue(lexer, &((*object)[std::move(key.as<std::string>())]));
         !err.ok()) {
       return err;
     }
@@ -629,7 +629,7 @@ Result<void> parse_object(Lexer* lexer, value* out) {
 
     if ((*lexer)->type != Lexer::TokenType::kComma) {
       return Error{.code = Error::Code::kInvalidArgument,
-                   .message = strings::cat("expected ',' or '}', got '",
+                   .message = strings::Cat("expected ',' or '}', got '",
                                            (*lexer)->value, "'")};
     }
 
@@ -639,7 +639,7 @@ Result<void> parse_object(Lexer* lexer, value* out) {
   }
 }
 
-Result<void> parse_value(Lexer* lexer, value* value) {
+Result<void> ParseValue(Lexer* lexer, Value* value) {
   switch ((*lexer)->type) {
     case Lexer::TokenType::kBoolean: {
       *value = (*lexer)->value == "true";
@@ -648,13 +648,13 @@ Result<void> parse_value(Lexer* lexer, value* value) {
       *value = nullptr;
     } break;
     case Lexer::TokenType::kString: {
-      if (Result<void> err = resolve_escape_sequences((*lexer)->value, value);
+      if (Result<void> err = ResolveEscapeSequences((*lexer)->value, value);
           !err.ok()) {
         return err;
       }
     } break;
     case Lexer::TokenType::kIntegral: {
-      Result<int64_t> integer = parse_int((*lexer)->value);
+      Result<int64_t> integer = ParseInt((*lexer)->value);
       if (!integer.ok()) {
         return integer.error();
       }
@@ -662,7 +662,7 @@ Result<void> parse_value(Lexer* lexer, value* value) {
       *value = *integer;
     } break;
     case Lexer::TokenType::kDouble: {
-      Result<double> fraction = parse_double((*lexer)->value);
+      Result<double> fraction = ParseDouble((*lexer)->value);
       if (!fraction.ok()) {
         return fraction.error();
       }
@@ -670,15 +670,15 @@ Result<void> parse_value(Lexer* lexer, value* value) {
       *value = *fraction;
     } break;
     case Lexer::TokenType::kArrayStart: {
-      return parse_array(lexer, value);
+      return ParseArray(lexer, value);
     }
     case Lexer::TokenType::kObjectStart: {
-      return parse_object(lexer, value);
+      return ParseObject(lexer, value);
     }
     default: {
       return Error{
           .code = Error::Code::kInvalidArgument,
-          .message = strings::cat("unexpected token: '", (*lexer)->value, "'")};
+          .message = strings::Cat("unexpected token: '", (*lexer)->value, "'")};
     }
   }
 
@@ -691,24 +691,24 @@ Result<void> parse_value(Lexer* lexer, value* value) {
 
 }  // namespace
 
-Result<value> parse(std::string json) { return parse(std::string_view(json)); }
+Result<Value> Parse(std::string json) { return Parse(std::string_view(json)); }
 
-Result<value> parse(std::string_view json) {
+Result<Value> Parse(std::string_view json) {
   Lexer lexer(json);
   ++lexer;
   if (!lexer.ok()) {
     return lexer.error();
   }
 
-  value out;
-  if (Result<void> err = parse_value(&lexer, &out); !err.ok()) {
+  Value out;
+  if (Result<void> err = ParseValue(&lexer, &out); !err.ok()) {
     return err.error();
   }
 
   if (!lexer.eof()) {
     return Error{
         .code = Error::Code::kInvalidArgument,
-        .message = strings::cat("unexpected token: '", lexer->value, "'")};
+        .message = strings::Cat("unexpected token: '", lexer->value, "'")};
   }
 
   return out;

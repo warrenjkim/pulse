@@ -17,24 +17,24 @@
 
 namespace pulse::http {
 
-std::optional<Router::Match> Router::match(Method method,
-                                           std::string_view path) const {
+std::optional<Router::RouteMatch> Router::Match(Method method,
+                                                std::string_view path) const {
   const auto it = routes_.find(method);
   if (it == routes_.end()) {
     return std::nullopt;
   }
 
   for (const Route& route : it->second) {
-    if (std::optional<Pattern::Captures> captures = route.pattern.match(path)) {
-      return Router::Match{.handler = route.handler.get(),
-                           .path_params = *std::move(captures)};
+    if (std::optional<Pattern::Captures> captures = route.pattern.Match(path)) {
+      return Router::RouteMatch{.handler = route.handler.get(),
+                                .path_params = *std::move(captures)};
     }
   }
 
   return std::nullopt;
 }
 
-Result<void> Router::add(Method method, std::string_view raw_pattern,
+Result<void> Router::Add(Method method, std::string_view raw_pattern,
                          std::unique_ptr<Handler> handler) {
   Result<Pattern> pattern = Pattern::Make(raw_pattern);
   if (!pattern.ok()) {
@@ -46,7 +46,7 @@ Result<void> Router::add(Method method, std::string_view raw_pattern,
     if (route.raw_pattern == raw_pattern) {
       return pulse::Error{
           .code = pulse::Error::Code::kAlreadyExists,
-          .message = strings::cat("raw_pattern '", std::string(raw_pattern),
+          .message = strings::Cat("raw_pattern '", std::string(raw_pattern),
                                   "' already exists")};
     }
   }

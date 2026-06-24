@@ -7,7 +7,7 @@
 
 namespace pulse::strings {
 
-std::vector<std::string_view> split(std::string_view string,
+std::vector<std::string_view> Split(std::string_view string,
                                     std::string_view delimiter) {
   if (delimiter.empty()) {
     return {string};

@@ -12,43 +12,43 @@ namespace {
 using ::testing::StrEq;
 
 TEST(RenderTest, TextOnly) {
-  EXPECT_THAT(render(Make<P>("hello")), StrEq("<p>hello</p>"));
+  EXPECT_THAT(Render(Make<P>("hello")), StrEq("<p>hello</p>"));
 }
 
 TEST(RenderTest, EmptyElement) {
-  EXPECT_THAT(render(Make<Div>()), StrEq("<div></div>"));
+  EXPECT_THAT(Render(Make<Div>()), StrEq("<div></div>"));
 }
 
 TEST(RenderTest, SingleAttribute) {
-  EXPECT_THAT(render(Make<Div>(Attributes{Class{"card"}})),
+  EXPECT_THAT(Render(Make<Div>(Attributes{Class{"card"}})),
               StrEq("<div class=\"card\"></div>"));
 }
 
 TEST(RenderTest, MultipleAttributes) {
-  EXPECT_THAT(render(Make<Div>(Attributes{Class{"card"}, Id{"main"}})),
+  EXPECT_THAT(Render(Make<Div>(Attributes{Class{"card"}, Id{"main"}})),
               StrEq("<div class=\"card\" id=\"main\"></div>"));
 }
 
 TEST(RenderTest, NestedElements) {
-  EXPECT_THAT(render(Make<Div>(Make<P>("hello"))),
+  EXPECT_THAT(Render(Make<Div>(Make<P>("hello"))),
               StrEq("<div><p>hello</p></div>"));
 }
 
 TEST(RenderTest, AttributesAndChildren) {
-  EXPECT_THAT(render(Make<Div>(Attributes{Class{"card"}}, Make<P>("hello"))),
+  EXPECT_THAT(Render(Make<Div>(Attributes{Class{"card"}}, Make<P>("hello"))),
               StrEq("<div class=\"card\"><p>hello</p></div>"));
 }
 
 TEST(RenderTest, DeeplyNested) {
   EXPECT_THAT(
-      render(Make<Div>(Attributes{Class{"card"}}, Make<H1>("heading 1"),
+      Render(Make<Div>(Attributes{Class{"card"}}, Make<H1>("heading 1"),
                        Make<P>("paragraph"))),
       StrEq("<div class=\"card\"><h1>heading 1</h1><p>paragraph</p></div>"));
 }
 
 TEST(RenderTest, AllTags) {
   EXPECT_THAT(
-      (render(Make<Html>(
+      (Render(Make<Html>(
           Make<Head>(Make<Title>("title")),
           Make<Body>(
               Make<H1>("heading 1"), Make<H2>("heading 2"),
@@ -83,7 +83,7 @@ TEST(RenderTest, AllTags) {
 }
 
 TEST(RenderTest, FormTags) {
-  EXPECT_THAT(render(Make<Html>(
+  EXPECT_THAT(Render(Make<Html>(
                   Make<Head>(Make<Title>("form")),
                   Make<Body>(Make<Form>(
                       Attributes{Action{"/submit"}, Method{"post"}},

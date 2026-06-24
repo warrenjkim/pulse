@@ -16,7 +16,7 @@ ThreadPool::ThreadPool(size_t threads) : queue_(threads), in_flight_(0) {
   for (size_t i = 0; i < threads; i++) {
     pool_.emplace_back([this] {
       while (true) {
-        if (std::optional<std::function<void()>> work = queue_.pop();
+        if (std::optional<std::function<void()>> work = queue_.Pop();
             work.has_value()) {
           (*std::move(work))();
           in_flight_--;
@@ -30,8 +30,8 @@ ThreadPool::ThreadPool(size_t threads) : queue_(threads), in_flight_(0) {
 }
 
 ThreadPool::~ThreadPool() {
-  join();
-  queue_.shutdown();
+  Join();
+  queue_.Shutdown();
   for (std::thread& thread : pool_) {
     if (thread.joinable()) {
       thread.join();
@@ -39,12 +39,12 @@ ThreadPool::~ThreadPool() {
   }
 }
 
-void ThreadPool::submit(std::function<void()> task) {
+void ThreadPool::Submit(std::function<void()> task) {
   in_flight_++;
-  queue_.push(std::move(task));
+  queue_.Push(std::move(task));
 }
 
-void ThreadPool::join() {
+void ThreadPool::Join() {
   std::unique_lock l(mu_);
   cv_.wait(l, [this] { return in_flight_.load() == 0; });
 }

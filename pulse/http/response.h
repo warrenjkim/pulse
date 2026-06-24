@@ -18,14 +18,10 @@ struct Response {
 
 }  // namespace pulse::http
 
-// TODO(remove unnecessary calls to Stringify)
 template <>
 struct pulse::Stringify<pulse::http::Response> {
-  static std::string to_string(const pulse::http::Response& res) {
-    return strings::cat(
-        "Response{.content_type=",
-        pulse::Stringify<std::string>::to_string(res.content_type),
-        ",.status=", pulse::Stringify<int>::to_string(res.status),
-        ",.body=", pulse::Stringify<std::string>::to_string(res.body), "}");
+  static std::string ToString(const pulse::http::Response& res) {
+    return strings::Cat("Response{.content_type=", res.content_type,
+                        ",.status=", res.status, ",.body=", res.body, "}");
   }
 };

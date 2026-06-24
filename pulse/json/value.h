@@ -18,16 +18,16 @@
 
 namespace pulse::json {
 
-class value;
+class Value;
 
-using array_t = std::vector<value>;
-using object_t = std::map<std::string, value, std::less<>>;
+using Array = std::vector<Value>;
+using Object = std::map<std::string, Value, std::less<>>;
 
 template <typename T>
 concept JsonType = std::same_as<T, std::nullptr_t> || std::same_as<T, bool> ||
                    std::same_as<T, int64_t> || std::same_as<T, double> ||
-                   std::same_as<T, std::string> || std::same_as<T, array_t> ||
-                   std::same_as<T, object_t>;
+                   std::same_as<T, std::string> || std::same_as<T, Array> ||
+                   std::same_as<T, Object>;
 
 template <typename T>
 concept StringKey = std::convertible_to<std::decay_t<T>, std::string_view>;
@@ -40,129 +40,129 @@ concept IndexKey =
 template <typename T>
 concept KeyType = StringKey<T> || IndexKey<T>;
 
-class value {
+class Value {
  public:
-  value() : value_(nullptr) {}
+  constexpr Value() : value_(nullptr) {}
 
-  value(nullptr_t) : value_(nullptr) {}
+  constexpr Value(nullptr_t) : value_(nullptr) {}
 
-  value(bool b) : value_(b) {}
+  constexpr Value(bool b) : value_(b) {}
 
-  value(std::string s) : value_(std::move(s)) {}
+  constexpr Value(std::string s) : value_(std::move(s)) {}
 
-  value(std::string_view s) : value_(std::string(s)) {}
+  constexpr Value(std::string_view s) : value_(std::string(s)) {}
 
-  value(const char* s) : value_(std::string(s)) {}
+  constexpr Value(const char* s) : value_(std::string(s)) {}
 
-  value(array_t a) : value_(std::move(a)) {}
+  constexpr Value(Array a) : value_(std::move(a)) {}
 
-  value(object_t o) : value_(std::move(o)) {}
+  constexpr Value(Object o) : value_(std::move(o)) {}
 
   template <typename T>
     requires(std::same_as<T, char>)
-  value(T c) : value_(std::string(1, c)) {}
+  constexpr Value(T c) : value_(std::string(1, c)) {}
 
   template <std::integral T>
     requires(!std::same_as<T, bool>)
-  value(T n) : value_(static_cast<int64_t>(n)) {}
+  constexpr Value(T n) : value_(static_cast<int64_t>(n)) {}
 
   template <std::floating_point T>
-  value(T d) : value_(static_cast<double>(d)) {}
+  constexpr Value(T d) : value_(static_cast<double>(d)) {}
 
-  ~value() = default;
+  constexpr ~Value() = default;
 
-  value(const value&) = default;
+  constexpr Value(const Value&) = default;
 
-  value(value&&) = default;
+  constexpr Value(Value&&) = default;
 
-  value& operator=(const value&) = default;
+  constexpr Value& operator=(const Value&) = default;
 
-  value& operator=(value&&) = default;
+  constexpr Value& operator=(Value&&) = default;
 
   template <typename T>
-    requires(!std::same_as<std::decay_t<T>, value>)
-  value& operator=(T&& v);
+    requires(!std::same_as<std::decay_t<T>, Value>)
+  constexpr Value& operator=(T&& v);
 
   template <KeyType T>
-  value& operator[](const T& key);
+  constexpr Value& operator[](const T& key);
 
   template <JsonType T>
-  bool is() const noexcept;
+  constexpr bool is() const noexcept;
 
   template <JsonType T>
-  T& as();
+  constexpr T& as();
 
   template <JsonType T>
-  const T& as() const;
+  constexpr const T& as() const;
 
-  friend bool operator==(const value&, const value&) = default;
+  friend constexpr bool operator==(const Value&, const Value&) = default;
 
   template <JsonType T>
-  friend bool operator==(const value& v, const T& other) noexcept;
+  friend constexpr bool operator==(const Value& v, const T& other) noexcept;
 
  private:
-  friend struct Stringify<value>;
+  friend struct Stringify<Value>;
 
-  std::string_view type_name() const noexcept;
+  constexpr std::string_view TypeName() const noexcept;
 
   template <JsonType T>
-  static constexpr std::string_view type_name() noexcept;
+  static constexpr std::string_view TypeName() noexcept;
 
-  std::variant<std::nullptr_t, bool, int64_t, double, std::string, array_t,
-               object_t>
+  std::variant<std::nullptr_t, bool, int64_t, double, std::string, Array,
+               Object>
       value_;
 };
 
 // Implementation details below;
 
 template <typename T>
-  requires(!std::same_as<std::decay_t<T>, value>)
-value& value::operator=(T&& v) {
+  requires(!std::same_as<std::decay_t<T>, Value>)
+constexpr Value& Value::operator=(T&& v) {
   value_ = std::forward<T>(v);
 
   return *this;
 }
 
 template <KeyType T>
-value& value::operator[](const T& key) {
+constexpr Value& Value::operator[](const T& key) {
   if constexpr (StringKey<T>) {
     if (std::holds_alternative<std::nullptr_t>(value_)) {
-      value_.emplace<object_t>();
+      value_.emplace<Object>();
     }
 
-    return std::get<object_t>(value_)[key];
+    return std::get<Object>(value_)[key];
   }
 
   if constexpr (IndexKey<T>) {
     if (std::holds_alternative<std::nullptr_t>(value_)) {
-      value_.emplace<array_t>();
+      value_.emplace<Array>();
     }
 
-    return std::get<array_t>(value_)[static_cast<size_t>(key)];
+    return std::get<Array>(value_)[static_cast<size_t>(key)];
   }
 }
 
 template <JsonType T>
-bool value::is() const noexcept {
+constexpr bool Value::is() const noexcept {
   return std::holds_alternative<T>(value_);
 }
 
 template <JsonType T>
-T& value::as() {
+constexpr T& Value::as() {
   return std::get<T>(value_);
 }
 
 template <JsonType T>
-const T& value::as() const {
+constexpr const T& Value::as() const {
   return std::get<T>(value_);
 }
 
 template <JsonType T>
-bool operator==(const value& v, const T& other) noexcept {
+constexpr bool operator==(const Value& v, const T& other) noexcept {
   return std::holds_alternative<T>(v.value_) && std::get<T>(v.value_) == other;
 }
 
-inline std::string_view value::type_name() const noexcept {
+constexpr std::string_view Value::TypeName() const noexcept {
   switch (value_.index()) {
     case 0:
       return "null";
@@ -184,7 +184,7 @@ inline std::string_view value::type_name() const noexcept {
 }
 
 template <JsonType T>
-constexpr std::string_view value::type_name() noexcept {
+constexpr std::string_view Value::TypeName() noexcept {
   if constexpr (std::same_as<T, std::nullptr_t>) {
     return "null";
   } else if constexpr (std::same_as<T, bool>) {
@@ -195,9 +195,9 @@ constexpr std::string_view value::type_name() noexcept {
     return "double";
   } else if constexpr (std::same_as<T, std::string>) {
     return "string";
-  } else if constexpr (std::same_as<T, array_t>) {
+  } else if constexpr (std::same_as<T, Array>) {
     return "array";
-  } else if constexpr (std::same_as<T, object_t>) {
+  } else if constexpr (std::same_as<T, Object>) {
     return "object";
   }
 }
@@ -205,80 +205,80 @@ constexpr std::string_view value::type_name() noexcept {
 }  // namespace pulse::json
 
 template <>
-struct pulse::Stringify<pulse::json::array_t> {
-  static std::string to_string(const pulse::json::array_t& array) {
+struct pulse::Stringify<pulse::json::Array> {
+  static std::string ToString(const pulse::json::Array& array) {
     std::string out;
-    pulse::Stringify<pulse::json::array_t>::to_string(array, &out);
+    pulse::Stringify<pulse::json::Array>::ToString(array, &out);
     return out;
   }
 
-  static void to_string(const pulse::json::array_t& v, std::string* out) {
-    pulse::strings::append(out, "[");
+  static void ToString(const pulse::json::Array& v, std::string* out) {
+    pulse::strings::Append(out, "[");
     for (const auto& v : v) {
-      pulse::strings::append(out, v, ",");
+      pulse::strings::Append(out, v, ",");
     }
 
     if (out->back() == ',') {
       out->pop_back();
     }
 
-    pulse::strings::append(out, "]");
+    pulse::strings::Append(out, "]");
   }
 };
 
 template <>
-struct pulse::Stringify<pulse::json::object_t> {
-  static std::string to_string(const pulse::json::object_t& object) {
+struct pulse::Stringify<pulse::json::Object> {
+  static std::string ToString(const pulse::json::Object& object) {
     std::string out;
-    pulse::Stringify<pulse::json::object_t>::to_string(object, &out);
+    pulse::Stringify<pulse::json::Object>::ToString(object, &out);
     return out;
   }
 
-  static void to_string(const pulse::json::object_t& v, std::string* out) {
-    pulse::strings::append(out, "{");
+  static void ToString(const pulse::json::Object& v, std::string* out) {
+    pulse::strings::Append(out, "{");
     for (const auto& [k, v] : v) {
-      pulse::strings::append(out, "\"", k, "\"", ":", v, ",");
+      pulse::strings::Append(out, "\"", k, "\"", ":", v, ",");
     }
 
     if (out->back() == ',') {
       out->pop_back();
     }
 
-    pulse::strings::append(out, "}");
+    pulse::strings::Append(out, "}");
   }
 };
 
 template <>
-struct pulse::Stringify<pulse::json::value> {
-  static std::string to_string(const pulse::json::value& v) {
+struct pulse::Stringify<pulse::json::Value> {
+  static std::string ToString(const pulse::json::Value& v) {
     std::string out;
-    pulse::Stringify<pulse::json::value>::to_string(v, &out);
+    pulse::Stringify<pulse::json::Value>::ToString(v, &out);
     return out;
   }
 
  private:
-  static void to_string(const pulse::json::value& v, std::string* out) {
+  static void ToString(const pulse::json::Value& v, std::string* out) {
     std::visit(
         [out](const auto& v) {
           using T = std::decay_t<decltype(v)>;
           if constexpr (std::same_as<T, std::nullptr_t>) {
-            pulse::strings::append(out, "null");
+            pulse::strings::Append(out, "null");
           } else if constexpr (std::same_as<T, bool>) {
-            pulse::strings::append(out, v ? "true" : "false");
+            pulse::strings::Append(out, v ? "true" : "false");
           } else if constexpr (std::same_as<T, int64_t>) {
-            pulse::strings::append(out, v);
+            pulse::strings::Append(out, v);
           } else if constexpr (std::same_as<T, double>) {
             char buffer[32];
             auto [ptr, unused_ec] = std::to_chars(
                 buffer, buffer + sizeof(buffer), v, std::chars_format::general);
             *ptr = '\0';
-            pulse::strings::append(out, buffer);
+            pulse::strings::Append(out, buffer);
           } else if constexpr (std::same_as<T, std::string>) {
-            pulse::strings::append(out, "\"", v, "\"");
-          } else if constexpr (std::same_as<T, pulse::json::array_t>) {
-            pulse::Stringify<pulse::json::array_t>::to_string(v, out);
-          } else if constexpr (std::same_as<T, pulse::json::object_t>) {
-            pulse::Stringify<pulse::json::object_t>::to_string(v, out);
+            pulse::strings::Append(out, "\"", v, "\"");
+          } else if constexpr (std::same_as<T, pulse::json::Array>) {
+            pulse::Stringify<pulse::json::Array>::ToString(v, out);
+          } else if constexpr (std::same_as<T, pulse::json::Object>) {
+            pulse::Stringify<pulse::json::Object>::ToString(v, out);
           }
         },
         v.value_);

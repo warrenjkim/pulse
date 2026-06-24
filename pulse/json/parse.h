@@ -7,6 +7,6 @@
 
 namespace pulse::json {
 
-Result<value> parse(std::string_view json);
+Result<Value> Parse(std::string_view json);
 
 }  // namespace pulse::json

@@ -6,8 +6,8 @@
 
 namespace pulse::html {
 
-std::string render(const Element& element) {
-  return Stringify<Element>::to_string(element);
+std::string Render(const Element& element) {
+  return Stringify<Element>::ToString(element);
 }
 
 }  // namespace pulse::html

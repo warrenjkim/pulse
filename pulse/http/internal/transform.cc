@@ -19,7 +19,7 @@ namespace pulse::http {
 
 namespace {
 
-constexpr std::string_view reason(int status) {
+constexpr std::string_view Reason(int status) {
   switch (status) {
     case 200:
       return "OK";
@@ -38,10 +38,10 @@ constexpr std::string_view reason(int status) {
 }  // namespace
 
 // TODO(store version number)
-Result<Request> parse_header(std::string_view raw) {
+Result<Request> ParseHeader(std::string_view raw) {
   Request request;
-  std::vector<std::string_view> header = strings::split(raw, "\r\n");
-  std::vector<std::string_view> request_line = strings::split(header[0], " ");
+  std::vector<std::string_view> header = strings::Split(raw, "\r\n");
+  std::vector<std::string_view> request_line = strings::Split(header[0], " ");
   if (request_line.size() < 3) {
     Log() << "malformed request line: [" << header[0] << "]";
     return Error{.code = Error::Code::kInternal,
@@ -62,23 +62,23 @@ Result<Request> parse_header(std::string_view raw) {
     Log() << "invalid method: [" << method << "]";
     return Error{
         .code = Error::Code::kInternal,
-        .message = strings::cat("parse_header: invalid method: ", method)};
+        .message = strings::Cat("parse_header: invalid method: ", method)};
   }
 
   std::vector<std::string_view> path_with_query_params =
-      strings::split(request_line[1], "?");
+      strings::Split(request_line[1], "?");
   if (path_with_query_params.empty() || path_with_query_params[0].empty() ||
       path_with_query_params[0][0] != '/') {
     Log() << "invalid path: [" << path_with_query_params[0] << "]";
     return Error{.code = Error::Code::kInternal,
-                 .message = strings::cat("parse_header: invalid url: ",
+                 .message = strings::Cat("parse_header: invalid url: ",
                                          path_with_query_params[0])};
   }
 
   request.url = std::string(path_with_query_params[0]);
   if (path_with_query_params.size() > 1) {
     for (std::string_view param :
-         strings::split(path_with_query_params[1], "&")) {
+         strings::Split(path_with_query_params[1], "&")) {
       if (size_t i = param.find('=');
           i != std::string::npos && i + 1 < param.size()) {
         request.query[param.substr(0, i)] = std::string(param.substr(i + 1));
@@ -87,7 +87,7 @@ Result<Request> parse_header(std::string_view raw) {
 
       Log() << "malformed query parameter: [" << param << "]";
       return Error{.code = Error::Code::kInternal,
-                   .message = strings::cat(
+                   .message = strings::Cat(
                        "parse_header: malformed query parameter: ", param)};
     }
   }
@@ -106,27 +106,27 @@ Result<Request> parse_header(std::string_view raw) {
 
     Log() << "malformed header field: [" << header[i] << "]";
     return Error{.code = Error::Code::kInternal,
-                 .message = strings::cat(
+                 .message = strings::Cat(
                      "parse_header: malformed header field: ", header[i])};
   }
 
-  Log() << "parsed request: " << pulse::to_string(request);
+  Log() << "parsed request: " << pulse::ToString(request);
   return request;
 }
 
-std::string serialize(const Response& response) {
-  std::string out = strings::cat("HTTP/1.1 ", response.status, " ",
-                                 reason(response.status), "\r\n");
+std::string Serialize(const Response& response) {
+  std::string out = strings::Cat("HTTP/1.1 ", response.status, " ",
+                                 Reason(response.status), "\r\n");
   if (!response.content_type.empty()) {
-    strings::append(&out, "Content-Type: ", response.content_type, "\r\n");
+    strings::Append(&out, "Content-Type: ", response.content_type, "\r\n");
   }
 
-  strings::append(&out, "Content-Length: ", response.body.size(), "\r\n");
+  strings::Append(&out, "Content-Length: ", response.body.size(), "\r\n");
   for (const auto& [key, value] : response.headers) {
-    strings::append(&out, key, ": ", value, "\r\n");
+    strings::Append(&out, key, ": ", value, "\r\n");
   }
 
-  return strings::cat(out, "\r\n", response.body);
+  return strings::Cat(out, "\r\n", response.body);
 }
 
 }  // namespace pulse::http

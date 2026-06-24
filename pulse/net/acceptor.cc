@@ -54,7 +54,7 @@ Acceptor::~Acceptor() {
   }
 }
 
-Socket Acceptor::accept() {
+Socket Acceptor::Accept() {
   int fd = ::accept(fd_, /*address=*/nullptr, /*address_len=*/nullptr);
   if (fd < 0) {
     Log() << "accept() failed: " << strerror(errno);

@@ -4,7 +4,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -100,7 +99,7 @@ TEST_P(MatchOkTest, Matches) {
   Result<Pattern> result = Pattern::Make(params.pattern);
   ASSERT_TRUE(result.ok()) << result.error().message;
 
-  std::optional<Pattern::Captures> captures = result->match(params.path);
+  std::optional<Pattern::Captures> captures = result->Match(params.path);
   ASSERT_TRUE(captures.has_value());
   EXPECT_THAT(*captures, Eq(params.expected));
 }
@@ -146,7 +145,7 @@ TEST_P(MatchFailTest, DoesNotMatch) {
   const MatchFailTestCase& params = GetParam();
   Result<Pattern> result = Pattern::Make(params.pattern);
   ASSERT_TRUE(result.ok()) << result.error().message;
-  EXPECT_FALSE(result->match(params.path).has_value());
+  EXPECT_FALSE(result->Match(params.path).has_value());
 }
 
 INSTANTIATE_TEST_SUITE_P(

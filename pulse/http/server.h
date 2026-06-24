@@ -22,7 +22,7 @@ class Server {
   Server& operator=(const Server&) = delete;
 
   // Starts the accept loop. Blocks until the process is killed.
-  void run();
+  void Run();
 
  private:
   Router router_;

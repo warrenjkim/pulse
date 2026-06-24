@@ -27,13 +27,13 @@ class Parameters {
       : map_(init.begin(), init.end()) {}
 
   template <Parseable T>
-  Result<T> get(std::string_view key) const {
+  Result<T> Get(std::string_view key) const {
     if (auto it = map_.find(key); it != map_.end()) {
       return ParameterParser<T>::Parse(it->second);
     }
 
     return Error{.code = Error::Code::kNotFound,
-                 .message = strings::cat("parameter not found: ", key)};
+                 .message = strings::Cat("parameter not found: ", key)};
   }
 
   std::string& operator[](std::string_view key) {
@@ -61,16 +61,16 @@ class Parameters {
 
 template <>
 struct pulse::Stringify<pulse::http::Parameters> {
-  static std::string to_string(const pulse::http::Parameters& p) {
+  static std::string ToString(const pulse::http::Parameters& p) {
     std::string out = "Parameters{";
     for (const auto& [key, value] : p.map_) {
-      out += strings::cat("{", key, ",", value, "},");
+      out += strings::Cat("{", key, ",", value, "},");
     }
 
     if (!p.map_.empty()) {
       out.pop_back();
     }
 
-    return strings::cat(out, "}");
+    return strings::Cat(out, "}");
   }
 };

@@ -18,7 +18,7 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::TestParamInfo;
 using ::testing::TestWithParam;
-using ::testing::Values;
+using ::testing::ValuesIn;
 
 struct InvalidRequestTestCase {
   std::string name;
@@ -29,37 +29,36 @@ struct InvalidRequestTestCase {
 class InvalidRequestTest : public TestWithParam<InvalidRequestTestCase> {};
 
 TEST_P(InvalidRequestTest, InvalidRequest) {
-  Result<Request> request = parse_header(GetParam().raw);
+  Result<Request> request = ParseHeader(GetParam().raw);
   EXPECT_FALSE(request.ok());
   EXPECT_THAT(request.error().message, HasSubstr(GetParam().expected_message));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ParseTest, InvalidRequestTest,
-    Values(
-        InvalidRequestTestCase{.name = "UnknownMethod",
+INSTANTIATE_TEST_SUITE_P(ParseTest, InvalidRequestTest,
+                         ValuesIn<InvalidRequestTestCase>(
+                             {{.name = "UnknownMethod",
                                .raw = "PATCH /entries HTTP/1.1\r\n"
                                       "Host: 100.x.x.x:8080",
                                .expected_message = "invalid method: PATCH"},
-        InvalidRequestTestCase{.name = "TrailingAmpersand",
+                              {.name = "TrailingAmpersand",
                                .raw = "GET /entries?month=01& HTTP/1.1\r\n"
                                       "Host: 100.x.x.x:8080",
                                .expected_message = "malformed query parameter"},
-        InvalidRequestTestCase{.name = "InvalidPath",
+                              {.name = "InvalidPath",
                                .raw = "GET entries HTTP/1.1\r\n"
                                       "Host: 100.x.x.x:8080",
                                .expected_message = "invalid url"},
-        InvalidRequestTestCase{.name = "EmptyHeaderValue",
+                              {.name = "EmptyHeaderValue",
                                .raw = "GET / HTTP/1.1\r\n"
                                       "Host: ",
                                .expected_message = "malformed header field"},
-        InvalidRequestTestCase{.name = "MalformedHeader",
+                              {.name = "MalformedHeader",
                                .raw = "GET / HTTP/1.1\r\n"
                                       "BadHeader",
-                               .expected_message = "malformed header field"}),
-    [](const TestParamInfo<InvalidRequestTestCase>& info) {
-      return info.param.name;
-    });
+                               .expected_message = "malformed header field"}}),
+                         [](const TestParamInfo<InvalidRequestTestCase>& info) {
+                           return info.param.name;
+                         });
 
 struct ValidRequestTestCase {
   std::string name;
@@ -70,52 +69,47 @@ struct ValidRequestTestCase {
 class ValidRequestTest : public TestWithParam<ValidRequestTestCase> {};
 
 TEST_P(ValidRequestTest, ValidRequest) {
-  Result<Request> request = parse_header(GetParam().raw);
+  Result<Request> request = ParseHeader(GetParam().raw);
   EXPECT_TRUE(request.ok()) << request.error().message;
   EXPECT_THAT(*request, Eq(GetParam().expected));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ParseTest, ValidRequestTest,
-    Values(
-        ValidRequestTestCase{
-            .name = "Request",
-            .raw = "GET /entries?month=01 HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080",
-            .expected = Request{.method = Method::kGet,
-                                .url = "/entries",
-                                .query = {{"month", "01"}},
-                                .headers = {{"Host", "100.x.x.x:8080"}}}},
-        ValidRequestTestCase{
-            .name = "GetWithParams",
-            .raw = "GET /entries?month=2026-04&limit=10 HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080\r\n"
-                   "Accept: text/html",
-            .expected = Request{.method = Method::kGet,
-                                .url = "/entries",
-                                .query = {{"month", "2026-04"},
-                                          {"limit", "10"}},
-                                .headers = {{"Host", "100.x.x.x:8080"},
-                                            {"Accept", "text/html"}}}},
-        ValidRequestTestCase{
-            .name = "Post",
-            .raw = "POST /entries HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080\r\n"
-                   "Content-Type: application/json",
-            .expected = Request{.method = Method::kPost,
-                                .url = "/entries",
-                                .query = {},
-                                .headers = {{"Host", "100.x.x.x:8080"},
-                                            {"Content-Type",
-                                             "application/json"}}}},
-        ValidRequestTestCase{
-            .name = "GetNoParams",
-            .raw = "GET / HTTP/1.1\r\n"
-                   "Host: 100.x.x.x:8080",
-            .expected = Request{.method = Method::kGet,
-                                .url = "/",
-                                .query = {},
-                                .headers = {{"Host", "100.x.x.x:8080"}}}}),
+    ValuesIn<ValidRequestTestCase>(
+        {{.name = "Request",
+          .raw = "GET /entries?month=01 HTTP/1.1\r\n"
+                 "Host: 100.x.x.x:8080",
+          .expected = Request{.method = Method::kGet,
+                              .url = "/entries",
+                              .query = {{"month", "01"}},
+                              .headers = {{"Host", "100.x.x.x:8080"}}}},
+         {.name = "GetWithParams",
+          .raw = "GET /entries?month=2026-04&limit=10 HTTP/1.1\r\n"
+                 "Host: 100.x.x.x:8080\r\n"
+                 "Accept: text/html",
+          .expected = Request{.method = Method::kGet,
+                              .url = "/entries",
+                              .query = {{"month", "2026-04"}, {"limit", "10"}},
+                              .headers = {{"Host", "100.x.x.x:8080"},
+                                          {"Accept", "text/html"}}}},
+         {.name = "Post",
+          .raw = "POST /entries HTTP/1.1\r\n"
+                 "Host: 100.x.x.x:8080\r\n"
+                 "Content-Type: application/json",
+          .expected = Request{.method = Method::kPost,
+                              .url = "/entries",
+                              .query = {},
+                              .headers = {{"Host", "100.x.x.x:8080"},
+                                          {"Content-Type",
+                                           "application/json"}}}},
+         {.name = "GetNoParams",
+          .raw = "GET / HTTP/1.1\r\n"
+                 "Host: 100.x.x.x:8080",
+          .expected = Request{.method = Method::kGet,
+                              .url = "/",
+                              .query = {},
+                              .headers = {{"Host", "100.x.x.x:8080"}}}}}),
     [](const TestParamInfo<ValidRequestTestCase>& info) {
       return info.param.name;
     });
@@ -129,48 +123,46 @@ struct SerializeTestCase {
 class SerializeTest : public TestWithParam<SerializeTestCase> {};
 
 TEST_P(SerializeTest, Serialize) {
-  EXPECT_THAT(serialize(GetParam().response), Eq(GetParam().expected));
+  EXPECT_THAT(Serialize(GetParam().response), Eq(GetParam().expected));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     SerializeTest, SerializeTest,
-    Values(SerializeTestCase{.name = "Ok",
-                             .response = Response{.content_type = "text/html",
-                                                  .status = 200,
-                                                  .body = "<html></html>"},
-                             .expected = "HTTP/1.1 200 OK\r\n"
-                                         "Content-Type: text/html\r\n"
-                                         "Content-Length: 13\r\n"
-                                         "\r\n"
-                                         "<html></html>"},
-           SerializeTestCase{.name = "NotFound",
-                             .response = Response{.content_type = "text/html",
-                                                  .status = 404,
-                                                  .body = ""},
-                             .expected = "HTTP/1.1 404 Not Found\r\n"
-                                         "Content-Type: text/html\r\n"
-                                         "Content-Length: 0\r\n"
-                                         "\r\n"},
-           SerializeTestCase{
-               .name = "JsonBody",
-               .response = Response{.content_type = "application/json",
-                                    .status = 200,
-                                    .body = "{\"cc_bill\": 6600}"},
-               .expected = "HTTP/1.1 200 OK\r\n"
-                           "Content-Type: application/json\r\n"
-                           "Content-Length: 17\r\n"
-                           "\r\n"
-                           "{\"cc_bill\": 6600}"},
-           SerializeTestCase{
-               .name = "InternalServerError",
-               .response = Response{.content_type = "text/html",
-                                    .status = 500,
-                                    .body = "something went wrong"},
-               .expected = "HTTP/1.1 500 Internal Server Error\r\n"
-                           "Content-Type: text/html\r\n"
-                           "Content-Length: 20\r\n"
-                           "\r\n"
-                           "something went wrong"}),
+    ValuesIn<SerializeTestCase>(
+        {{.name = "Ok",
+          .response = Response{.content_type = "text/html",
+                               .status = 200,
+                               .body = "<html></html>"},
+          .expected = "HTTP/1.1 200 OK\r\n"
+                      "Content-Type: text/html\r\n"
+                      "Content-Length: 13\r\n"
+                      "\r\n"
+                      "<html></html>"},
+         {.name = "NotFound",
+          .response =
+              Response{.content_type = "text/html", .status = 404, .body = ""},
+          .expected = "HTTP/1.1 404 Not Found\r\n"
+                      "Content-Type: text/html\r\n"
+                      "Content-Length: 0\r\n"
+                      "\r\n"},
+         {.name = "JsonBody",
+          .response = Response{.content_type = "application/json",
+                               .status = 200,
+                               .body = "{\"cc_bill\": 6600}"},
+          .expected = "HTTP/1.1 200 OK\r\n"
+                      "Content-Type: application/json\r\n"
+                      "Content-Length: 17\r\n"
+                      "\r\n"
+                      "{\"cc_bill\": 6600}"},
+         {.name = "InternalServerError",
+          .response = Response{.content_type = "text/html",
+                               .status = 500,
+                               .body = "something went wrong"},
+          .expected = "HTTP/1.1 500 Internal Server Error\r\n"
+                      "Content-Type: text/html\r\n"
+                      "Content-Length: 20\r\n"
+                      "\r\n"
+                      "something went wrong"}}),
     [](const TestParamInfo<SerializeTestCase>& info) {
       return info.param.name;
     });

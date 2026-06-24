@@ -24,39 +24,39 @@ namespace pulse::http {
 Server::Server(Router router, const Server::Options& opts)
     : router_(std::move(router)), pool_(opts.threads), acceptor_(opts.port) {}
 
-void Server::run() {
+void Server::Run() {
   while (true) {
-    net::Socket s = acceptor_.accept();
+    net::Socket s = acceptor_.Accept();
     if (!s.ok()) {
       continue;
     }
     // TODO(use move-only functions)
-    pool_.submit([this, socket = std::make_shared<net::Socket>(std::move(s))] {
-      std::string header = socket->read_until("\r\n\r\n");
+    pool_.Submit([this, socket = std::make_shared<net::Socket>(std::move(s))] {
+      std::string header = socket->ReadUntil("\r\n\r\n");
       if (header.empty()) {
         Log() << "empty header";
         return;
       }
 
-      Result<Request> request = parse_header(header);
+      Result<Request> request = ParseHeader(header);
       if (!request.ok()) {
         Log() << "parse error: " << request.error().message;
-        socket->write(serialize(Response{.content_type = "text/html",
+        socket->Write(Serialize(Response{.content_type = "text/html",
                                          .status = 400,
                                          .body = "<h1>400 Bad Request</h1>"}));
         return;
       }
 
       if (request->method == Method::kOptions) {
-        socket->write(serialize(cors_preflight(*request)));
+        socket->Write(Serialize(CorsPreflight(*request)));
         return;
       }
 
-      std::optional<Router::Match> match =
-          router_.match(request->method, request->url);
+      std::optional<Router::RouteMatch> match =
+          router_.Match(request->method, request->url);
       if (!match.has_value()) {
-        Log() << "no routes for method: " << pulse::to_string(request->method);
-        socket->write(serialize(Response{.content_type = "text/html",
+        Log() << "no routes for method: " << pulse::ToString(request->method);
+        socket->Write(Serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
         return;
@@ -66,14 +66,14 @@ void Server::run() {
       if (auto it = request->headers.find("Content-Length");
           it != request->headers.end()) {
         // TODO(write stoul to return success/failure)
-        request->body = socket->read(std::stoul(it->second));
+        request->body = socket->Read(std::stoul(it->second));
       }
 
-      Log() << "request: " << pulse::to_string(*request);
+      Log() << "request: " << pulse::ToString(*request);
       Response response = (*match->handler)(*request);
-      add_cors_headers(&response);
-      socket->write(serialize(response));
-      Log() << "response: " << pulse::to_string(response);
+      AddCorsHeaders(&response);
+      socket->Write(Serialize(response));
+      Log() << "response: " << pulse::ToString(response);
     });
   }
 }

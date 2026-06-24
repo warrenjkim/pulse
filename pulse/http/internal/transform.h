@@ -26,9 +26,9 @@ namespace pulse::http {
 //   * The query parameter(s) are not well-formed.
 //   * The headers are not well-formed.
 // Returns a `Request` with an empty body otherwise.
-Result<Request> parse_header(std::string_view raw);
+Result<Request> ParseHeader(std::string_view raw);
 
 // Serializes a `Response` into a raw HTTP/1.1 response.
-std::string serialize(const Response& response);
+std::string Serialize(const Response& response);
 
 }  // namespace pulse::http

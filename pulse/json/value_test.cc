@@ -21,65 +21,65 @@ using ::testing::TestParamInfo;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
-TEST(ValueTest, DefaultIsNull) { EXPECT_TRUE(value().is<nullptr_t>()); }
+TEST(ValueTest, DefaultIsNull) { EXPECT_TRUE(Value().is<nullptr_t>()); }
 
 TEST(ValueTest, NullConstruction) {
-  EXPECT_TRUE(value(nullptr).is<nullptr_t>());
+  EXPECT_TRUE(Value(nullptr).is<nullptr_t>());
 }
 
-TEST(ValueTest, BoolConstruction) { EXPECT_TRUE(value(true).is<bool>()); }
+TEST(ValueTest, BoolConstruction) { EXPECT_TRUE(Value(true).is<bool>()); }
 
-TEST(ValueTest, IntConstruction) { EXPECT_TRUE(value(42).is<int64_t>()); }
+TEST(ValueTest, IntConstruction) { EXPECT_TRUE(Value(42).is<int64_t>()); }
 
-TEST(ValueTest, DoubleConstruction) { EXPECT_TRUE(value(3.14).is<double>()); }
+TEST(ValueTest, DoubleConstruction) { EXPECT_TRUE(Value(3.14).is<double>()); }
 
 TEST(ValueTest, StringConstruction) {
-  EXPECT_TRUE(value(std::string("hello")).is<std::string>());
+  EXPECT_TRUE(Value(std::string("hello")).is<std::string>());
 }
 
 TEST(ValueTest, StringViewConstruction) {
-  EXPECT_TRUE(value(std::string_view("hello")).is<std::string>());
+  EXPECT_TRUE(Value(std::string_view("hello")).is<std::string>());
 }
 
 TEST(ValueTest, CStringConstruction) {
-  EXPECT_TRUE(value("hello").is<std::string>());
+  EXPECT_TRUE(Value("hello").is<std::string>());
 }
 
 TEST(ValueTest, ArrayConstruction) {
-  EXPECT_TRUE(value(array_t{1, 2}).is<array_t>());
+  EXPECT_TRUE(Value(Array{1, 2}).is<Array>());
 }
 
 TEST(ValueTest, ObjectConstruction) {
-  EXPECT_TRUE(value(object_t{{"key", "val"}}).is<object_t>());
+  EXPECT_TRUE(Value(Object{{"key", "val"}}).is<Object>());
 }
 
 TEST(ValueTest, CopyConstruction) {
-  value original = "hello";
-  value copy(original);
+  Value original = "hello";
+  Value copy(original);
   EXPECT_THAT(copy, Eq(std::string("hello")));
   EXPECT_THAT(original, Eq(std::string("hello")));
 }
 
 TEST(ValueTest, MoveConstruction) {
-  EXPECT_THAT(value(value("hello")), Eq(std::string("hello")));
+  EXPECT_THAT(Value(Value("hello")), Eq(std::string("hello")));
 }
 
 TEST(ValueTest, CopyAssignment) {
-  value original = "hello";
-  value copy;
+  Value original = "hello";
+  Value copy;
   copy = original;
   EXPECT_THAT(copy, Eq(std::string("hello")));
   EXPECT_THAT(original, Eq(std::string("hello")));
 }
 
 TEST(ValueTest, MoveAssignment) {
-  value moved;
-  moved = value("hello");
+  Value moved;
+  moved = Value("hello");
   EXPECT_THAT(moved, Eq(std::string("hello")));
 }
 
 TEST(ValueTest, Reassignment) {
-  value v = "hello";
+  Value v = "hello";
   EXPECT_THAT(v.is<std::string>(), IsTrue());
   v = 42;
   EXPECT_THAT(v.is<int64_t>(), IsTrue());
@@ -92,82 +92,79 @@ TEST(ValueTest, Reassignment) {
 }
 
 TEST(ValueTest, ObjectImplicitPromotion) {
-  value v;
+  Value v;
   v["key"] = "value";
-  EXPECT_TRUE(v.is<object_t>());
+  EXPECT_TRUE(v.is<Object>());
 }
 
 TEST(ValueTest, ObjectAccess) {
-  EXPECT_THAT(value(object_t{{"key", "value"}})["key"],
-              Eq(std::string("value")));
+  EXPECT_THAT(Value(Object{{"key", "value"}})["key"], Eq(std::string("value")));
 }
 
 TEST(ValueTest, NestedObject) {
-  EXPECT_THAT(
-      value(object_t{{"outer", object_t{{"inner", 42}}}})["outer"]["inner"],
-      Eq(42));
+  EXPECT_THAT(Value(Object{{"outer", Object{{"inner", 42}}}})["outer"]["inner"],
+              Eq(42));
 }
 
-TEST(ValueTest, EqualityNull) { EXPECT_THAT(value(), Eq(nullptr)); }
+TEST(ValueTest, EqualityNull) { EXPECT_THAT(Value(), Eq(nullptr)); }
 
-TEST(ValueTest, EqualityBool) { EXPECT_THAT(value(true), Eq(true)); }
+TEST(ValueTest, EqualityBool) { EXPECT_THAT(Value(true), Eq(true)); }
 
-TEST(ValueTest, EqualityInt) { EXPECT_THAT(value(42), Eq(42)); }
+TEST(ValueTest, EqualityInt) { EXPECT_THAT(Value(42), Eq(42)); }
 
-TEST(ValueTest, EqualityDouble) { EXPECT_THAT(value(3.14), Eq(3.14)); }
+TEST(ValueTest, EqualityDouble) { EXPECT_THAT(Value(3.14), Eq(3.14)); }
 
 TEST(ValueTest, EqualityString) {
-  EXPECT_THAT(value("hello"), Eq(std::string("hello")));
+  EXPECT_THAT(Value("hello"), Eq(std::string("hello")));
 }
 
 TEST(ValueTest, EqualityValue) {
-  EXPECT_THAT(value(42), Eq(value(42)));
-  EXPECT_THAT(value(42), Ne(value(24)));
+  EXPECT_THAT(Value(42), Eq(Value(42)));
+  EXPECT_THAT(Value(42), Ne(Value(24)));
 }
 
 struct StringifyTestCase {
   std::string_view name;
-  value input;
+  Value input;
   std::string_view expected;
 };
 
 class StringifyTest : public TestWithParam<StringifyTestCase> {};
 
 TEST_P(StringifyTest, Stringify) {
-  EXPECT_THAT(pulse::to_string(GetParam().input), StrEq(GetParam().expected));
+  EXPECT_THAT(pulse::ToString(GetParam().input), StrEq(GetParam().expected));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ValueTest, StringifyTest,
     ValuesIn<StringifyTestCase>({
-        {.name = "Null", .input = value(), .expected = "null"},
-        {.name = "BoolTrue", .input = value(true), .expected = "true"},
-        {.name = "BoolFalse", .input = value(false), .expected = "false"},
-        {.name = "Int", .input = value(42), .expected = "42"},
-        {.name = "Double", .input = value(3.14), .expected = "3.14"},
-        {.name = "String", .input = value("hello"), .expected = "\"hello\""},
-        {.name = "EmptyArray", .input = value(array_t{}), .expected = "[]"},
-        {.name = "EmptyObject", .input = value(object_t{}), .expected = "{}"},
+        {.name = "Null", .input = Value(), .expected = "null"},
+        {.name = "BoolTrue", .input = Value(true), .expected = "true"},
+        {.name = "BoolFalse", .input = Value(false), .expected = "false"},
+        {.name = "Int", .input = Value(42), .expected = "42"},
+        {.name = "Double", .input = Value(3.14), .expected = "3.14"},
+        {.name = "String", .input = Value("hello"), .expected = "\"hello\""},
+        {.name = "EmptyArray", .input = Value(Array{}), .expected = "[]"},
+        {.name = "EmptyObject", .input = Value(Object{}), .expected = "{}"},
         {.name = "Array",
-         .input = value(array_t{1, "two", 3.0}),
+         .input = Value(Array{1, "two", 3.0}),
          .expected = "[1,\"two\",3]"},
         {.name = "AllTypesInArray",
-         .input = value(array_t{nullptr, true, 42, 3.14, "hello",
-                                array_t{1, "two", 3.0},
-                                object_t{{"key", "val"}}}),
+         .input = Value(Array{nullptr, true, 42, 3.14, "hello",
+                              Array{1, "two", 3.0}, Object{{"key", "val"}}}),
          .expected =
              "[null,true,42,3.14,\"hello\",[1,\"two\",3],{\"key\":\"val\"}]"},
         {.name = "Object",
-         .input = value(object_t{{"a", 1}, {"b", "two"}}),
+         .input = Value(Object{{"a", 1}, {"b", "two"}}),
          .expected = "{\"a\":1,\"b\":\"two\"}"},
         {.name = "AllTypesInObject",
-         .input = value(object_t{{"null", nullptr},
-                                 {"bool", true},
-                                 {"int", 42},
-                                 {"double", 3.14},
-                                 {"string", "hello"},
-                                 {"array", array_t{1, "two", 3.0}},
-                                 {"object", object_t{{"key", "val"}}}}),
+         .input = Value(Object{{"null", nullptr},
+                               {"bool", true},
+                               {"int", 42},
+                               {"double", 3.14},
+                               {"string", "hello"},
+                               {"array", Array{1, "two", 3.0}},
+                               {"object", Object{{"key", "val"}}}}),
          .expected = "{\"array\":[1,\"two\",3],"
                      "\"bool\":true,"
                      "\"double\":3.14,"

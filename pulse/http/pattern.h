@@ -26,7 +26,7 @@ class Pattern {
 
   static Result<Pattern> Make(std::string_view pattern);
 
-  std::optional<Captures> match(std::string_view path) const;
+  std::optional<Captures> Match(std::string_view path) const;
 
   size_t segments() const { return pattern_.size(); }
 
@@ -57,24 +57,16 @@ PULSE_ENUM_TO_STRING(pulse::http::Pattern::Segment::Type,
 
 template <>
 struct pulse::Stringify<pulse::http::Pattern::Segment> {
-  static std::string to_string(const pulse::http::Pattern::Segment& segment) {
-    return strings::cat(
-        "Segment{.type=",
-        pulse::Stringify<pulse::http::Pattern::Segment::Type>::to_string(
-            segment.type),
-        ",.token=", pulse::Stringify<std::string>::to_string(segment.token),
-        "}");
+  static std::string ToString(const pulse::http::Pattern::Segment& segment) {
+    return strings::Cat("Segment{.type=", segment.type,
+                        ",.token=", segment.token, "}");
   }
 };
 
 template <>
 struct pulse::Stringify<pulse::http::Pattern> {
-  static std::string to_string(const pulse::http::Pattern& pattern) {
-    return strings::cat(
-        "Pattern{.pattern_=",
-        pulse::Stringify<std::vector<pulse::http::Pattern::Segment>>::to_string(
-            pattern.pattern_),
-        ",.captures_=", pulse::Stringify<int>::to_string(pattern.captures_),
-        "}");
+  static std::string ToString(const pulse::http::Pattern& pattern) {
+    return strings::Cat("Pattern{.pattern_=", pattern.pattern_,
+                        ",.captures_=", pattern.captures_, "}");
   }
 };

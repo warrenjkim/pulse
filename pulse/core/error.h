@@ -32,10 +32,8 @@ PULSE_ENUM_TO_STRING(pulse::Error::Code, ERROR_CODE_TABLE);
 
 template <>
 struct pulse::Stringify<pulse::Error> {
-  static std::string to_string(const pulse::Error& error) {
-    return strings::cat(
-        "Error{.code=",
-        pulse::Stringify<pulse::Error::Code>::to_string(error.code),
-        ",.message=", error.message, "}");
+  static std::string ToString(const pulse::Error& error) {
+    return strings::Cat("Error{.code=", error.code, ",.message=", error.message,
+                        "}");
   }
 };
