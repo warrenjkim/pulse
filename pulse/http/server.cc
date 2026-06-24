@@ -55,7 +55,7 @@ void Server::Run() {
       std::optional<Router::RouteMatch> match =
           router_.Match(request->method, request->url);
       if (!match.has_value()) {
-        Log() << "no routes for method: " << pulse::to_string(request->method);
+        Log() << "no routes for method: " << pulse::ToString(request->method);
         socket->Write(Serialize(Response{.content_type = "text/html",
                                          .status = 404,
                                          .body = "<h1>404 Not Found</h1>"}));
@@ -69,11 +69,11 @@ void Server::Run() {
         request->body = socket->Read(std::stoul(it->second));
       }
 
-      Log() << "request: " << pulse::to_string(*request);
+      Log() << "request: " << pulse::ToString(*request);
       Response response = (*match->handler)(*request);
       AddCorsHeaders(&response);
       socket->Write(Serialize(response));
-      Log() << "response: " << pulse::to_string(response);
+      Log() << "response: " << pulse::ToString(response);
     });
   }
 }

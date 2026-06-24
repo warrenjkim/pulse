@@ -180,7 +180,7 @@ TEST(RouterTest, MakeWithNoDepHandler) {
 TEST(RouterTest, MakeWithDepHandler) {
   std::string name = "injected";
   ServerContext<std::string*> ctx;
-  ctx.Set(&name);
+  ctx.set(&name);
 
   Result<Router> router = Router::Make<Routes<DepHandler>>(ctx);
   ASSERT_TRUE(router.ok());
@@ -194,7 +194,7 @@ TEST(RouterTest, MakeWithDepHandler) {
 TEST(RouterTest, MakeWithMultipleHandlers) {
   std::string name = "injected";
   ServerContext<std::string*> ctx;
-  ctx.Set(&name);
+  ctx.set(&name);
 
   Result<Router> router = Router::Make<Routes<NoDepHandler, DepHandler>>(ctx);
   ASSERT_TRUE(router.ok());
@@ -217,8 +217,8 @@ TEST(RouterTest, MakeWithNestedRoutes) {
 TEST(RouterTest, MakeWithNestedRoutesAndDeps) {
   std::string name = "injected";
   ServerContext<std::string, std::string*> ctx;
-  ctx.Set(name);
-  ctx.Set(&name);
+  ctx.set(name);
+  ctx.set(&name);
 
   Result<Router> router =
       Router::Make<Routes<NoDepHandler, Routes<DepHandler, GetNamedHandler>>>(
@@ -241,8 +241,8 @@ TEST(RouterMakeTest, MakeWithMixedDeps) {
   std::string name = "mixed";
   int code = 202;
   ServerContext<std::string*, int> ctx;
-  ctx.Set(&name);
-  ctx.Set(code);
+  ctx.set(&name);
+  ctx.set(code);
 
   Result<Router> router = Router::Make<Routes<MixedDepHandler>>(ctx);
   ASSERT_TRUE(router.ok());
@@ -265,7 +265,7 @@ TEST(RouterMakeTest, MakeWithMixedDeps) {
 TEST(RouterTest, MakeRejectsMalformedPattern) {
   std::string name = "injected";
   ServerContext<std::string> ctx;
-  ctx.Set(name);
+  ctx.set(name);
 
   Result<Router> result = Router::Make<Routes<MalformedHandler>>(ctx);
   ASSERT_FALSE(result.ok());
@@ -275,7 +275,7 @@ TEST(RouterTest, MakeRejectsMalformedPattern) {
 TEST(RouterTest, MakeSamePatternDifferentMethodsAllowed) {
   std::string name = "injected";
   ServerContext<std::string> ctx;
-  ctx.Set(name);
+  ctx.set(name);
 
   Result<Router> router =
       Router::Make<Routes<GetNamedHandler, PostNamedHandler>>(ctx);
