@@ -23,16 +23,16 @@ class BlockingQueue {
 
   // Pushes `data` onto the queue. Blocks if the queue is full. Returns false if
   // the queue is shut down, true otherwise.
-  bool push(T data);
+  bool Push(T data);
 
   // Pops the front item off the queue. Blocks if the queue is empty. Returns
   // std::nullopt if the queue is shut down and empty, T otherwise.
-  std::optional<T> pop();
+  std::optional<T> Pop();
 
   // Unblocks all threads waiting in push() or pop(). All subsequent push()
   // calls return false. `pop()` drains remaining items before returning
   // std::nullopt.
-  void shutdown();
+  void Shutdown();
 
   bool is_shutdown() const;
 
@@ -52,11 +52,11 @@ BlockingQueue<T>::BlockingQueue(size_t max_size)
 
 template <typename T>
 BlockingQueue<T>::~BlockingQueue() {
-  shutdown();
+  Shutdown();
 }
 
 template <typename T>
-bool BlockingQueue<T>::push(T data) {
+bool BlockingQueue<T>::Push(T data) {
   {
     std::unique_lock l(mu_);
     cv_.wait(l, [this] { return shutdown_ || queue_.size() < max_size_; });
@@ -72,7 +72,7 @@ bool BlockingQueue<T>::push(T data) {
 }
 
 template <typename T>
-std::optional<T> BlockingQueue<T>::pop() {
+std::optional<T> BlockingQueue<T>::Pop() {
   std::optional<T> front = std::nullopt;
   {
     std::unique_lock l(mu_);
@@ -90,7 +90,7 @@ std::optional<T> BlockingQueue<T>::pop() {
 }
 
 template <typename T>
-void BlockingQueue<T>::shutdown() {
+void BlockingQueue<T>::Shutdown() {
   {
     std::unique_lock l(mu_);
     shutdown_ = true;

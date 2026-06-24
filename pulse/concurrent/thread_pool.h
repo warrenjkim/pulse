@@ -32,11 +32,11 @@ class ThreadPool {
   // the work runs asynchronously.
   //
   // NOTE: Must not be called if `join()` has been called.
-  void submit(std::function<void()> work);
+  void Submit(std::function<void()> work);
 
   // Blocks until all submitted tasks have completed. Safe to call multiple
   // times — subsequent calls return immediately if no work is in flight.
-  void join();
+  void Join();
 
  private:
   std::vector<std::thread> pool_;

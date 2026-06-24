@@ -31,7 +31,7 @@ void Server::Run() {
       continue;
     }
     // TODO(use move-only functions)
-    pool_.submit([this, socket = std::make_shared<net::Socket>(std::move(s))] {
+    pool_.Submit([this, socket = std::make_shared<net::Socket>(std::move(s))] {
       std::string header = socket->ReadUntil("\r\n\r\n");
       if (header.empty()) {
         Log() << "empty header";

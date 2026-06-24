@@ -17,8 +17,8 @@ using ::testing::Eq;
 TEST(ThreadPoolTest, ExecutesTask) {
   ThreadPool pool(2);
   std::atomic<bool> ran = false;
-  pool.submit([&ran] { ran = true; });
-  pool.join();
+  pool.Submit([&ran] { ran = true; });
+  pool.Join();
   EXPECT_TRUE(ran);
 }
 
@@ -26,21 +26,21 @@ TEST(ThreadPoolTest, ExecutesAllTasks) {
   ThreadPool pool(4);
   std::atomic<int> count = 0;
   for (int i = 0; i < 100; i++) {
-    pool.submit([&count] { count++; });
+    pool.Submit([&count] { count++; });
   }
 
-  pool.join();
+  pool.Join();
   EXPECT_THAT(count.load(), Eq(100));
 }
 
 TEST(ThreadPoolTest, JoinBlocksUntilComplete) {
   ThreadPool pool(2);
   std::atomic<bool> ran = false;
-  pool.submit([&ran] {
+  pool.Submit([&ran] {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     ran = true;
   });
-  pool.join();
+  pool.Join();
   EXPECT_TRUE(ran);
 }
 
@@ -49,7 +49,7 @@ TEST(ThreadPoolTest, DestructorJoins) {
   {
     ThreadPool pool(2);
     for (int i = 0; i < 10; i++) {
-      pool.submit([&count] { count++; });
+      pool.Submit([&count] { count++; });
     }
   }
 
@@ -65,7 +65,7 @@ TEST(ThreadPoolTest, ConcurrentSubmit) {
   for (int i = 0; i < kThreads; i++) {
     producers.emplace_back([&pool, &count] {
       for (int j = 0; j < kTasksPerThread; j++) {
-        pool.submit([&count] { count++; });
+        pool.Submit([&count] { count++; });
       }
     });
   }
@@ -74,7 +74,7 @@ TEST(ThreadPoolTest, ConcurrentSubmit) {
     thread.join();
   }
 
-  pool.join();
+  pool.Join();
   EXPECT_THAT(count.load(), Eq(kThreads * kTasksPerThread));
 }
 

@@ -26,13 +26,13 @@ TEST(BlockingQueueTest, ConcurrentPushPop) {
   constexpr int kItems = 50;
   std::thread producer([&queue] {
     for (int i = 0; i < kItems; i++) {
-      EXPECT_TRUE(queue.push(i));
+      EXPECT_TRUE(queue.Push(i));
     }
   });
 
   std::thread consumer([&mu, &queue, &results] {
     for (int i = 0; i < kItems; i++) {
-      if (std::optional<int> front = queue.pop(); front.has_value()) {
+      if (std::optional<int> front = queue.Pop(); front.has_value()) {
         std::scoped_lock l(mu);
         results.push_back(*front);
       }
@@ -48,30 +48,30 @@ TEST(BlockingQueueTest, ConcurrentPushPop) {
 TEST(BlockingQueueTest, ShutdownEmptyPopReturnsNullopt) {
   BlockingQueue<int> queue(10);
 
-  queue.shutdown();
+  queue.Shutdown();
 
-  EXPECT_THAT(queue.pop(), Eq(std::nullopt));
+  EXPECT_THAT(queue.Pop(), Eq(std::nullopt));
 }
 
 TEST(BlockingQueueTest, ShutdownUnblocks) {
   BlockingQueue<int> queue(10);
-  EXPECT_TRUE(queue.push(1));
-  EXPECT_TRUE(queue.push(2));
+  EXPECT_TRUE(queue.Push(1));
+  EXPECT_TRUE(queue.Push(2));
 
-  queue.shutdown();
+  queue.Shutdown();
 
-  EXPECT_THAT(queue.pop(), Optional(1));
-  EXPECT_THAT(queue.pop(), Optional(2));
-  EXPECT_THAT(queue.pop(), Eq(std::nullopt));
+  EXPECT_THAT(queue.Pop(), Optional(1));
+  EXPECT_THAT(queue.Pop(), Optional(2));
+  EXPECT_THAT(queue.Pop(), Eq(std::nullopt));
 }
 
 TEST(BlockingQueueTest, PushAfterShutdownDropsItem) {
   BlockingQueue<int> queue(10);
 
-  queue.shutdown();
+  queue.Shutdown();
 
-  EXPECT_FALSE(queue.push(1));
-  EXPECT_THAT(queue.pop(), Eq(std::nullopt));
+  EXPECT_FALSE(queue.Push(1));
+  EXPECT_THAT(queue.Pop(), Eq(std::nullopt));
 }
 
 TEST(BlockingQueueTest, IsShutdown) {
@@ -79,7 +79,7 @@ TEST(BlockingQueueTest, IsShutdown) {
 
   EXPECT_FALSE(queue.is_shutdown());
 
-  queue.shutdown();
+  queue.Shutdown();
 
   EXPECT_TRUE(queue.is_shutdown());
 }
@@ -90,12 +90,12 @@ TEST(BlockingQueueTest, PopBlocksUntilPush) {
   std::future<int> future = promise.get_future();
 
   std::thread consumer([&] {
-    std::optional<int> front = queue.pop();
+    std::optional<int> front = queue.Pop();
     promise.set_value(front.value_or(-1));
   });
 
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  queue.push(42);
+  queue.Push(42);
 
   EXPECT_THAT(future.get(), Eq(42));
   consumer.join();
@@ -106,11 +106,11 @@ TEST(BlockingQueueTest, PopUnblocksOnShutdown) {
   std::promise<std::optional<int>> promise;
   std::future<std::optional<int>> future = promise.get_future();
 
-  std::thread consumer([&] { promise.set_value(queue.pop()); });
+  std::thread consumer([&] { promise.set_value(queue.Pop()); });
 
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-  queue.shutdown();
+  queue.Shutdown();
 
   EXPECT_THAT(future.get(), Eq(std::nullopt));
   consumer.join();
@@ -118,17 +118,17 @@ TEST(BlockingQueueTest, PopUnblocksOnShutdown) {
 
 TEST(BlockingQueueTest, PushBlocksWhenFull) {
   BlockingQueue<int> queue(1);
-  queue.push(1);
+  queue.Push(1);
 
   std::atomic<bool> pushed = false;
   std::thread producer([&queue, &pushed] {
-    queue.push(2);
+    queue.Push(2);
     pushed = true;
   });
 
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
   EXPECT_FALSE(pushed);
-  queue.pop();
+  queue.Pop();
 
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
   EXPECT_TRUE(pushed);
