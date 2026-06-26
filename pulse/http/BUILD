@@ -175,6 +175,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":parameters",
+        ":url",
         "//pulse/core:error",
         "//pulse/core:result",
         "//pulse/strings:cat",
@@ -190,6 +191,30 @@ cc_test(
         "//pulse/core:error",
         "//pulse/core:result",
         "//pulse/strings:cat",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "url",
+    srcs = ["url.cc"],
+    hdrs = ["url.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pulse/core:error",
+        "//pulse/core:result",
+        "//pulse/strings:cat",
+    ],
+)
+
+cc_test(
+    name = "url_test",
+    srcs = ["url_test.cc"],
+    deps = [
+        ":url",
+        "//pulse/core:error",
+        "//pulse/core:result",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
