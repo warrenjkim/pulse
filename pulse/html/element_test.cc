@@ -113,6 +113,19 @@ TEST(RenderTest, FormTags) {
                     "</html>"));
 }
 
+TEST(RenderTest, StyleTag) {
+  EXPECT_THAT(Render(Make<Html>(Make<Head>(Make<Title>("styled"),
+                                           Make<Style>("body { color: red; }")),
+                                Make<Body>(Make<P>("hello")))),
+              StrEq("<html>"
+                    "<head>"
+                    "<title>styled</title>"
+                    "<style>body { color: red; }</style>"
+                    "</head>"
+                    "<body><p>hello</p></body>"
+                    "</html>"));
+}
+
 }  // namespace
 
 }  // namespace pulse::html
