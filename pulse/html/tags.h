@@ -13,6 +13,11 @@ concept TagType = requires {
   typename T::AllowedAttributes;
 };
 
+struct Style {
+  static constexpr std::string_view kTag = "style";
+  using AllowedAttributes = AttributeList<>;
+};
+
 struct Div {
   static constexpr std::string_view kTag = "div";
   using AllowedAttributes = AttributeList<Class, Id>;
