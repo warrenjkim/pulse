@@ -1,7 +1,6 @@
 #include "pulse/http/pattern.h"
 
 #include <cstddef>
-#include <optional>
 #include <string>
 #include <string_view>
 
@@ -99,8 +98,8 @@ TEST_P(MatchOkTest, Matches) {
   Result<Pattern> result = Pattern::Make(params.pattern);
   ASSERT_TRUE(result.ok()) << result.error().message;
 
-  std::optional<Pattern::Captures> captures = result->Match(params.path);
-  ASSERT_TRUE(captures.has_value());
+  Result<Pattern::Captures> captures = result->Match(params.path);
+  ASSERT_TRUE(captures.ok());
   EXPECT_THAT(*captures, Eq(params.expected));
 }
 
@@ -145,7 +144,7 @@ TEST_P(MatchFailTest, DoesNotMatch) {
   const MatchFailTestCase& params = GetParam();
   Result<Pattern> result = Pattern::Make(params.pattern);
   ASSERT_TRUE(result.ok()) << result.error().message;
-  EXPECT_FALSE(result->Match(params.path).has_value());
+  EXPECT_FALSE(result->Match(params.path).ok());
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -76,8 +76,8 @@ class Router {
   };
 
   // Matches on a given path. Returns a RouteMatch on a matched route,
-  // `std::nullopt` otherwise.
-  std::optional<RouteMatch> Match(Method method, std::string_view path) const;
+  // `pulse::Error` otherwise.
+  Result<RouteMatch> Match(Method method, std::string_view path) const;
 
  private:
   template <HttpServerContext Ctx, HttpHandler... Hs>

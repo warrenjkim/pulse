@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "pulse/core/container_stringify.h"
 #include "pulse/core/enum_macros.h"
 #include "pulse/core/result.h"
 #include "pulse/core/stringify.h"
@@ -26,7 +25,7 @@ class Pattern {
 
   static Result<Pattern> Make(std::string_view pattern);
 
-  std::optional<Captures> Match(std::string_view path) const;
+  Result<Captures> Match(std::string_view path) const;
 
   size_t segments() const { return pattern_.size(); }
 
