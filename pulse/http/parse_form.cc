@@ -8,63 +8,34 @@
 #include "pulse/core/error.h"
 #include "pulse/core/result.h"
 #include "pulse/http/parameters.h"
+#include "pulse/http/url.h"
 #include "pulse/strings/cat.h"
 
 namespace pulse::http {
 
 namespace {
 
-Result<int> Hex(char c) {
-  if (c >= '0' && c <= '9') {
-    return c - '0';
-  }
-
-  if (c >= 'A' && c <= 'F') {
-    return c - 'A' + 10;
-  }
-
-  if (c >= 'a' && c <= 'f') {
-    return c - 'a' + 10;
-  }
-
-  return Error{.code = Error::Code::kInvalidArgument,
-               .message = strings::Cat("invalid hex digit: ", c)};
-}
-
-Result<char> DecodeOctet(std::string_view string, size_t* i) {
-  if (*i + 2 >= string.size()) {
-    return Error{.code = Error::Code::kInvalidArgument,
-                 .message = "truncated percent sequence"};
-  }
-
-  Result<int> hi = Hex(string[++(*i)]);
-  if (!hi.ok()) {
-    return hi.error();
-  }
-
-  Result<int> lo = Hex(string[++(*i)]);
-  if (!lo.ok()) {
-    return lo.error();
-  }
-
-  return static_cast<char>((*hi << 4) | *lo);
-}
-
-Result<std::string> DecodeString(std::string_view string) {
+Result<std::string> DecodeFormString(std::string_view input) {
   std::string out;
-  out.reserve(string.size());
-  for (size_t i = 0; i < string.size(); i++) {
-    if (string[i] == '%') {
-      Result<char> c = DecodeOctet(string, &i);
-      if (!c.ok()) {
-        return c.error();
+  out.reserve(input.size());
+  for (size_t i = 0; i < input.size(); i++) {
+    if (input[i] == '%') {
+      if (i + 2 >= input.size()) {
+        return Error{.code = Error::Code::kInvalidArgument,
+                     .message = "truncated percent sequence"};
       }
 
-      out += *c;
-    } else if (string[i] == '+') {
+      Result<std::string> decoded = DecodePercent(input.substr(i, 3));
+      if (!decoded.ok()) {
+        return decoded.error();
+      }
+
+      out += *decoded;
+      i += 2;
+    } else if (input[i] == '+') {
       out += ' ';
     } else {
-      out += string[i];
+      out += input[i];
     }
   }
 
@@ -94,19 +65,18 @@ Result<Parameters> ParseForm(std::string_view body) {
                    .message = strings::Cat("missing '=' in pair: ", pair)};
     }
 
-    Result<std::string> key = DecodeString(pair.substr(0, eq));
+    Result<std::string> key = DecodeFormString(pair.substr(0, eq));
     if (!key.ok()) {
       return key.error();
     }
 
-    Result<std::string> value = DecodeString(pair.substr(eq + 1));
+    Result<std::string> value = DecodeFormString(pair.substr(eq + 1));
     if (!value.ok()) {
       return value.error();
     }
 
     params[*std::move(key)] = *std::move(value);
   }
-
   return params;
 }
 
