@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -10,6 +9,7 @@
 
 #include "pulse/core/error.h"
 #include "pulse/core/result.h"
+#include "pulse/core/stringify.h"
 #include "pulse/http/handler.h"
 #include "pulse/http/method.h"
 #include "pulse/http/pattern.h"
@@ -17,21 +17,29 @@
 
 namespace pulse::http {
 
-std::optional<Router::RouteMatch> Router::Match(Method method,
-                                                std::string_view path) const {
+Result<Router::RouteMatch> Router::Match(Method method,
+                                         std::string_view path) const {
   const auto it = routes_.find(method);
   if (it == routes_.end()) {
-    return std::nullopt;
+    return Error{
+        .code = Error::Code::kNotFound,
+        .message = strings::Cat("no routes for method: ", ToString(method))};
   }
 
   for (const Route& route : it->second) {
-    if (std::optional<Pattern::Captures> captures = route.pattern.Match(path)) {
-      return Router::RouteMatch{.handler = route.handler.get(),
-                                .path_params = *std::move(captures)};
+    Result<Pattern::Captures> captures = route.pattern.Match(path);
+    if (captures.ok()) {
+      return RouteMatch{.handler = route.handler.get(),
+                        .path_params = *std::move(captures)};
+    }
+
+    if (captures.error().code != Error::Code::kNotFound) {
+      return captures.error();
     }
   }
 
-  return std::nullopt;
+  return Error{.code = Error::Code::kNotFound,
+               .message = strings::Cat("no match for path: ", path)};
 }
 
 Result<void> Router::Add(Method method, std::string_view raw_pattern,

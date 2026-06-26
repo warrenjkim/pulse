@@ -11,6 +11,7 @@
 #include "pulse/core/error.h"
 #include "pulse/core/result.h"
 #include "pulse/http/parameters.h"
+#include "pulse/http/url.h"
 #include "pulse/strings/cat.h"
 #include "pulse/strings/split.h"
 
@@ -73,19 +74,24 @@ pulse::Result<Pattern> Pattern::Make(std::string_view pattern) {
   return Pattern(std::move(segments), static_cast<int>(captures.size()));
 }
 
-std::optional<Pattern::Captures> Pattern::Match(std::string_view path) const {
+Result<Pattern::Captures> Pattern::Match(std::string_view path) const {
   Parameters captures;
   const std::vector<std::string_view> parts = strings::Split(path, kDelimiter);
   if (parts.size() != pattern_.size()) {
-    return std::nullopt;
+    return Error{.code = Error::Code::kNotFound, .message = "no match"};
   }
 
   for (size_t i = 0; i < pattern_.size(); i++) {
     const auto& [type, token] = pattern_[i];
     if (type == Segment::Type::kPattern && token != parts[i]) {
-      return std::nullopt;
+      return Error{.code = Error::Code::kNotFound, .message = "no match"};
     } else if (type == Segment::Type::kCapture) {
-      captures[token] = std::string(parts[i]);
+      Result<std::string> decoded = DecodePercent(parts[i]);
+      if (!decoded.ok()) {
+        return decoded.error();
+      }
+
+      captures[token] = *std::move(decoded);
     }
   }
 

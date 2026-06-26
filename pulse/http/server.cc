@@ -1,11 +1,11 @@
 #include "pulse/http/server.h"
 
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 
 #include "pulse/concurrent/thread_pool.h"
+#include "pulse/core/error.h"
 #include "pulse/core/log.h"
 #include "pulse/core/result.h"
 #include "pulse/core/stringify.h"
@@ -52,13 +52,23 @@ void Server::Run() {
         return;
       }
 
-      std::optional<Router::RouteMatch> match =
+      Result<Router::RouteMatch> match =
           router_.Match(request->method, request->url);
-      if (!match.has_value()) {
-        Log() << "no routes for method: " << pulse::ToString(request->method);
-        socket->Write(Serialize(Response{.content_type = "text/html",
-                                         .status = 404,
-                                         .body = "<h1>404 Not Found</h1>"}));
+      if (!match.ok()) {
+        if (match.error().code == Error::Code::kNotFound) {
+          Log() << "no routes for: " << ToString(request->method) << " "
+                << request->url;
+          socket->Write(Serialize(Response{.content_type = "text/html",
+                                           .status = 404,
+                                           .body = "<h1>404 Not Found</h1>"}));
+        } else {
+          Log() << "route match error: " << match.error().message;
+          socket->Write(
+              Serialize(Response{.content_type = "text/html",
+                                 .status = 400,
+                                 .body = "<h1>400 Bad Request</h1>"}));
+        }
+
         return;
       }
 
@@ -69,11 +79,11 @@ void Server::Run() {
         request->body = socket->Read(std::stoul(it->second));
       }
 
-      Log() << "request: " << pulse::ToString(*request);
+      Log() << "request: " << ToString(*request);
       Response response = (*match->handler)(*request);
       AddCorsHeaders(&response);
       socket->Write(Serialize(response));
-      Log() << "response: " << pulse::ToString(response);
+      Log() << "response: " << ToString(response);
     });
   }
 }

@@ -25,6 +25,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":parameters",
+        ":url",
         "//pulse/core:enum_macros",
         "//pulse/core:error",
         "//pulse/core:result",
@@ -79,6 +80,7 @@ cc_library(
         ":pattern",
         "//pulse/core:error",
         "//pulse/core:result",
+        "//pulse/core:stringify",
         "//pulse/strings:cat",
     ],
 )
@@ -123,6 +125,7 @@ cc_library(
         ":response",
         ":router",
         "//pulse/concurrent:thread_pool",
+        "//pulse/core:error",
         "//pulse/core:log",
         "//pulse/core:result",
         "//pulse/core:stringify",

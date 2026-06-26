@@ -1,6 +1,5 @@
 #include "pulse/http/router.h"
 
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -171,9 +170,8 @@ TEST(RouterTest, MakeWithNoDepHandler) {
   Result<Router> router = Router::Make<Routes<NoDepHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
 
-  std::optional<Router::RouteMatch> match =
-      router->Match(Method::kGet, "/health");
-  ASSERT_TRUE(match.has_value());
+  Result<Router::RouteMatch> match = router->Match(Method::kGet, "/health");
+  ASSERT_TRUE(match.ok());
   EXPECT_THAT((*match->handler)(Request{}).body, Eq("health"));
 }
 
@@ -185,9 +183,8 @@ TEST(RouterTest, MakeWithDepHandler) {
   Result<Router> router = Router::Make<Routes<DepHandler>>(ctx);
   ASSERT_TRUE(router.ok());
 
-  std::optional<Router::RouteMatch> match =
-      router->Match(Method::kGet, "/name");
-  ASSERT_TRUE(match.has_value());
+  Result<Router::RouteMatch> match = router->Match(Method::kGet, "/name");
+  ASSERT_TRUE(match.ok());
   EXPECT_THAT((*match->handler)(Request{}).body, Eq("injected"));
 }
 
@@ -199,8 +196,8 @@ TEST(RouterTest, MakeWithMultipleHandlers) {
   Result<Router> router = Router::Make<Routes<NoDepHandler, DepHandler>>(ctx);
   ASSERT_TRUE(router.ok());
 
-  EXPECT_TRUE(router->Match(Method::kGet, "/health").has_value());
-  EXPECT_TRUE(router->Match(Method::kGet, "/name").has_value());
+  EXPECT_TRUE(router->Match(Method::kGet, "/health").ok());
+  EXPECT_TRUE(router->Match(Method::kGet, "/name").ok());
 }
 
 TEST(RouterTest, MakeWithNestedRoutes) {
@@ -209,9 +206,9 @@ TEST(RouterTest, MakeWithNestedRoutes) {
       ServerContext{});
   ASSERT_TRUE(router.ok());
 
-  EXPECT_TRUE(router->Match(Method::kGet, "/health").has_value());
-  EXPECT_TRUE(router->Match(Method::kGet, "/items").has_value());
-  EXPECT_TRUE(router->Match(Method::kPost, "/items").has_value());
+  EXPECT_TRUE(router->Match(Method::kGet, "/health").ok());
+  EXPECT_TRUE(router->Match(Method::kGet, "/items").ok());
+  EXPECT_TRUE(router->Match(Method::kPost, "/items").ok());
 }
 
 TEST(RouterTest, MakeWithNestedRoutesAndDeps) {
@@ -225,9 +222,9 @@ TEST(RouterTest, MakeWithNestedRoutesAndDeps) {
           ctx);
   ASSERT_TRUE(router.ok());
 
-  EXPECT_TRUE(router->Match(Method::kGet, "/health").has_value());
-  EXPECT_TRUE(router->Match(Method::kGet, "/name").has_value());
-  EXPECT_TRUE(router->Match(Method::kGet, "/named").has_value());
+  EXPECT_TRUE(router->Match(Method::kGet, "/health").ok());
+  EXPECT_TRUE(router->Match(Method::kGet, "/name").ok());
+  EXPECT_TRUE(router->Match(Method::kGet, "/named").ok());
 }
 
 TEST(RouterTest, MakeReturnsFirstError) {
@@ -247,9 +244,8 @@ TEST(RouterMakeTest, MakeWithMixedDeps) {
   Result<Router> router = Router::Make<Routes<MixedDepHandler>>(ctx);
   ASSERT_TRUE(router.ok());
 
-  std::optional<Router::RouteMatch> match =
-      router->Match(Method::kGet, "/mixed");
-  ASSERT_TRUE(match.has_value());
+  Result<Router::RouteMatch> match = router->Match(Method::kGet, "/mixed");
+  ASSERT_TRUE(match.ok());
   Response response = (*match->handler)(Request{});
   EXPECT_THAT(response.body, Eq("mixed"));
   EXPECT_THAT(response.status, Eq(202));
@@ -281,14 +277,13 @@ TEST(RouterTest, MakeSamePatternDifferentMethodsAllowed) {
       Router::Make<Routes<GetNamedHandler, PostNamedHandler>>(ctx);
   ASSERT_TRUE(router.ok());
 
-  std::optional<Router::RouteMatch> get_match =
-      router->Match(Method::kGet, "/named");
-  ASSERT_TRUE(get_match.has_value());
+  Result<Router::RouteMatch> get_match = router->Match(Method::kGet, "/named");
+  ASSERT_TRUE(get_match.ok());
   EXPECT_THAT((*get_match->handler)(Request{}).body, Eq("injected"));
 
-  std::optional<Router::RouteMatch> post_match =
+  Result<Router::RouteMatch> post_match =
       router->Match(Method::kPost, "/named");
-  ASSERT_TRUE(post_match.has_value());
+  ASSERT_TRUE(post_match.ok());
   EXPECT_THAT((*post_match->handler)(Request{}).body, Eq("injected"));
 }
 
@@ -297,14 +292,13 @@ TEST(RouterTest, MatchesMethod) {
       Router::Make<Routes<GetItemsHandler, PostItemsHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
 
-  std::optional<Router::RouteMatch> get_match =
-      router->Match(Method::kGet, "/items");
-  ASSERT_TRUE(get_match.has_value());
+  Result<Router::RouteMatch> get_match = router->Match(Method::kGet, "/items");
+  ASSERT_TRUE(get_match.ok());
   EXPECT_THAT((*get_match->handler)(Request{}).body, Eq("get_items"));
 
-  std::optional<Router::RouteMatch> post_match =
+  Result<Router::RouteMatch> post_match =
       router->Match(Method::kPost, "/items");
-  ASSERT_TRUE(post_match.has_value());
+  ASSERT_TRUE(post_match.ok());
   EXPECT_THAT((*post_match->handler)(Request{}).body, Eq("post_items"));
 }
 
@@ -314,14 +308,14 @@ TEST(RouterTest, MatchLiteralBeatsCapture) {
           ServerContext{});
   ASSERT_TRUE(router.ok());
 
-  std::optional<Router::RouteMatch> literal_match =
+  Result<Router::RouteMatch> literal_match =
       router->Match(Method::kGet, "/items/new");
-  ASSERT_TRUE(literal_match.has_value());
+  ASSERT_TRUE(literal_match.ok());
   EXPECT_THAT((*literal_match->handler)(Request{}).body, Eq("item_new"));
 
-  std::optional<Router::RouteMatch> capture_match =
+  Result<Router::RouteMatch> capture_match =
       router->Match(Method::kGet, "/items/42");
-  ASSERT_TRUE(capture_match.has_value());
+  ASSERT_TRUE(capture_match.ok());
   EXPECT_THAT((*capture_match->handler)(Request{}).body, Eq("item_by_id"));
   EXPECT_THAT(capture_match->path_params, Eq(Pattern::Captures{{"id", "42"}}));
 }
@@ -331,9 +325,9 @@ TEST(RouterTest, MatchBindsNestedCaptures) {
       Router::Make<Routes<GetNestedItemHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
 
-  std::optional<Router::RouteMatch> match =
+  Result<Router::RouteMatch> match =
       router->Match(Method::kGet, "/items/1/subitems/2");
-  ASSERT_TRUE(match.has_value());
+  ASSERT_TRUE(match.ok());
   EXPECT_THAT(match->path_params,
               Eq(Pattern::Captures{{"item_id", "1"}, {"subitem_id", "2"}}));
 }
@@ -342,34 +336,34 @@ TEST(RouterTest, NoMatchUnknownPath) {
   Result<Router> router =
       Router::Make<Routes<GetItemByIdHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
-  EXPECT_FALSE(router->Match(Method::kGet, "/unknown").has_value());
+  EXPECT_FALSE(router->Match(Method::kGet, "/unknown").ok());
 }
 
 TEST(RouterTest, NoMatchTooFewSegments) {
   Result<Router> router =
       Router::Make<Routes<GetItemByIdHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
-  EXPECT_FALSE(router->Match(Method::kGet, "/items").has_value());
+  EXPECT_FALSE(router->Match(Method::kGet, "/items").ok());
 }
 
 TEST(RouterTest, NoMatchTooManySegments) {
   Result<Router> router =
       Router::Make<Routes<GetItemByIdHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
-  EXPECT_FALSE(router->Match(Method::kGet, "/items/42/extra").has_value());
+  EXPECT_FALSE(router->Match(Method::kGet, "/items/42/extra").ok());
 }
 
 TEST(RouterTest, NoMatchWrongMethod) {
   Result<Router> router =
       Router::Make<Routes<GetItemsHandler>>(ServerContext{});
   ASSERT_TRUE(router.ok());
-  EXPECT_FALSE(router->Match(Method::kPost, "/items").has_value());
+  EXPECT_FALSE(router->Match(Method::kPost, "/items").ok());
 }
 
 TEST(RouterTest, NoMatchEmptyRouter) {
   Result<Router> router = Router::Make<Routes<>>(ServerContext{});
   ASSERT_TRUE(router.ok());
-  EXPECT_FALSE(router->Match(Method::kGet, "/items").has_value());
+  EXPECT_FALSE(router->Match(Method::kGet, "/items").ok());
 }
 
 }  // namespace
