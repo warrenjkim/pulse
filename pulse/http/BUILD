@@ -167,3 +167,30 @@ cc_library(
         "//pulse/core:result",
     ],
 )
+
+cc_library(
+    name = "parse_form",
+    srcs = ["parse_form.cc"],
+    hdrs = ["parse_form.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":parameters",
+        "//pulse/core:error",
+        "//pulse/core:result",
+        "//pulse/strings:cat",
+    ],
+)
+
+cc_test(
+    name = "parse_form_test",
+    srcs = ["parse_form_test.cc"],
+    deps = [
+        ":parameters",
+        ":parse_form",
+        "//pulse/core:error",
+        "//pulse/core:result",
+        "//pulse/strings:cat",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
