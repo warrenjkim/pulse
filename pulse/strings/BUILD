@@ -4,6 +4,7 @@ cc_library(
     deps = [
         ":cat",
         ":split",
+        ":string_literal",
     ],
 )
 
@@ -14,6 +15,12 @@ cc_library(
     deps = [
         "//pulse/core:stringify",
     ],
+)
+
+cc_library(
+    name = "string_literal",
+    hdrs = ["string_literal.h"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(

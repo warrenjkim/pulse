@@ -20,22 +20,17 @@ namespace {
 
 using ::testing::Eq;
 
-class NoDepHandler final : public Handler {
+class NoDepHandler final : public Handler<Method::kGet, "/health"> {
  public:
-  PULSE_HTTP_ROUTE("/health", Method::kGet);
-  using Dependencies = Dependencies<>;
-
   Response operator()(const Request&) const override {
     return Response{
         .content_type = "text/plain", .status = 200, .body = "health"};
   }
 };
 
-class DepHandler final : public Handler {
+class DepHandler final
+    : public Handler<Method::kGet, "/name", Dependencies<std::string*>> {
  public:
-  PULSE_HTTP_ROUTE("/name", Method::kGet);
-  using Dependencies = Dependencies<std::string*>;
-
   explicit DepHandler(std::string* name) : name_(name) {}
 
   Response operator()(const Request&) const override {
@@ -47,22 +42,17 @@ class DepHandler final : public Handler {
   std::string* name_;
 };
 
-class DuplicateHandler final : public Handler {
+class DuplicateHandler final : public Handler<Method::kGet, "/health"> {
  public:
-  PULSE_HTTP_ROUTE("/health", Method::kGet);
-  using Dependencies = Dependencies<>;
-
   Response operator()(const Request&) const override {
     return Response{
         .content_type = "text/plain", .status = 200, .body = "duplicate"};
   }
 };
 
-class MixedDepHandler final : public Handler {
+class MixedDepHandler final
+    : public Handler<Method::kGet, "/mixed", Dependencies<std::string*, int>> {
  public:
-  PULSE_HTTP_ROUTE("/mixed", Method::kGet);
-  using Dependencies = Dependencies<std::string*, int>;
-
   explicit MixedDepHandler(std::string* name, int code)
       : name_(name), code_(code) {}
 
@@ -76,11 +66,9 @@ class MixedDepHandler final : public Handler {
   const int code_;
 };
 
-class GetNamedHandler final : public Handler {
+class GetNamedHandler final
+    : public Handler<Method::kGet, "/named", Dependencies<std::string>> {
  public:
-  PULSE_HTTP_ROUTE("/named", Method::kGet);
-  using Dependencies = Dependencies<std::string>;
-
   explicit GetNamedHandler(std::string name) : name_(std::move(name)) {}
 
   Response operator()(const Request&) const override {
@@ -91,11 +79,9 @@ class GetNamedHandler final : public Handler {
   std::string name_;
 };
 
-class PostNamedHandler final : public Handler {
+class PostNamedHandler final
+    : public Handler<Method::kPost, "/named", Dependencies<std::string>> {
  public:
-  PULSE_HTTP_ROUTE("/named", Method::kPost);
-  using Dependencies = Dependencies<std::string>;
-
   explicit PostNamedHandler(std::string name) : name_(std::move(name)) {}
 
   Response operator()(const Request&) const override {
@@ -106,11 +92,9 @@ class PostNamedHandler final : public Handler {
   std::string name_;
 };
 
-class MalformedHandler final : public Handler {
+class MalformedHandler final
+    : public Handler<Method::kGet, "/name/{bad", Dependencies<std::string>> {
  public:
-  PULSE_HTTP_ROUTE("/name/{bad", Method::kGet);
-  using Dependencies = Dependencies<std::string>;
-
   explicit MalformedHandler(std::string name) : name_(std::move(name)) {}
 
   Response operator()(const Request&) const override {
@@ -121,46 +105,32 @@ class MalformedHandler final : public Handler {
   std::string name_;
 };
 
-struct GetItemsHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items", Method::kGet);
-  using Dependencies = Dependencies<>;
-
+struct GetItemsHandler final : public Handler<Method::kGet, "/items"> {
   Response operator()(const Request&) const override {
     return Response{.body = "get_items"};
   }
 };
 
-struct PostItemsHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items", Method::kPost);
-  using Dependencies = Dependencies<>;
-
+struct PostItemsHandler final : public Handler<Method::kPost, "/items"> {
   Response operator()(const Request&) const override {
     return Response{.body = "post_items"};
   }
 };
 
-struct GetItemByIdHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items/{id}", Method::kGet);
-  using Dependencies = Dependencies<>;
-
+struct GetItemByIdHandler final : public Handler<Method::kGet, "/items/{id}"> {
   Response operator()(const Request&) const override {
     return Response{.body = "item_by_id"};
   }
 };
 
-struct GetItemNewHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items/new", Method::kGet);
-  using Dependencies = Dependencies<>;
-
+struct GetItemNewHandler final : public Handler<Method::kGet, "/items/new"> {
   Response operator()(const Request&) const override {
     return Response{.body = "item_new"};
   }
 };
 
-struct GetNestedItemHandler final : public Handler {
-  PULSE_HTTP_ROUTE("/items/{item_id}/subitems/{subitem_id}", Method::kGet);
-  using Dependencies = Dependencies<>;
-
+struct GetNestedItemHandler final
+    : public Handler<Method::kGet, "/items/{item_id}/subitems/{subitem_id}"> {
   Response operator()(const Request&) const override {
     return Response{.body = "nested"};
   }
@@ -250,7 +220,6 @@ TEST(RouterMakeTest, MakeWithMixedDeps) {
   EXPECT_THAT(response.body, Eq("mixed"));
   EXPECT_THAT(response.status, Eq(202));
 
-  // Mutating the pointer dep is visible; mutating the value dep is not.
   name = "mutated";
   code = 999;
   Response response2 = (*match->handler)(Request{});
