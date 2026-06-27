@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -71,7 +70,7 @@ class Router {
   static Result<Router> Make(const Ctx& ctx);
 
   struct RouteMatch {
-    const Handler* handler;
+    const internal::Handler* handler;
     Pattern::Captures path_params;
   };
 
@@ -89,14 +88,14 @@ class Router {
   struct Route {
     Pattern pattern;
     std::string raw_pattern;
-    std::unique_ptr<Handler> handler;
+    std::unique_ptr<internal::Handler> handler;
   };
 
   template <HttpServerContext Ctx, HttpHandler... Hs>
   Result<void> Add(const Ctx& ctx);
 
   Result<void> Add(Method method, std::string_view raw_pattern,
-                   std::unique_ptr<Handler> handler);
+                   std::unique_ptr<internal::Handler> handler);
 
   std::unordered_map<Method, std::vector<Route>> routes_;
 };

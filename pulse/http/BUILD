@@ -110,6 +110,7 @@ cc_library(
         ":request",
         ":response",
         "//pulse/core:type_map",
+        "//pulse/strings:string_literal",
     ],
 )
 

@@ -43,7 +43,7 @@ Result<Router::RouteMatch> Router::Match(Method method,
 }
 
 Result<void> Router::Add(Method method, std::string_view raw_pattern,
-                         std::unique_ptr<Handler> handler) {
+                         std::unique_ptr<internal::Handler> handler) {
   Result<Pattern> pattern = Pattern::Make(raw_pattern);
   if (!pattern.ok()) {
     return pattern.error();

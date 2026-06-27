@@ -8,11 +8,7 @@
 #include "pulse/http/method.h"
 #include "pulse/http/request.h"
 #include "pulse/http/response.h"
-
-// Declares kPath and kMethod for an HTTP handler.
-#define PULSE_HTTP_ROUTE(path, method)                             \
-  [[maybe_unused]] static constexpr std::string_view kPath = path; \
-  [[maybe_unused]] static constexpr ::pulse::http::Method kMethod = method
+#include "pulse/strings/string_literal.h"
 
 namespace pulse::http {
 
@@ -41,42 +37,42 @@ concept HttpServerContext = is_server_context<T>::value;
 template <typename... Deps>
 struct Dependencies {};
 
-// Abstract base for HTTP request handlers.
-//
-// Subclass and override `operator()` to implement an endpoint. Each handler
-// must declare a `kPath`, `kMethod`, and `Dependencies` alias. Use
-// `PULSE_HTTP_ROUTE` to declare both the path and method in one line.
-//
-// Example Usage:
-//
-//   struct GetUserHandler : Handler {
-//     PULSE_HTTP_ROUTE("/users/{id}", Method::kGet);
-//     using Dependencies = pulse::http::Dependencies<UserStore*, Config>;
-//
-//     explicit GetUserHandler(UserStore* store, Config config)
-//         : store_(store), config_(std::move(config)) {}
-//
-//     Response operator()(const Request& request) const override {
-//       std::string id = request.path_params.at("id");
-//       return store_->get(id);
-//     }
-//
-//   private:
-//     UserStore* store_;
-//     const Config config_;
-//   };
+namespace internal {
+
 struct Handler {
   virtual Response operator()(const Request& request) const = 0;
 
   virtual ~Handler() = default;
 };
 
+}  // namespace internal
+
 template <typename H>
-concept HttpHandler = requires {
-  { H::kPath } -> std::convertible_to<std::string_view>;
-  { H::kMethod } -> std::same_as<const Method&>;
-  typename H::Dependencies;
-  requires std::derived_from<H, Handler>;
+concept HttpHandler = std::derived_from<H, internal::Handler>;
+
+// Abstract base for HTTP request handlers.
+//
+// Subclass and override `operator()` to implement an endpoint.
+//
+// Example Usage:
+//
+//   struct GetUserHandler
+//       : Handler<Method::kGet, "/users/{id}", Dependencies<UserStore*>> {
+//     explicit GetUserHandler(UserStore* store) : store_(*store) {}
+//
+//     Response operator()(const Request& request) const override {
+//       // ...
+//     }
+//
+//   private:
+//     UserStore& store_;
+//   };
+template <Method kHttpMethod, strings::StringLiteral kHttpPath,
+          typename Deps = Dependencies<>>
+struct Handler : public internal::Handler {
+  static constexpr Method kMethod = kHttpMethod;
+  static constexpr std::string_view kPath = kHttpPath;
+  using Dependencies = Deps;
 };
 
 }  // namespace pulse::http
