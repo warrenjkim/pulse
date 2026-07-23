@@ -9,6 +9,7 @@
 #include "pulse/core/result.h"
 #include "pulse/core/result_or_die.h"
 #include "pulse/json/parse.h"
+#include "pulse/reflect/schema.h"
 
 namespace pulse::json {
 
@@ -22,8 +23,8 @@ struct Simple {
   std::string name;
   double amount;
 
-  static auto schema() {
-    return Schema<Simple>{}
+  static auto Schema() {
+    return reflect::Schema<Simple>{}
         .Field("name", &Simple::name)
         .Field("amount", &Simple::amount);
   }
@@ -33,8 +34,8 @@ struct WithOptional {
   std::string name;
   std::optional<std::string> description;
 
-  static auto schema() {
-    return Schema<WithOptional>{}
+  static auto Schema() {
+    return reflect::Schema<WithOptional>{}
         .Field("name", &WithOptional::name)
         .Field("description", &WithOptional::description);
   }
