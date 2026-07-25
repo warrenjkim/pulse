@@ -16,6 +16,7 @@ cc_library(
         ":value",
         "@pulse//pulse/core:error",
         "@pulse//pulse/core:result",
+        "@pulse//pulse/reflect:schema",
         "@pulse//pulse/strings:cat",
     ],
 )
@@ -31,6 +32,7 @@ cc_test(
         "@pulse//pulse/core:error",
         "@pulse//pulse/core:result",
         "@pulse//pulse/core:result_or_die",
+        "@pulse//pulse/reflect:schema",
     ],
 )
 
