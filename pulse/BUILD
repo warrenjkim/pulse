@@ -8,5 +8,6 @@ cc_library(
         "//pulse/http",
         "//pulse/json",
         "//pulse/net",
+        "//pulse/reflect",
     ],
 )
