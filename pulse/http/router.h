@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "pulse/core/result.h"
+#include "pulse/core/type_list.h"
 #include "pulse/http/handler.h"
 #include "pulse/http/method.h"
 #include "pulse/http/pattern.h"
@@ -15,7 +16,7 @@
 namespace pulse::http {
 
 template <typename... T>
-struct Routes {};
+using Routes = pulse::TypeList<T...>;
 
 template <typename T>
 struct is_handler_list : std::false_type {};
@@ -25,29 +26,6 @@ struct is_handler_list<Routes<Handlers...>> : std::true_type {};
 
 template <typename T>
 concept HttpHandlers = is_handler_list<T>::value;
-
-namespace internal {
-
-template <typename Accumulator, typename... Rest>
-struct Flatten;
-
-template <typename... Accumulator>
-struct Flatten<Routes<Accumulator...>> {
-  using type = Routes<Accumulator...>;
-};
-
-template <typename... Accumulator, HttpHandler Handler, typename... Rest>
-struct Flatten<Routes<Accumulator...>, Handler, Rest...> {
-  using type = typename Flatten<Routes<Accumulator..., Handler>, Rest...>::type;
-};
-
-template <typename... Accumulator, typename... Nested, typename... Rest>
-struct Flatten<Routes<Accumulator...>, Routes<Nested...>, Rest...> {
-  using type =
-      typename Flatten<Routes<Accumulator...>, Nested..., Rest...>::type;
-};
-
-}  // namespace internal
 
 class Router {
  public:
@@ -104,7 +82,7 @@ class Router {
 
 template <HttpHandlers Hs, HttpServerContext Ctx>
 Result<Router> Router::Make(const Ctx& ctx) {
-  return Router::Make(ctx, typename internal::Flatten<Routes<>, Hs>::type{});
+  return Router::Make(ctx, typename Flatten<Routes<>, Hs>::Type{});
 }
 
 template <HttpServerContext Ctx, HttpHandler... Hs>
