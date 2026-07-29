@@ -52,9 +52,21 @@ concept HttpHandler = std::derived_from<H, internal::Handler>;
 
 // Abstract base for HTTP request handlers.
 //
-// Subclass and override `operator()` to implement an endpoint.
+// Subclass and override `operator()` to implement an endpoint. Handlers with
+// a structured request body can optionally specify `HttpReq`, a struct that
+// defines `pulse::reflect::Schema` describing its fields, making it
+// available as `Handler::HttpRequest` for reflection.
 //
 // Example Usage:
+//
+//   struct CreateUserRequest {
+//     std::string name;
+//
+//     static constexpr auto Schema() {
+//       return pulse::reflect::Schema<CreateUserRequest>{}
+//           .Field("name", &CreateUserRequest::name);
+//     }
+//   };
 //
 //   struct GetUserHandler
 //       : Handler<Method::kGet, "/users/{id}", Dependencies<UserStore*>> {
@@ -67,12 +79,19 @@ concept HttpHandler = std::derived_from<H, internal::Handler>;
 //   private:
 //     UserStore& store_;
 //   };
+//
+//   struct CreateUserHandler
+//       : Handler<Method::kPost, "/users", Dependencies<UserStore*>,
+//                 CreateUserRequest> {
+//     // ...
+//   };
 template <Method kHttpMethod, strings::StringLiteral kHttpPath,
-          typename Deps = Dependencies<>>
+          typename Deps = Dependencies<>, typename HttpReq = void>
 struct Handler : public internal::Handler {
   static constexpr Method kMethod = kHttpMethod;
   static constexpr std::string_view kPath = kHttpPath;
   using Dependencies = Deps;
+  using HttpRequest = HttpReq;
 };
 
 }  // namespace pulse::http
