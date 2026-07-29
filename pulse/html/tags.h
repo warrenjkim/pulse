@@ -131,7 +131,7 @@ struct Label {
 
 struct Button {
   static constexpr std::string_view kTag = "button";
-  using AllowedAttributes = AttributeList<Class, Id, Type>;
+  using AllowedAttributes = AttributeList<Class, Id, Type, OnClick>;
 };
 
 }  // namespace pulse::html

@@ -116,4 +116,10 @@ struct For {
   operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
 };
 
+struct OnClick {
+  static constexpr std::string_view kKey = "onclick";
+  std::string value;
+  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
+};
+
 }  // namespace pulse::html
