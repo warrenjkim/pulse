@@ -83,6 +83,22 @@ cc_test(
 )
 
 cc_library(
+    name = "type_list",
+    hdrs = ["type_list.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "type_list_test",
+    srcs = ["type_list_test.cc"],
+    deps = [
+        ":type_list",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "type_map",
     hdrs = ["type_map.h"],
     visibility = ["//visibility:public"],
