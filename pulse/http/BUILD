@@ -81,6 +81,7 @@ cc_library(
         "//pulse/core:error",
         "//pulse/core:result",
         "//pulse/core:stringify",
+        "//pulse/core:type_list",
         "//pulse/strings:cat",
     ],
 )
