@@ -22,7 +22,8 @@ template <typename StructType>
 concept Reflectable = requires { StructType::Schema(); };
 
 // A single named field of `StructType`, described by a member pointer.
-// Produced by `Schema::Field()`; consumed via `Schema::ForEachField()`.
+// Produced by `Schema::Field()`; consumed via `Schema::ForEachField()` and
+// `Schema::Map()`.
 //
 // TODO(bind nested fields/values)
 template <typename StructType, typename FieldType>
@@ -36,7 +37,8 @@ struct SchemaField {
 // pointer to the struct member. `Schema` should not be constructed directly
 // outside of chaining `Field()` calls.
 //
-// NOTE: Fields are visited, in registration order, via `ForEachField()`.
+// Fields are visited, in registration order, via `ForEachField()` or
+// `Map()`.
 template <typename StructType, typename... Fields>
 class Schema {
  public:
@@ -52,10 +54,21 @@ class Schema {
   }
 
   // Invokes `fn(field)` for each registered `SchemaField`, in registration
-  // order.
+  // order. Intended for side-effecting visits (e.g. binding into a result);
+  // discards `fn`'s return value. See `Map()` to collect results instead.
   template <typename Fn>
   constexpr void ForEachField(Fn&& fn) const {
     std::apply([&fn](const auto&... fields) { (fn(fields), ...); }, fields_);
+  }
+
+  // Invokes `fn(field)` for each registered `SchemaField`, in registration
+  // order, and returns the results as a `std::tuple<decltype(fn(fields))...>`.
+  // Intended for transforming fields at compile-time.
+  template <typename Fn>
+  constexpr auto Map(Fn&& fn) const {
+    return std::apply(
+        [&fn](const auto&... fields) { return std::make_tuple(fn(fields)...); },
+        fields_);
   }
 
  private:
