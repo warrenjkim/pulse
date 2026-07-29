@@ -79,6 +79,8 @@ Element Make(Attributes<Attrs...> attributes, Children&&... children) {
 
 std::string Render(const Element& html);
 
+std::string RenderDocument(const Element& html);
+
 }  // namespace pulse::html
 
 template <>
