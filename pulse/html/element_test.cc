@@ -126,6 +126,16 @@ TEST(RenderTest, StyleTag) {
                     "</html>"));
 }
 
+TEST(RenderDocumentTest, Doctype) {
+  EXPECT_THAT(RenderDocument(Make<Html>(Make<Head>(Make<Title>("title")),
+                                        Make<Body>(Make<P>("hello")))),
+              StrEq("<!doctype html>"
+                    "<html>"
+                    "<head><title>title</title></head>"
+                    "<body><p>hello</p></body>"
+                    "</html>"));
+}
+
 }  // namespace
 
 }  // namespace pulse::html
