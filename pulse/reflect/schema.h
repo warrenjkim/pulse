@@ -28,6 +28,8 @@ concept Reflectable = requires { StructType::Schema(); };
 // TODO(bind nested fields/values)
 template <typename StructType, typename FieldType>
 struct SchemaField {
+  using MemberFieldType = FieldType;
+
   std::string_view key;
   FieldType StructType::*member;
 };
