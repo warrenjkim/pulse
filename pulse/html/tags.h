@@ -139,4 +139,9 @@ struct Button {
   using AllowedAttributes = AttributeList<Class, Id, Type, OnClick>;
 };
 
+struct Pre {
+  static constexpr std::string_view kTag = "pre";
+  using AllowedAttributes = AttributeList<Class, Id>;
+};
+
 }  // namespace pulse::html
