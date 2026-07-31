@@ -144,4 +144,9 @@ struct Pre {
   using AllowedAttributes = AttributeList<Class, Id>;
 };
 
+struct Hr {
+  static constexpr std::string_view kTag = "hr";
+  using AllowedAttributes = AttributeList<>;
+};
+
 }  // namespace pulse::html
