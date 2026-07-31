@@ -1,5 +1,8 @@
 #pragma once
 
+#include <concepts>
+#include <type_traits>
+
 namespace pulse {
 
 // A compile-time list of types. Nesting is allowed.
@@ -43,5 +46,23 @@ struct Flatten<TypeList<Accumulator...>, TypeList<Nested...>, Rest...> {
   using Type =
       typename Flatten<TypeList<Accumulator...>, Nested..., Rest...>::Type;
 };
+
+// True if `T` is one of the types in `List...`, false otherwise.
+//
+// Usage:
+//
+//   using A = TypeList<int, double>;
+//
+//   Contains<int, A>::value;    // true
+//   Contains<float, A>::value;  // false
+//
+// Note: `Contains` matches types exactly. It does not consider implicit
+// conversions, cv-qualification, or reference stripping.
+template <typename Tag, typename List>
+struct Contains {};
+
+template <typename T, typename... List>
+struct Contains<T, TypeList<List...>>
+    : std::bool_constant<(std::same_as<T, List> || ...)> {};
 
 }  // namespace pulse
