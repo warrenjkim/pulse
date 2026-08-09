@@ -15,6 +15,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pulse/core:type_list",
+        "//pulse/strings:string_literal",
     ],
 )
 
@@ -22,7 +23,10 @@ cc_library(
     name = "tags",
     hdrs = ["tags.h"],
     visibility = ["//visibility:public"],
-    deps = [":attributes"],
+    deps = [
+        ":attributes",
+        "//pulse/strings:string_literal",
+    ],
 )
 
 cc_library(
