@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "pulse/core/type_list.h"
+#include "pulse/strings/string_literal.h"
 
 namespace pulse::html {
 
@@ -13,6 +14,19 @@ struct Attribute {
   std::string_view key;
   std::string value;
 };
+
+namespace internal {
+
+template <strings::StringLiteral kName>
+struct Attribute {
+  static constexpr std::string_view kKey = kName;
+  std::string value;
+  operator ::pulse::html::Attribute() const {
+    return ::pulse::html::Attribute{.key = kKey, .value = value};
+  }
+};
+
+}  // namespace internal
 
 template <typename T>
 concept AttributeType = requires {
@@ -33,87 +47,18 @@ template <typename Attr, typename Tag>
 concept AttributeAllowed =
     Contains<Attr, typename Tag::AllowedAttributes>::value;
 
-struct Class {
-  static constexpr std::string_view kKey = "class";
-  std::string value;
-
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Href {
-  static constexpr std::string_view kKey = "href";
-  std::string value;
-
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Id {
-  static constexpr std::string_view kKey = "id";
-  std::string value;
-
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct RowSpan {
-  static constexpr std::string_view kKey = "rowspan";
-  std::string value;
-
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct ColSpan {
-  static constexpr std::string_view kKey = "colspan";
-  std::string value;
-
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Action {
-  static constexpr std::string_view kKey = "action";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Method {
-  static constexpr std::string_view kKey = "method";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Type {
-  static constexpr std::string_view kKey = "type";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Name {
-  static constexpr std::string_view kKey = "name";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Value {
-  static constexpr std::string_view kKey = "value";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct Placeholder {
-  static constexpr std::string_view kKey = "placeholder";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct For {
-  static constexpr std::string_view kKey = "for";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
-
-struct OnClick {
-  static constexpr std::string_view kKey = "onclick";
-  std::string value;
-  operator Attribute() const { return Attribute{.key = kKey, .value = value}; }
-};
+using Class = internal::Attribute<"class">;
+using Href = internal::Attribute<"href">;
+using Id = internal::Attribute<"id">;
+using RowSpan = internal::Attribute<"rowspan">;
+using ColSpan = internal::Attribute<"colspan">;
+using Action = internal::Attribute<"action">;
+using Method = internal::Attribute<"method">;
+using Type = internal::Attribute<"type">;
+using Name = internal::Attribute<"name">;
+using Value = internal::Attribute<"value">;
+using Placeholder = internal::Attribute<"placeholder">;
+using For = internal::Attribute<"for">;
+using OnClick = internal::Attribute<"onclick">;
 
 }  // namespace pulse::html

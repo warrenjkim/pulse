@@ -4,8 +4,15 @@
 #include <string_view>
 
 #include "pulse/html/attributes.h"
+#include "pulse/strings/string_literal.h"
 
 namespace pulse::html {
+
+template <strings::StringLiteral kName, typename Attrs = AttributeList<>>
+struct Tag {
+  static constexpr std::string_view kTag = kName;
+  using AllowedAttributes = Attrs;
+};
 
 template <typename T>
 concept TagType = requires {
@@ -13,140 +20,34 @@ concept TagType = requires {
   typename T::AllowedAttributes;
 };
 
-struct Script {
-  static constexpr std::string_view kTag = "script";
-  using AllowedAttributes = AttributeList<>;
-};
-
-struct Style {
-  static constexpr std::string_view kTag = "style";
-  using AllowedAttributes = AttributeList<>;
-};
-
-struct Div {
-  static constexpr std::string_view kTag = "div";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct H1 {
-  static constexpr std::string_view kTag = "h1";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct H2 {
-  static constexpr std::string_view kTag = "h2";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct H3 {
-  static constexpr std::string_view kTag = "h3";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct P {
-  static constexpr std::string_view kTag = "p";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Span {
-  static constexpr std::string_view kTag = "span";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Table {
-  static constexpr std::string_view kTag = "table";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Thead {
-  static constexpr std::string_view kTag = "thead";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Tbody {
-  static constexpr std::string_view kTag = "tbody";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Tr {
-  static constexpr std::string_view kTag = "tr";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Th {
-  static constexpr std::string_view kTag = "th";
-  using AllowedAttributes = AttributeList<Class, Id, RowSpan, ColSpan>;
-};
-
-struct Td {
-  static constexpr std::string_view kTag = "td";
-  using AllowedAttributes = AttributeList<Class, Id, RowSpan, ColSpan>;
-};
-
-struct A {
-  static constexpr std::string_view kTag = "a";
-  using AllowedAttributes = AttributeList<Class, Id, Href>;
-};
-
-struct Html {
-  static constexpr std::string_view kTag = "html";
-  using AllowedAttributes = AttributeList<>;
-};
-
-struct Head {
-  static constexpr std::string_view kTag = "head";
-  using AllowedAttributes = AttributeList<>;
-};
-
-struct Body {
-  static constexpr std::string_view kTag = "body";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Title {
-  static constexpr std::string_view kTag = "title";
-  using AllowedAttributes = AttributeList<>;
-};
-
-struct Form {
-  static constexpr std::string_view kTag = "form";
-  using AllowedAttributes = AttributeList<Class, Id, Action, Method>;
-};
-
-struct Input {
-  static constexpr std::string_view kTag = "input";
-  using AllowedAttributes =
-      AttributeList<Class, Id, Type, Name, Value, Placeholder>;
-};
-
-struct Select {
-  static constexpr std::string_view kTag = "select";
-  using AllowedAttributes = AttributeList<Class, Id, Name>;
-};
-
-struct Option {
-  static constexpr std::string_view kTag = "option";
-  using AllowedAttributes = AttributeList<Value>;
-};
-
-struct Label {
-  static constexpr std::string_view kTag = "label";
-  using AllowedAttributes = AttributeList<Class, Id, For>;
-};
-
-struct Button {
-  static constexpr std::string_view kTag = "button";
-  using AllowedAttributes = AttributeList<Class, Id, Type, OnClick>;
-};
-
-struct Pre {
-  static constexpr std::string_view kTag = "pre";
-  using AllowedAttributes = AttributeList<Class, Id>;
-};
-
-struct Hr {
-  static constexpr std::string_view kTag = "hr";
-  using AllowedAttributes = AttributeList<>;
-};
+using A = Tag<"a", AttributeList<Class, Id, Href>>;
+using Body = Tag<"body", AttributeList<Class, Id>>;
+using Button = Tag<"button", AttributeList<Class, Id, Type, OnClick>>;
+using Div = Tag<"div", AttributeList<Class, Id>>;
+using Form = Tag<"form", AttributeList<Class, Id, Action, Method>>;
+using H1 = Tag<"h1", AttributeList<Class, Id>>;
+using H2 = Tag<"h2", AttributeList<Class, Id>>;
+using H3 = Tag<"h3", AttributeList<Class, Id>>;
+using Head = Tag<"head">;
+using Hr = Tag<"hr">;
+using Html = Tag<"html">;
+using Input =
+    Tag<"input", AttributeList<Class, Id, Type, Name, Value, Placeholder>>;
+using Label = Tag<"label", AttributeList<Class, Id, For>>;
+using Nav = Tag<"nav", AttributeList<Class, Id>>;
+using Option = Tag<"option", AttributeList<Value>>;
+using P = Tag<"p", AttributeList<Class, Id>>;
+using Pre = Tag<"pre", AttributeList<Class, Id>>;
+using Script = Tag<"script">;
+using Select = Tag<"select", AttributeList<Class, Id, Name>>;
+using Span = Tag<"span", AttributeList<Class, Id>>;
+using Style = Tag<"style">;
+using Table = Tag<"table", AttributeList<Class, Id>>;
+using Tbody = Tag<"tbody", AttributeList<Class, Id>>;
+using Td = Tag<"td", AttributeList<Class, Id, RowSpan, ColSpan>>;
+using Th = Tag<"th", AttributeList<Class, Id, RowSpan, ColSpan>>;
+using Thead = Tag<"thead", AttributeList<Class, Id>>;
+using Title = Tag<"title">;
+using Tr = Tag<"tr", AttributeList<Class, Id>>;
 
 }  // namespace pulse::html
