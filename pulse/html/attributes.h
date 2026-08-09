@@ -4,7 +4,8 @@
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <type_traits>
+
+#include "pulse/core/type_list.h"
 
 namespace pulse::html {
 
@@ -26,14 +27,7 @@ struct Attributes {
 };
 
 template <AttributeType... T>
-struct AttributeList {};
-
-template <typename Tag, typename List>
-struct Contains {};
-
-template <typename T, typename... List>
-struct Contains<T, AttributeList<List...>>
-    : std::bool_constant<(std::same_as<T, List> || ...)> {};
+using AttributeList = TypeList<T...>;
 
 template <typename Attr, typename Tag>
 concept AttributeAllowed =

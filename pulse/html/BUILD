@@ -13,6 +13,9 @@ cc_library(
     name = "attributes",
     hdrs = ["attributes.h"],
     visibility = ["//visibility:public"],
+    deps = [
+        "//pulse/core:type_list",
+    ],
 )
 
 cc_library(

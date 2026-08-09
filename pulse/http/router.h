@@ -16,7 +16,7 @@
 namespace pulse::http {
 
 template <typename... T>
-using Routes = pulse::TypeList<T...>;
+using Routes = TypeList<T...>;
 
 template <typename T>
 struct is_handler_list : std::false_type {};
