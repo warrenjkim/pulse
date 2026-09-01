@@ -10,6 +10,8 @@ namespace pulse {
 template <typename T>
 struct Stringify {
   static std::string ToString(const T& value);
+
+  static std::string DebugString(const T& value) { return ToString(value); }
 };
 
 template <typename T>
