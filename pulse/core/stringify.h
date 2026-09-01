@@ -58,7 +58,8 @@ std::string ToString(T value) {
 }
 
 template <typename T>
-  requires(std::is_pointer_v<T> && std::is_object_v<std::remove_pointer_t<T>> &&
+  requires(std::is_pointer_v<T> &&
+           !std::is_function_v<std::remove_pointer_t<T>> &&
            !std::same_as<std::remove_cv_t<std::remove_pointer_t<T>>, char>)
 std::string ToString(T value) {
   constexpr char kHex[] = "0123456789abcdef";
