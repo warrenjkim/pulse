@@ -1,13 +1,17 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 #include <string>
+#include <type_traits>
 
 namespace pulse {
 
 template <typename T>
 struct Stringify {
   static std::string ToString(const T& value);
+
+  static std::string DebugString(const T& value) { return ToString(value); }
 };
 
 template <typename T>
@@ -45,5 +49,28 @@ struct Stringify<std::string> {
     return out + "\"";
   }
 };
+
+template <typename T>
+  requires(std::same_as<std::remove_cv_t<T>, char*>)
+std::string ToString(T value) {
+  return Stringify<std::string>::ToString(value);
+}
+
+template <typename T>
+  requires(std::is_pointer_v<T> && std::is_object_v<std::remove_pointer_t<T>> &&
+           !std::same_as<std::remove_cv_t<std::remove_pointer_t<T>>, char>)
+std::string ToString(T value) {
+  constexpr char kHex[] = "0123456789abcdef";
+  auto addr = reinterpret_cast<uintptr_t>(value);
+  std::string out(2 + sizeof(addr) * 2, '0');
+  out[1] = 'x';
+
+  for (auto it = out.end() - 1; it != out.begin() + 1; --it) {
+    *it = kHex[addr & 0xf];
+    addr >>= 4;
+  }
+
+  return out;
+}
 
 }  // namespace pulse
