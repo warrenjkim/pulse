@@ -20,6 +20,7 @@ concept Stringifiable = requires(const T& t) {
 };
 
 template <Stringifiable T>
+  requires(!std::is_pointer_v<T>)
 std::string ToString(const T& value) {
   return Stringify<T>::ToString(value);
 }
