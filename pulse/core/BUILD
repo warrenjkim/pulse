@@ -26,6 +26,18 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_test(
+    name = "stringify_test",
+    srcs = [
+        "stringify_test.cc",
+    ],
+    deps = [
+        ":stringify",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "log",
     hdrs = ["log.h"],

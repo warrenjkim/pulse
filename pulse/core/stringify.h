@@ -3,7 +3,6 @@
 #include <concepts>
 #include <cstdint>
 #include <string>
-#include <type_traits>
 
 namespace pulse {
 
@@ -20,7 +19,6 @@ concept Stringifiable = requires(const T& t) {
 };
 
 template <Stringifiable T>
-  requires(!std::is_pointer_v<T>)
 std::string ToString(const T& value) {
   return Stringify<T>::ToString(value);
 }
@@ -51,34 +49,38 @@ struct Stringify<std::string> {
   }
 };
 
-template <typename T>
-  requires(std::same_as<std::remove_cv_t<T>, bool>)
-std::string ToString(T value) {
-  return value ? "true" : "false";
-}
+template <>
+struct Stringify<bool> {
+  static std::string ToString(bool value) { return value ? "true" : "false"; }
+};
 
-template <typename T>
-  requires(std::same_as<std::remove_cv_t<T>, char*>)
-std::string ToString(T value) {
-  return Stringify<std::string>::ToString(value);
-}
-
-template <typename T>
-  requires(std::is_pointer_v<T> &&
-           !std::is_function_v<std::remove_pointer_t<T>> &&
-           !std::same_as<std::remove_cv_t<std::remove_pointer_t<T>>, char>)
-std::string ToString(T value) {
-  constexpr char kHex[] = "0123456789abcdef";
-  auto addr = reinterpret_cast<uintptr_t>(value);
-  std::string out(2 + sizeof(addr) * 2, '0');
-  out[1] = 'x';
-
-  for (auto it = out.end() - 1; it != out.begin() + 1; --it) {
-    *it = kHex[addr & 0xf];
-    addr >>= 4;
+template <>
+struct Stringify<char*> {
+  static std::string ToString(char* value) {
+    return Stringify<std::string>::ToString(value);
   }
+};
 
-  return out;
-}
+template <>
+struct Stringify<const char*> {
+  static std::string ToString(const char* value) {
+    return Stringify<std::string>::ToString(value);
+  }
+};
+
+template <>
+struct Stringify<const void*> {
+  static std::string ToString(const void* value) {
+    constexpr char kHex[] = "0123456789abcdef";
+    auto addr = reinterpret_cast<uintptr_t>(value);
+    std::string out(2 + sizeof(addr) * 2, '0');
+    out[1] = 'x';
+    for (auto it = out.end() - 1; it != out.begin() + 1; --it) {
+      *it = kHex[addr & 0xf];
+      addr >>= 4;
+    }
+    return out;
+  }
+};
 
 }  // namespace pulse
