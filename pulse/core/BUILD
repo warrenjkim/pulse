@@ -2,11 +2,30 @@ cc_library(
     name = "core",
     visibility = ["//visibility:public"],
     deps = [
+        ":demangle",
         ":enum_macros",
         ":error",
         ":result",
         ":result_or_die",
         ":stringify",
+    ],
+)
+
+cc_library(
+    name = "demangle",
+    hdrs = ["demangle.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//pulse/strings:cat"],
+)
+
+cc_test(
+    name = "demangle_test",
+    srcs = ["demangle_test.cc"],
+    deps = [
+        ":demangle",
+        ":result",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
