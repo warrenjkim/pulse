@@ -52,6 +52,12 @@ struct Stringify<std::string> {
 };
 
 template <typename T>
+  requires(std::same_as<std::remove_cv_t<T>, bool>)
+std::string ToString(T value) {
+  return value ? "true" : "false";
+}
+
+template <typename T>
   requires(std::same_as<std::remove_cv_t<T>, char*>)
 std::string ToString(T value) {
   return Stringify<std::string>::ToString(value);
