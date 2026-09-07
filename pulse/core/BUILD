@@ -15,7 +15,6 @@ cc_library(
     name = "demangle",
     hdrs = ["demangle.h"],
     visibility = ["//visibility:public"],
-    deps = ["//pulse/strings:cat"],
 )
 
 cc_test(
@@ -43,14 +42,19 @@ cc_library(
         "stringify.h",
     ],
     visibility = ["//visibility:public"],
+    deps = [
+        ":demangle",
+    ],
 )
 
 cc_test(
     name = "stringify_test",
     srcs = [
+        "container_stringify_test.cc",
         "stringify_test.cc",
     ],
     deps = [
+        ":demangle",
         ":stringify",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

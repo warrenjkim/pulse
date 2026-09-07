@@ -1,7 +1,9 @@
 #include "pulse/core/demangle.h"
 
 #include <string>
+#include <string_view>
 #include <typeinfo>
+#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -26,12 +28,6 @@ using ::testing::TestParamInfo;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
-struct DemangleCase {
-  std::string name;
-  std::string mangled;
-  std::string expected;
-};
-
 TEST(DemangleTest, GrammarFixturesAreWhatTheCompilerActuallyEmits) {
   EXPECT_THAT(typeid(Widget).name(), StrEq("N5pulse13demangle_test6WidgetE"));
   EXPECT_THAT(typeid(Result<int>).name(), StrEq("N5pulse6ResultIiEE"));
@@ -43,6 +39,11 @@ TEST(DemangleTest, GrammarFixturesAreWhatTheCompilerActuallyEmits) {
 
 TEST(DemangleTest, NullInputYieldsEmptyStringRatherThanDereferencing) {
   EXPECT_THAT(Demangle(nullptr), Eq(""));
+}
+
+TEST(DemangleTest, StripsImplementationInlineNamespaces) {
+  EXPECT_THAT(Demangle(typeid(std::vector<int>).name()),
+              Eq("std::vector<int, std::allocator<int>>"));
 }
 
 struct TypeNameCase {
@@ -93,6 +94,17 @@ INSTANTIATE_TEST_SUITE_P(
          .expected = "pulse::demangle_test::Widget* const"},
     }),
     [](const TestParamInfo<TypeNameCase>& info) { return info.param.name; });
+
+TEST(TypeNameTest, UsesCanonicalAliases) {
+  EXPECT_THAT(TypeName<std::string>(), Eq("std::string"));
+  EXPECT_THAT(TypeName<std::string_view>(), Eq("std::string_view"));
+}
+
+TEST(TypeNameTest, PreservesQualifiersOnAliasedTypes) {
+  EXPECT_THAT(TypeName<const std::string>(), Eq("std::string const"));
+  EXPECT_THAT(TypeName<std::string&>(), Eq("std::string&"));
+  EXPECT_THAT(TypeName<std::string_view>(), Eq("std::string_view"));
+}
 
 TEST(TypeNameTest, DemanglesOncePerInstantiation) {
   EXPECT_EQ(&TypeName<Widget>(), &TypeName<Widget>());
