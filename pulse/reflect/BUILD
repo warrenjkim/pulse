@@ -31,8 +31,8 @@ cc_test(
     deps = [
         ":data_sink",
         ":dump_struct",
-        "//pulse/core:stringify",
         "//pulse/core:pretty_function",
+        "//pulse/core:stringify",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -42,4 +42,35 @@ cc_library(
     name = "schema",
     hdrs = ["schema.h"],
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "stringify_sink",
+    hdrs = ["stringify_sink.h"],
+    deps = [
+        ":data_sink",
+        "//pulse/core:stringify",
+    ],
+)
+
+cc_library(
+    name = "struct_stringify",
+    hdrs = ["struct_stringify.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dump_struct",
+        ":stringify_sink",
+        "//pulse/core:stringify",
+    ],
+)
+
+cc_test(
+    name = "struct_stringify_test",
+    srcs = ["struct_stringify_test.cc"],
+    deps = [
+        ":struct_stringify",
+        "//pulse/core:stringify",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
 )
