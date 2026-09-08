@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -38,6 +39,17 @@ struct TypeAlias {
 
 TYPE_ALIAS(std::string);
 TYPE_ALIAS(std::string_view);
+
+TYPE_ALIAS(uint8_t);
+TYPE_ALIAS(uint16_t);
+TYPE_ALIAS(uint32_t);
+TYPE_ALIAS(uint64_t);
+
+TYPE_ALIAS(int8_t);
+TYPE_ALIAS(int16_t);
+TYPE_ALIAS(int64_t);
+
+TYPE_ALIAS(size_t);
 
 #undef TYPE_ALIAS
 #undef STRINGIFY
@@ -80,6 +92,7 @@ inline std::string Demangle(const char* mangled) {
   int status = 0;
   std::unique_ptr<char, Free> demangled(
       abi::__cxa_demangle(mangled, nullptr, nullptr, &status));
+
   if (status == 0) {
     return internal::StripInlineNamespaces(demangled.get());
   }

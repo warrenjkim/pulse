@@ -1,5 +1,7 @@
 #include "pulse/core/demangle.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <typeinfo>
@@ -98,6 +100,14 @@ INSTANTIATE_TEST_SUITE_P(
 TEST(TypeNameTest, UsesCanonicalAliases) {
   EXPECT_THAT(TypeName<std::string>(), Eq("std::string"));
   EXPECT_THAT(TypeName<std::string_view>(), Eq("std::string_view"));
+  EXPECT_THAT(TypeName<uint8_t>(), Eq("uint8_t"));
+  EXPECT_THAT(TypeName<uint16_t>(), Eq("uint16_t"));
+  EXPECT_THAT(TypeName<uint32_t>(), Eq("uint32_t"));
+  EXPECT_THAT(TypeName<uint64_t>(), Eq("uint64_t"));
+  EXPECT_THAT(TypeName<int8_t>(), Eq("int8_t"));
+  EXPECT_THAT(TypeName<int16_t>(), Eq("int16_t"));
+  EXPECT_THAT(TypeName<int64_t>(), Eq("int64_t"));
+  EXPECT_THAT(TypeName<size_t>(), Eq("size_t"));
 }
 
 TEST(TypeNameTest, PreservesQualifiersOnAliasedTypes) {
