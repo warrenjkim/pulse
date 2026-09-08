@@ -25,6 +25,17 @@ cc_library(
 )
 
 cc_library(
+    name = "stringifiable_type",
+    hdrs = [
+        "stringifiable_type.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":stringify",
+    ],
+)
+
+cc_library(
     name = "stringify",
     hdrs = [
         "container_stringify.h",
