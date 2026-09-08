@@ -3,6 +3,7 @@
 #include <concepts>
 #include <cstddef>
 #include <ranges>
+#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -20,6 +21,15 @@ concept PairLike = requires(const T& value) {
 
 template <typename T>
 concept StringLike = std::convertible_to<const T&, std::string_view>;
+
+template <typename T>
+concept HasTupleSize = requires { std::tuple_size<T>::value; };
+
+template <typename T>
+concept HasStaticExtent = requires {
+  { T::extent } -> std::convertible_to<size_t>;
+  requires T::extent != std::dynamic_extent;
+};
 
 template <typename T>
 using RangeValue = std::ranges::range_value_t<T>;
@@ -40,19 +50,6 @@ concept RenderableMap =
     std::ranges::input_range<T> && !StringLike<T> && PairLike<RangeValue<T>> &&
     Stringifiable<Key<T>> && Stringifiable<Value<T>>;
 
-// Returns the name of a range without its template arguments.
-//
-//   IntBag -> IntBag
-//   std::vector<int,...> -> std::vector
-inline std::string RangeName(std::string_view pretty_function) {
-  return std::string(pretty_function.substr(0, pretty_function.find('<')));
-}
-
-template <typename T>
-bool HasTemplateArguments() {
-  return TypeName<T>().find('<') != std::string_view::npos;
-}
-
 // Returns the canonical type label used when rendering a value inside a
 // container.
 //
@@ -60,6 +57,35 @@ bool HasTemplateArguments() {
 // implementation-specific template arguments such as allocators are omitted.
 template <typename T>
 const std::string& TypeLabel();
+
+// Returns the name of `type_name` without its template arguments.
+//
+//   Struct -> Struct
+//   std::vector<int,...> -> std::vector
+inline std::string TemplateName(std::string_view type_name) {
+  return std::string(type_name.substr(0, type_name.find('<')));
+}
+
+template <typename T>
+consteval bool HasTemplateArguments() {
+  return TypeName<T>().find('<') != std::string_view::npos;
+}
+
+// Returns the bracketed extents of an array type, outermost first.
+//
+//   int[] -> []
+//   int[1] -> [1]
+//   int[2][3] -> [2][3]
+template <typename T>
+std::string ArrayExtents() {
+  if constexpr (std::is_array_v<T>) {
+    constexpr size_t kExtent = std::extent_v<T>;
+    return "[" + (kExtent != 0 ? std::to_string(kExtent) : "") + "]" +
+           ArrayExtents<std::remove_extent_t<T>>();
+  } else {
+    return "";
+  }
+}
 
 // Resolves the canonical type label for `T`.
 //
@@ -70,22 +96,30 @@ template <typename T>
 std::string CanonicalTypeLabel() {
   if constexpr (!TypeAlias<T>::kName.empty()) {
     return std::string(TypeAlias<T>::kName);
+  } else if constexpr (std::is_array_v<T>) {
+    return TypeLabel<std::remove_all_extents_t<T>>() + ArrayExtents<T>();
   } else if constexpr (RenderableMap<T>) {
-    const std::string name = RangeName(TypeName<T>());
-    if (!HasTemplateArguments<T>()) {
-      return name;
+    if constexpr (!HasTemplateArguments<T>()) {
+      return TemplateName(TypeName<T>());
+    } else {
+      return TemplateName(TypeName<T>()) + "<" + TypeLabel<Key<T>>() + "," +
+             TypeLabel<Value<T>>() + ">";
     }
-
-    return name + "<" + TypeLabel<Key<T>>() + "," + TypeLabel<Value<T>>() + ">";
   } else if constexpr (RenderableRange<T>) {
-    const std::string name = RangeName(TypeName<T>());
-    if (!HasTemplateArguments<T>()) {
-      return name;
+    if constexpr (HasTupleSize<T>) {
+      return TemplateName(TypeName<T>()) + "<" + TypeLabel<RangeValue<T>>() +
+             "," + std::to_string(std::tuple_size_v<T>) + ">";
+    } else if constexpr (HasStaticExtent<T>) {
+      return TemplateName(TypeName<T>()) + "<" + TypeLabel<RangeValue<T>>() +
+             "," + std::to_string(T::extent) + ">";
+    } else if constexpr (!HasTemplateArguments<T>()) {
+      return TemplateName(TypeName<T>());
+    } else {
+      return TemplateName(TypeName<T>()) + "<" + TypeLabel<RangeValue<T>>() +
+             ">";
     }
-
-    return name + "<" + TypeLabel<RangeValue<T>>() + ">";
   } else {
-    return TypeName<T>();
+    return std::string(TypeName<T>());
   }
 }
 
@@ -95,6 +129,24 @@ const std::string& TypeLabel() {
   return label;
 }
 
+// Renders `range` as `Label{a,b,c}`, with each element rendered by `render`.
+template <typename R, std::invocable<const RangeValue<R>&> F>
+std::string RenderRange(const R& range, const F& render) {
+  std::string out = TypeLabel<R>() + "{";
+
+  bool first = true;
+  for (const auto& element : range) {
+    if (!first) {
+      out += ",";
+    }
+
+    first = false;
+    out += render(element);
+  }
+
+  return out + "}";
+}
+
 }  // namespace pulse::internal
 
 namespace pulse {
@@ -102,19 +154,10 @@ namespace pulse {
 template <internal::RenderableRange R>
 struct Stringify<R> {
   static std::string ToString(const R& range) {
-    std::string out = internal::TypeLabel<R>() + "{";
-
-    bool first = true;
-    for (const auto& element : range) {
-      if (!first) {
-        out += ",";
-      }
-
-      first = false;
-      out += Stringify<internal::RangeValue<R>>::ToString(element);
-    }
-
-    return out + "}";
+    return internal::RenderRange(
+        range, [](const internal::RangeValue<R>& element) {
+          return Stringify<internal::RangeValue<R>>::ToString(element);
+        });
   }
 
   static std::string DebugString(const R& range) { return ToString(range); }
@@ -123,20 +166,12 @@ struct Stringify<R> {
 template <internal::RenderableMap R>
 struct Stringify<R> {
   static std::string ToString(const R& range) {
-    std::string out = internal::TypeLabel<R>() + "{";
-
-    bool first = true;
-    for (const auto& [key, value] : range) {
-      if (!first) {
-        out += ",";
-      }
-
-      first = false;
-      out += "{" + Stringify<internal::Key<R>>::ToString(key) + "," +
-             Stringify<internal::Value<R>>::ToString(value) + "}";
-    }
-
-    return out + "}";
+    return internal::RenderRange(
+        range, [](const internal::RangeValue<R>& entry) {
+          return "{" + Stringify<internal::Key<R>>::ToString(entry.first) +
+                 "," + Stringify<internal::Value<R>>::ToString(entry.second) +
+                 "}";
+        });
   }
 
   static std::string DebugString(const R& range) { return ToString(range); }
