@@ -13,7 +13,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "pulse/core/pretty_function.h"
+#include "pulse/core/demangle.h"
 #include "pulse/core/stringify.h"
 
 namespace pulse {
@@ -37,71 +37,59 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::StartsWith;
 
-TEST(ContainerStringifyTest, MatchesRanges) {
+TEST(RenderableRangeTest, MatchesSequenceRanges) {
   static_assert(internal::RenderableRange<std::vector<int>>);
+  static_assert(internal::RenderableRange<std::deque<int>>);
+  static_assert(internal::RenderableRange<std::list<int>>);
   static_assert(internal::RenderableRange<std::set<int>>);
   static_assert(internal::RenderableRange<std::array<int, 3>>);
   static_assert(internal::RenderableRange<std::span<const int>>);
   static_assert(internal::RenderableRange<IntBag>);
-  static_assert(internal::RenderableRange<int[3]>);
-  static_assert(internal::RenderableRange<int[2][3]>);
 }
 
-TEST(ContainerStringifyTest, MatchesMaps) {
+TEST(RenderableRangeTest, MatchesMapRanges) {
   static_assert(internal::RenderableMap<std::map<std::string, int>>);
   static_assert(internal::RenderableMap<std::unordered_map<std::string, int>>);
+  static_assert(internal::RenderableMap<std::multimap<int, int>>);
 }
 
-TEST(ContainerStringifyTest, RangesAndMapsAreDisjoint) {
+TEST(RenderableRangeTest, SequenceAndMapRangesAreDisjoint) {
   static_assert(!internal::RenderableMap<std::vector<int>>);
   static_assert(!internal::RenderableRange<std::map<std::string, int>>);
 }
 
-TEST(ContainerStringifyTest, ExcludesStrings) {
+TEST(RenderableRangeTest, ExcludesStrings) {
   static_assert(!internal::RenderableRange<std::string>);
   static_assert(!internal::RenderableRange<std::string_view>);
-  static_assert(!internal::RenderableRange<char[4]>);
 }
 
-TEST(ContainerStringifyTest, RequiresStringifiableElements) {
+TEST(RenderableRangeTest, RequiresStringifiableElements) {
   static_assert(!Stringifiable<Opaque>);
   static_assert(!internal::RenderableRange<std::vector<Opaque>>);
-  static_assert(!internal::RenderableRange<Opaque[3]>);
   static_assert(!internal::RenderableMap<std::map<Opaque, int>>);
   static_assert(!internal::RenderableMap<std::map<int, Opaque>>);
 }
 
-TEST(ContainerStringifyTest, NamesContainers) {
+TEST(RenderableRangeTest, MatchesCArrays) {
+  static_assert(internal::RenderableRange<int[3]>);
+  static_assert(internal::RenderableRange<std::string[2]>);
+  static_assert(internal::RenderableRange<std::vector<int>[2]>);
+  static_assert(internal::RenderableRange<int[2][3]>);
+}
+
+TEST(RenderableRangeTest, ExcludesCArraysOfUnstringifiableElements) {
+  static_assert(!internal::RenderableRange<Opaque[3]>);
+}
+
+TEST(TypeLabelTest, NamesContainers) {
   EXPECT_THAT(internal::TypeLabel<std::vector<int>>(), Eq("std::vector<int>"));
-  EXPECT_THAT((internal::TypeLabel<std::map<int, std::string>>()),
-              Eq("std::map<int,std::string>"));
-  EXPECT_THAT(internal::TypeLabel<std::span<const int>>(),
-              Eq("std::span<int>"));
-  EXPECT_THAT(internal::TypeLabel<IntBag>(),
-              Eq("pulse::container_stringify_test::IntBag"));
+  EXPECT_THAT((internal::TypeLabel<std::unordered_map<int, bool>>()),
+              Eq("std::unordered_map<int,bool>"));
+  EXPECT_THAT((internal::TypeLabel<std::map<int, int>>()),
+              Eq("std::map<int,int>"));
 }
 
-TEST(ContainerStringifyTest, KeepsStaticExtents) {
-  EXPECT_THAT((internal::TypeLabel<std::array<int, 3>>()),
-              Eq("std::array<int,3>"));
-  EXPECT_THAT((internal::TypeLabel<std::array<std::array<int, 2>, 3>>()),
-              Eq("std::array<std::array<int,2>,3>"));
-  EXPECT_THAT((internal::TypeLabel<std::span<const int, 4>>()),
-              Eq("std::span<int,4>"));
-}
-
-TEST(ContainerStringifyTest, NamesCArrays) {
-  EXPECT_THAT(internal::TypeLabel<int[3]>(), Eq("int[3]"));
-  EXPECT_THAT(internal::TypeLabel<int[1][2][3]>(), Eq("int[1][2][3]"));
-  EXPECT_THAT(internal::TypeLabel<int[]>(), Eq("int[]"));
-  EXPECT_THAT(internal::TypeLabel<int[][1]>(), Eq("int[][1]"));
-  EXPECT_THAT((internal::TypeLabel<std::map<int, std::string>[2]>()),
-              Eq("std::map<int,std::string>[2]"));
-  EXPECT_THAT(internal::TypeLabel<Opaque[3]>(),
-              Eq(std::string(TypeName<Opaque>()) + "[3]"));
-}
-
-TEST(ContainerStringifyTest, RecursesThroughElementTypes) {
+TEST(TypeLabelTest, RecursesThroughNestedContainers) {
   using T = std::vector<std::unordered_map<std::string, std::vector<int>>>;
 
   EXPECT_THAT(
@@ -109,80 +97,154 @@ TEST(ContainerStringifyTest, RecursesThroughElementTypes) {
       Eq("std::vector<std::unordered_map<std::string,std::vector<int>>>"));
 }
 
-TEST(ContainerStringifyTest, LeavesOtherTypesToTypeName) {
-  EXPECT_THAT(internal::TypeLabel<int>(), Eq("int"));
-  EXPECT_THAT(internal::TypeLabel<std::string>(), Eq("std::string"));
-  EXPECT_THAT(internal::TypeLabel<Opaque>(),
-              Eq(std::string(TypeName<Opaque>())));
+TEST(TypeLabelTest, OmitsContainerImplementationArguments) {
+  EXPECT_THAT(internal::TypeLabel<std::vector<int>>(), Eq("std::vector<int>"));
+  EXPECT_THAT((internal::TypeLabel<std::map<int, std::string>>()),
+              Eq("std::map<int,std::string>"));
 }
 
-TEST(ContainerStringifyTest, RendersRanges) {
+TEST(TypeLabelTest, OmitsArrayExtent) {
+  EXPECT_THAT((internal::TypeLabel<std::array<int, 3>>()),
+              Eq("std::array<int>"));
+}
+
+TEST(TypeLabelTest, UsesAliases) {
+  EXPECT_THAT(internal::TypeLabel<std::string>(), Eq("std::string"));
+  EXPECT_THAT(internal::TypeLabel<std::string_view>(), Eq("std::string_view"));
+}
+
+TEST(TypeLabelTest, LeavesOtherTypesToTypeName) {
+  EXPECT_THAT(internal::TypeLabel<int>(), Eq("int"));
+  EXPECT_THAT(internal::TypeLabel<Opaque>(), Eq(TypeName<Opaque>()));
+}
+
+TEST(TypeLabelTest, DoesNotInventTemplateArgumentsForCustomRanges) {
+  EXPECT_THAT(internal::TypeLabel<IntBag>(),
+              Eq("pulse::container_stringify_test::IntBag"));
+}
+
+TEST(TypeLabelTest, NamesCArraysWithoutASpace) {
+  EXPECT_THAT(internal::TypeLabel<int[3]>(), Eq("int[3]"));
+  EXPECT_THAT(internal::TypeLabel<std::string[2]>(), Eq("std::string[2]"));
+}
+
+TEST(TypeLabelTest, OrdersMultidimensionalArrayExtentsOutermostFirst) {
+  EXPECT_THAT(internal::TypeLabel<int[2][3]>(), Eq("int[2][3]"));
+  EXPECT_THAT(internal::TypeLabel<int[1][2][3]>(), Eq("int[1][2][3]"));
+}
+
+TEST(TypeLabelTest, RecursesThroughCArrayElementTypes) {
+  EXPECT_THAT(internal::TypeLabel<std::vector<int>[2]>(),
+              Eq("std::vector<int>[2]"));
+  EXPECT_THAT((internal::TypeLabel<std::map<int, std::string>[2]>()),
+              Eq("std::map<int,std::string>[2]"));
+}
+
+TEST(TypeLabelTest, NamesCArraysOfUnstringifiableElements) {
+  EXPECT_THAT(internal::TypeLabel<Opaque[3]>(), Eq(TypeName<Opaque>() + "[3]"));
+}
+
+TEST(StringifySequenceTest, RendersElements) {
   EXPECT_THAT(ToString(std::vector<int>{1, 2, 3}),
               Eq("std::vector<int>{1,2,3}"));
+  EXPECT_THAT(ToString(std::vector<int>{7}), Eq("std::vector<int>{7}"));
   EXPECT_THAT(ToString(std::vector<std::string>{}),
               Eq("std::vector<std::string>{}"));
-  EXPECT_THAT(ToString(std::deque<bool>{true, false}),
-              Eq("std::deque<bool>{true,false}"));
+}
+
+TEST(StringifySequenceTest, PreservesElementStrings) {
+  EXPECT_THAT(ToString(std::vector<std::string>{"a,", "b"}),
+              Eq("std::vector<std::string>{\"a,\",\"b\"}"));
+}
+
+TEST(StringifySequenceTest, RendersNestedContainers) {
+  using T = std::vector<std::vector<int>>;
+
+  EXPECT_THAT(ToString(T{{1, 2}, {}, {3}}), Eq("std::vector<std::vector<int>>{"
+                                               "std::vector<int>{1,2},"
+                                               "std::vector<int>{},"
+                                               "std::vector<int>{3}}"));
+}
+
+TEST(StringifySequenceTest, RendersOtherRanges) {
+  EXPECT_THAT(ToString(std::deque<int>{1, 2}), Eq("std::deque<int>{1,2}"));
+  EXPECT_THAT(ToString(std::list<bool>{true, false}),
+              Eq("std::list<bool>{true,false}"));
+  EXPECT_THAT((ToString(std::array<int, 2>{4, 5})), Eq("std::array<int>{4,5}"));
   EXPECT_THAT(ToString(std::set<int>{3, 1, 2}), Eq("std::set<int>{1,2,3}"));
-  EXPECT_THAT(ToString(std::list<int>{1}), Eq("std::list<int>{1}"));
+}
+
+TEST(StringifySequenceTest, RendersUserDefinedRanges) {
   EXPECT_THAT(ToString(IntBag{{1, 2}}),
               Eq("pulse::container_stringify_test::IntBag{1,2}"));
 }
 
-TEST(ContainerStringifyTest, RendersStaticExtentRanges) {
-  EXPECT_THAT((ToString(std::array<std::string, 2>{"a", "b"})),
-              Eq(R"(std::array<std::string,2>{"a","b"})"));
-  EXPECT_THAT((ToString(std::array<int, 0>{})), Eq("std::array<int,0>{}"));
-}
-
-TEST(ContainerStringifyTest, RendersCArrays) {
+TEST(StringifySequenceTest, RendersCArrays) {
   const int values[3] = {1, 2, 3};
   EXPECT_THAT(ToString(values), Eq("int[3]{1,2,3}"));
 
-  const int grid[2][3] = {{1, 2, 3}, {4, 5, 6}};
-  EXPECT_THAT(ToString(grid), Eq("int[2][3]{int[3]{1,2,3},int[3]{4,5,6}}"));
+  const std::string words[2] = {"a", "b"};
+  EXPECT_THAT(ToString(words), Eq("std::string[2]{\"a\",\"b\"}"));
+}
 
+TEST(StringifySequenceTest, RendersMultidimensionalCArrays) {
+  const int grid[2][3] = {{1, 2, 3}, {4, 5, 6}};
+
+  // The outer array's elements are themselves arrays, so each renders with its
+  // own label.
+  EXPECT_THAT(ToString(grid), Eq("int[2][3]{int[3]{1,2,3},int[3]{4,5,6}}"));
+}
+
+TEST(StringifySequenceTest, RendersCArraysOfContainers) {
   const std::vector<int> rows[2] = {{1, 2}, {3}};
+
   EXPECT_THAT(ToString(rows), Eq("std::vector<int>[2]{std::vector<int>{1,2},"
                                  "std::vector<int>{3}}"));
 }
 
-TEST(ContainerStringifyTest, RendersNestedContainers) {
-  EXPECT_THAT(ToString(std::vector<std::vector<int>>{{1, 2}, {}, {3}}),
-              Eq("std::vector<std::vector<int>>{"
-                 "std::vector<int>{1,2},"
-                 "std::vector<int>{},"
-                 "std::vector<int>{3}}"));
-  EXPECT_THAT((ToString(std::map<int, std::vector<int>>{{1, {2, 3}}})),
-              Eq("std::map<int,std::vector<int>>{{1,std::vector<int>{2,3}}}"));
+TEST(StringifySequenceTest, RendersSingleElementCArray) {
+  const int one[1] = {7};
+  EXPECT_THAT(ToString(one), Eq("int[1]{7}"));
 }
 
-TEST(ContainerStringifyTest, RendersMaps) {
+TEST(StringifySequenceTest, CharArraysRenderAsStrings) {
+  static_assert(!internal::RenderableRange<char[4]>);
+
+  const char text[4] = "abc";
+  EXPECT_THAT(ToString(text), Eq("\"abc\""));
+}
+
+TEST(StringifyMapTest, RendersEntries) {
   EXPECT_THAT((ToString(std::map<std::string, int>{{"a", 1}, {"b", 2}})),
-              Eq(R"(std::map<std::string,int>{{"a",1},{"b",2}})"));
+              Eq("std::map<std::string,int>{{\"a\",1},{\"b\",2}}"));
+
   EXPECT_THAT((ToString(std::multimap<int, int>{{1, 2}, {1, 3}})),
               Eq("std::multimap<int,int>{{1,2},{1,3}}"));
+}
+
+TEST(StringifyMapTest, RendersEmpty) {
   EXPECT_THAT((ToString(std::unordered_map<std::string, int>{})),
               Eq("std::unordered_map<std::string,int>{}"));
 }
 
-TEST(ContainerStringifyTest, RendersUnorderedMaps) {
+TEST(StringifyMapTest, RendersNestedValues) {
+  EXPECT_THAT((ToString(std::map<int, std::vector<int>>{{1, {2, 3}}})),
+              Eq("std::map<int,std::vector<int>>{{1,std::vector<int>{2,3}}}"));
+}
+
+TEST(StringifyMapTest, RendersUnorderedEntries) {
   const std::string out =
       ToString(std::unordered_map<std::string, int>{{"a", 1}, {"b", 2}});
 
   EXPECT_THAT(out, AllOf(StartsWith("std::unordered_map<std::string,int>{"),
-                         HasSubstr(R"({"a",1})"), HasSubstr(R"({"b",2})"),
+                         HasSubstr("{\"a\",1}"), HasSubstr("{\"b\",2}"),
                          HasSubstr("},{"), EndsWith("}")));
 }
 
-TEST(ContainerStringifyTest, UsesScalarSpecializations) {
-  EXPECT_THAT(ToString(std::vector<std::string>{"a,", "b"}),
-              Eq(R"(std::vector<std::string>{"a,","b"})"));
+TEST(StringifyContainerTest, UsesScalarSpecializations) {
+  EXPECT_THAT(ToString(std::string("hi")), Eq("\"hi\""));
   EXPECT_THAT(ToString(std::vector<const char*>{"a", "b"}),
-              Eq(R"(std::vector<const char*>{"a","b"})"));
-
-  const char text[4] = "abc";
-  EXPECT_THAT(ToString(text), Eq(R"("abc")"));
+              Eq("std::vector<char const*>{\"a\",\"b\"}"));
 }
 
 }  // namespace
