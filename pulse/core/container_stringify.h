@@ -7,7 +7,7 @@
 #include <string_view>
 #include <type_traits>
 
-#include "pulse/core/demangle.h"
+#include "pulse/core/pretty_function.h"
 #include "pulse/core/stringify.h"
 
 namespace pulse::internal {
@@ -44,8 +44,8 @@ concept RenderableMap =
 //
 //   IntBag -> IntBag
 //   std::vector<int,...> -> std::vector
-inline std::string RangeName(std::string_view type_name) {
-  return std::string(type_name.substr(0, type_name.find('<')));
+inline std::string RangeName(std::string_view pretty_function) {
+  return std::string(pretty_function.substr(0, pretty_function.find('<')));
 }
 
 template <typename T>
