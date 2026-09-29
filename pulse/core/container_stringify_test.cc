@@ -70,6 +70,17 @@ TEST(RenderableRangeTest, RequiresStringifiableElements) {
   static_assert(!internal::RenderableMap<std::map<int, Opaque>>);
 }
 
+TEST(RenderableRangeTest, MatchesCArrays) {
+  static_assert(internal::RenderableRange<int[3]>);
+  static_assert(internal::RenderableRange<std::string[2]>);
+  static_assert(internal::RenderableRange<std::vector<int>[2]>);
+  static_assert(internal::RenderableRange<int[2][3]>);
+}
+
+TEST(RenderableRangeTest, ExcludesCArraysOfUnstringifiableElements) {
+  static_assert(!internal::RenderableRange<Opaque[3]>);
+}
+
 TEST(TypeLabelTest, NamesContainers) {
   EXPECT_THAT(internal::TypeLabel<std::vector<int>>(), Eq("std::vector<int>"));
   EXPECT_THAT((internal::TypeLabel<std::unordered_map<int, bool>>()),
@@ -112,6 +123,27 @@ TEST(TypeLabelTest, DoesNotInventTemplateArgumentsForCustomRanges) {
               Eq("pulse::container_stringify_test::IntBag"));
 }
 
+TEST(TypeLabelTest, NamesCArraysWithoutASpace) {
+  EXPECT_THAT(internal::TypeLabel<int[3]>(), Eq("int[3]"));
+  EXPECT_THAT(internal::TypeLabel<std::string[2]>(), Eq("std::string[2]"));
+}
+
+TEST(TypeLabelTest, OrdersMultidimensionalArrayExtentsOutermostFirst) {
+  EXPECT_THAT(internal::TypeLabel<int[2][3]>(), Eq("int[2][3]"));
+  EXPECT_THAT(internal::TypeLabel<int[1][2][3]>(), Eq("int[1][2][3]"));
+}
+
+TEST(TypeLabelTest, RecursesThroughCArrayElementTypes) {
+  EXPECT_THAT(internal::TypeLabel<std::vector<int>[2]>(),
+              Eq("std::vector<int>[2]"));
+  EXPECT_THAT((internal::TypeLabel<std::map<int, std::string>[2]>()),
+              Eq("std::map<int,std::string>[2]"));
+}
+
+TEST(TypeLabelTest, NamesCArraysOfUnstringifiableElements) {
+  EXPECT_THAT(internal::TypeLabel<Opaque[3]>(), Eq(TypeName<Opaque>() + "[3]"));
+}
+
 TEST(StringifySequenceTest, RendersElements) {
   EXPECT_THAT(ToString(std::vector<int>{1, 2, 3}),
               Eq("std::vector<int>{1,2,3}"));
@@ -145,6 +177,41 @@ TEST(StringifySequenceTest, RendersOtherRanges) {
 TEST(StringifySequenceTest, RendersUserDefinedRanges) {
   EXPECT_THAT(ToString(IntBag{{1, 2}}),
               Eq("pulse::container_stringify_test::IntBag{1,2}"));
+}
+
+TEST(StringifySequenceTest, RendersCArrays) {
+  const int values[3] = {1, 2, 3};
+  EXPECT_THAT(ToString(values), Eq("int[3]{1,2,3}"));
+
+  const std::string words[2] = {"a", "b"};
+  EXPECT_THAT(ToString(words), Eq("std::string[2]{\"a\",\"b\"}"));
+}
+
+TEST(StringifySequenceTest, RendersMultidimensionalCArrays) {
+  const int grid[2][3] = {{1, 2, 3}, {4, 5, 6}};
+
+  // The outer array's elements are themselves arrays, so each renders with its
+  // own label.
+  EXPECT_THAT(ToString(grid), Eq("int[2][3]{int[3]{1,2,3},int[3]{4,5,6}}"));
+}
+
+TEST(StringifySequenceTest, RendersCArraysOfContainers) {
+  const std::vector<int> rows[2] = {{1, 2}, {3}};
+
+  EXPECT_THAT(ToString(rows), Eq("std::vector<int>[2]{std::vector<int>{1,2},"
+                                 "std::vector<int>{3}}"));
+}
+
+TEST(StringifySequenceTest, RendersSingleElementCArray) {
+  const int one[1] = {7};
+  EXPECT_THAT(ToString(one), Eq("int[1]{7}"));
+}
+
+TEST(StringifySequenceTest, CharArraysRenderAsStrings) {
+  static_assert(!internal::RenderableRange<char[4]>);
+
+  const char text[4] = "abc";
+  EXPECT_THAT(ToString(text), Eq("\"abc\""));
 }
 
 TEST(StringifyMapTest, RendersEntries) {

@@ -7,7 +7,7 @@
 #include <string_view>
 #include <type_traits>
 
-#include "pulse/core/demangle.h"
+#include "pulse/core/pretty_function.h"
 #include "pulse/core/stringify.h"
 
 namespace pulse::internal {
@@ -44,8 +44,8 @@ concept RenderableMap =
 //
 //   IntBag -> IntBag
 //   std::vector<int,...> -> std::vector
-inline std::string RangeName(std::string_view type_name) {
-  return std::string(type_name.substr(0, type_name.find('<')));
+inline std::string RangeName(std::string_view pretty_function) {
+  return std::string(pretty_function.substr(0, pretty_function.find('<')));
 }
 
 template <typename T>
@@ -61,6 +61,20 @@ bool HasTemplateArguments() {
 template <typename T>
 const std::string& TypeLabel();
 
+// Returns the bracketed extents of an array type, outermost first.
+//
+//   int[1] -> [1]
+//   int[2][3] -> [2][3]
+template <typename T>
+std::string ArrayExtents() {
+  if constexpr (std::is_array_v<T>) {
+    return "[" + std::to_string(std::extent_v<T>) + "]" +
+           ArrayExtents<std::remove_extent_t<T>>();
+  } else {
+    return "";
+  }
+}
+
 // Resolves the canonical type label for `T`.
 //
 // Container labels are reconstructed recursively from their key/value or
@@ -70,6 +84,8 @@ template <typename T>
 std::string CanonicalTypeLabel() {
   if constexpr (!TypeAlias<T>::kName.empty()) {
     return std::string(TypeAlias<T>::kName);
+  } else if constexpr (std::is_array_v<T>) {
+    return TypeLabel<std::remove_all_extents_t<T>>() + ArrayExtents<T>();
   } else if constexpr (RenderableMap<T>) {
     const std::string name = RangeName(TypeName<T>());
     if (!HasTemplateArguments<T>()) {

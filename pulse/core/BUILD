@@ -2,9 +2,9 @@ cc_library(
     name = "core",
     visibility = ["//visibility:public"],
     deps = [
-        ":demangle",
         ":enum_macros",
         ":error",
+        ":pretty_function",
         ":result",
         ":result_or_die",
         ":stringify",
@@ -17,22 +17,22 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
-cc_test(
-    name = "demangle_test",
-    srcs = ["demangle_test.cc"],
-    deps = [
-        ":demangle",
-        ":result",
-        "@googletest//:gtest",
-        "@googletest//:gtest_main",
-    ],
-)
-
 cc_library(
     name = "enum_macros",
     hdrs = ["enum_macros.h"],
     visibility = ["//visibility:public"],
     deps = [":stringify"],
+)
+
+cc_library(
+    name = "stringifiable_type",
+    hdrs = [
+        "stringifiable_type.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":stringify",
+    ],
 )
 
 cc_library(
@@ -43,7 +43,7 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        ":demangle",
+        ":pretty_function",
     ],
 )
 
@@ -54,7 +54,7 @@ cc_test(
         "stringify_test.cc",
     ],
     deps = [
-        ":demangle",
+        ":pretty_function",
         ":stringify",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -82,6 +82,23 @@ cc_library(
     name = "overload",
     hdrs = ["overload.h"],
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "pretty_function",
+    hdrs = ["pretty_function.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "pretty_function_test",
+    srcs = ["pretty_function_test.cc"],
+    deps = [
+        ":pretty_function",
+        ":result",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_library(
