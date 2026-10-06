@@ -20,6 +20,7 @@ build --cxxopt=-Wmissing-declarations
 build --cxxopt=-Woverloaded-virtual
 build --cxxopt=-Wredundant-decls
 build --cxxopt=-Wundef
+build --cxxopt=-Wno-missing-designated-field-initializers
 
 build:macos --copt=-mmacosx-version-min=26.0
 build:macos --linkopt=-mmacosx-version-min=26.0

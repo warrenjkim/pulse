@@ -25,3 +25,29 @@ llvm.toolchain(
 use_repo(llvm, "llvm_toolchain")
 
 register_toolchains("@llvm_toolchain//:all")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "llvm_macos_aarch64",
+    build_file = "//third_party/llvm:llvm.BUILD",
+    sha256 = "4177245188b0a30a6539c96b361dea56f253485756bfd8927a6a59e7301e7806",
+    strip_prefix = "LLVM-22.1.7-macOS-ARM64",
+    urls = ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.7/LLVM-22.1.7-macOS-ARM64.tar.xz"],
+)
+
+http_archive(
+    name = "llvm_linux_aarch64",
+    build_file = "//third_party/llvm:llvm.BUILD",
+    sha256 = "118ca2d3ad9da34367e05735317854e7977db45dc4c02a32af58da64c23b8789",
+    strip_prefix = "LLVM-22.1.7-Linux-ARM64",
+    urls = ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.7/LLVM-22.1.7-Linux-ARM64.tar.xz"],
+)
+
+http_archive(
+    name = "llvm_linux_x86_64",
+    build_file = "//third_party/llvm:llvm.BUILD",
+    sha256 = "edb0522b41e261819c06ea437d249f9b8acfa413d3805bc9920eec6fb76ff830",
+    strip_prefix = "LLVM-22.1.7-Linux-X64",
+    urls = ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.7/LLVM-22.1.7-Linux-X64.tar.xz"],
+)
