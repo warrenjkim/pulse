@@ -13,7 +13,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "pulse/core/demangle.h"
+#include "pulse/core/pretty_function.h"
 #include "pulse/core/stringify.h"
 
 namespace pulse {
@@ -177,7 +177,7 @@ TEST(StringifyMapTest, RendersUnorderedEntries) {
 TEST(StringifyContainerTest, UsesScalarSpecializations) {
   EXPECT_THAT(ToString(std::string("hi")), Eq("\"hi\""));
   EXPECT_THAT(ToString(std::vector<const char*>{"a", "b"}),
-              Eq("std::vector<char const*>{\"a\",\"b\"}"));
+              Eq("std::vector<const char*>{\"a\",\"b\"}"));
 }
 
 }  // namespace

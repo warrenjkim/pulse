@@ -40,14 +40,6 @@ using pretty_function_test::E;
 TEST(TypeNameTest, Alias) {
   static_assert(TypeName<std::string>() == "std::string");
   static_assert(TypeName<std::string_view>() == "std::string_view");
-  static_assert(TypeName<uint8_t>() == "uint8_t");
-  static_assert(TypeName<uint16_t>() == "uint16_t");
-  static_assert(TypeName<uint32_t>() == "uint32_t");
-  static_assert(TypeName<uint64_t>() == "uint64_t");
-  static_assert(TypeName<int8_t>() == "int8_t");
-  static_assert(TypeName<int16_t>() == "int16_t");
-  static_assert(TypeName<int64_t>() == "int64_t");
-  static_assert(TypeName<size_t>() == "size_t");
 }
 
 TEST(TypeNameTest, Clean) {

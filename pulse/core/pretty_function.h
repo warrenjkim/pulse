@@ -2,7 +2,6 @@
 
 #include <array>
 #include <cstddef>
-#include <cstdint>
 #include <string>
 #include <string_view>
 
@@ -31,16 +30,8 @@ struct TypeAlias {
     static constexpr std::string_view kName = STRINGIFY(Type); \
   }
 
-TYPE_ALIAS(uint8_t);
-TYPE_ALIAS(uint16_t);
-TYPE_ALIAS(uint32_t);
-TYPE_ALIAS(uint64_t);
-
-TYPE_ALIAS(int8_t);
-TYPE_ALIAS(int16_t);
-TYPE_ALIAS(int64_t);
-
-TYPE_ALIAS(size_t);
+TYPE_ALIAS(std::string);
+TYPE_ALIAS(std::string_view);
 
 #undef TYPE_ALIAS
 #undef STRINGIFY

@@ -85,7 +85,7 @@ std::string CanonicalTypeLabel() {
 
     return name + "<" + TypeLabel<RangeValue<T>>() + ">";
   } else {
-    return TypeName<T>();
+    return std::string(TypeName<T>());
   }
 }
 
