@@ -4,6 +4,12 @@ module(
     compatibility_level = 1,
 )
 
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "rules_go", version = "0.60.0")
+bazel_dep(name = "googletest", version = "1.17.0")
+bazel_dep(name = "toolchains_llvm", version = "1.8.0")
+
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
 git_override(
     module_name = "hedron_compile_commands",
@@ -11,6 +17,11 @@ git_override(
     remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
 )
 
-bazel_dep(name = "rules_cc", version = "0.0.15")
-bazel_dep(name = "rules_go", version = "0.60.0")
-bazel_dep(name = "googletest", version = "1.17.0")
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_version = "22.1.7",
+)
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")
