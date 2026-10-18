@@ -21,6 +21,48 @@ cc_library(
     deps = ["//third_party/llvm:clang_headers"],
 )
 
+cc_library(
+    name = "record",
+    hdrs = ["record.h"],
+)
+
+cc_library(
+    name = "source_writer",
+    hdrs = ["source_writer.h"],
+)
+
+cc_test(
+    name = "source_writer_test",
+    srcs = ["source_writer_test.cc"],
+    deps = [
+        ":source_writer",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "render",
+    srcs = ["render.cc"],
+    hdrs = ["render.h"],
+    copts = _PLUGIN_COPTS,
+    deps = [
+        ":record",
+        ":source_writer",
+    ],
+)
+
+cc_test(
+    name = "render_test",
+    srcs = ["render_test.cc"],
+    deps = [
+        ":record",
+        ":render",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_binary(
     name = "pulse_reflect.so",
     srcs = ["plugin.cc"],
