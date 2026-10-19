@@ -35,6 +35,8 @@ cc_library(
     features = _PLUGIN_FEATURES,
     deps = [
         ":attribute",
+        ":extract",
+        ":record",
         "//third_party/llvm:clang_headers",
     ],
 )
@@ -49,6 +51,23 @@ cc_library(
         ":consumer",
         "//third_party/llvm:clang_headers",
     ],
+)
+
+cc_library(
+    name = "extract",
+    srcs = ["extract.cc"],
+    hdrs = ["extract.h"],
+    copts = _PLUGIN_COPTS,
+    features = _PLUGIN_FEATURES,
+    deps = [
+        ":record",
+        "//third_party/llvm:clang_headers",
+    ],
+)
+
+clang_verify_test(
+    name = "extract_test",
+    src = "extract_test.cc",
 )
 
 cc_library(

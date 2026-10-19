@@ -2,29 +2,6 @@ struct [[pulse::reflect]] Struct {
   int i;
 };
 
-class [[pulse::reflect]] Class {
-  int i [[maybe_unused]];
-};
-
-struct Base {
-  int i;
-};
-
-struct [[pulse::reflect]] WithBase : Base {
-  int j;
-};
-
-template <typename T>
-struct [[pulse::reflect]] Template {
-  T v;
-};
-
-struct Outer {
-  struct [[pulse::reflect]] Nested {
-    int i;
-  };
-};
-
 namespace inner {
 
 struct [[pulse::reflect]] InNamespace {
@@ -44,41 +21,6 @@ struct [[pulse::reflect]] InAnonymousNamespace {
 struct [[pulse::reflect]] WithoutFields {
   using T = int;
   static constexpr bool kB = true;
-};
-
-struct [[pulse::reflect]] WithAnonymousUnion {
-  unsigned i;
-  union {
-    char s[8];
-    const char* p;
-  };
-};
-
-struct [[pulse::reflect]] WithAnonymousUnions {
-  union {
-    int i;
-    float f;
-  };
-  union {
-    long j;
-    double d;
-  };
-};
-
-struct [[pulse::reflect]] WithUnnamedUnionMember {
-  union {
-    int i;
-    float f;
-  } u;
-};
-
-struct [[pulse::reflect]] WithNamedUnionMember {
-  union V {
-    int i;
-    float f;
-  };
-
-  V v;
 };
 
 // expected-error@+1 {{only applies to structs and classes}}
@@ -106,7 +48,3 @@ struct Members {
 
 // expected-error@+1 {{only applies to structs and classes}}
 namespace [[pulse::reflect]] reflected {}
-
-struct [[pulse::reflect(1)]] WithArguments {
-  int i;
-};
