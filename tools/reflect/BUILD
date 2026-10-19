@@ -28,12 +28,27 @@ clang_verify_test(
 )
 
 cc_library(
+    name = "consumer",
+    srcs = ["consumer.cc"],
+    hdrs = ["consumer.h"],
+    copts = _PLUGIN_COPTS,
+    features = _PLUGIN_FEATURES,
+    deps = [
+        ":attribute",
+        "//third_party/llvm:clang_headers",
+    ],
+)
+
+cc_library(
     name = "action",
     srcs = ["action.cc"],
     hdrs = ["action.h"],
     copts = _PLUGIN_COPTS,
     features = _PLUGIN_FEATURES,
-    deps = ["//third_party/llvm:clang_headers"],
+    deps = [
+        ":consumer",
+        "//third_party/llvm:clang_headers",
+    ],
 )
 
 cc_library(

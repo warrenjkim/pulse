@@ -8,12 +8,13 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
 #include "llvm/ADT/StringRef.h"
+#include "tools/reflect/consumer.h"
 
 namespace pulse::reflect::plugin {
 
 std::unique_ptr<clang::ASTConsumer> ReflectAction::CreateASTConsumer(
     clang::CompilerInstance&, llvm::StringRef) {
-  return std::make_unique<clang::ASTConsumer>();
+  return std::make_unique<ReflectConsumer>();
 }
 
 bool ReflectAction::ParseArgs(const clang::CompilerInstance&,
