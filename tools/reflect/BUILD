@@ -1,5 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
-load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(":defs.bzl", "clang_verify_test", "exec_file")
 
 _PLUGIN_COPTS = [
@@ -12,10 +11,26 @@ _PLUGIN_FEATURES = [
     "-parse_headers",
 ]
 
+exports_files(["verify_test.sh"])
+
 cc_library(
     name = "attribute",
     srcs = ["attribute.cc"],
     hdrs = ["attribute.h"],
+    copts = _PLUGIN_COPTS,
+    features = _PLUGIN_FEATURES,
+    deps = ["//third_party/llvm:clang_headers"],
+)
+
+clang_verify_test(
+    name = "attribute_test",
+    src = "attribute_test.cc",
+)
+
+cc_library(
+    name = "action",
+    srcs = ["action.cc"],
+    hdrs = ["action.h"],
     copts = _PLUGIN_COPTS,
     features = _PLUGIN_FEATURES,
     deps = ["//third_party/llvm:clang_headers"],
@@ -77,6 +92,7 @@ cc_binary(
     }),
     linkshared = True,
     deps = [
+        ":action",
         ":attribute",
         "//third_party/llvm:clang_headers",
     ],
@@ -86,9 +102,4 @@ exec_file(
     name = "plugin",
     src = ":pulse_reflect.so",
     visibility = ["//visibility:public"],
-)
-
-clang_verify_test(
-    name = "attribute_test",
-    src = "attribute_test.cc",
 )
