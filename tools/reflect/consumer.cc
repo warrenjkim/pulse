@@ -11,6 +11,7 @@
 #include "tools/reflect/extract.h"
 #include "tools/reflect/inject.h"
 #include "tools/reflect/record.h"
+#include "tools/reflect/render.h"
 
 namespace pulse::reflect::plugin {
 
@@ -34,9 +35,7 @@ void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
     return;
   }
 
-  if (!Inject("consteval bool PulseInjected(const ::" + record->qualified_name +
-                  "*) { return true; }",
-              decl->getLocation(), preprocessor_)) {
+  if (!Inject(Render(*record), decl->getLocation(), preprocessor_)) {
     diags_->Report(decl->getLocation(),
                    diags_->getCustomDiagID(
                        clang::DiagnosticsEngine::Error,

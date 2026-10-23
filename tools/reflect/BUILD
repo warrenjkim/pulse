@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
-load(":defs.bzl", "clang_verify_test", "exec_file")
+load(":defs.bzl", "clang_verify_test", "exec_file", "reflect_cc_test")
 
 _PLUGIN_COPTS = [
     "-std=c++23",
@@ -41,6 +41,7 @@ cc_library(
         ":extract",
         ":inject",
         ":record",
+        ":render",
         "//third_party/llvm:clang_headers",
     ],
 )
@@ -128,6 +129,16 @@ cc_library(
 clang_verify_test(
     name = "inject_test",
     src = "inject_test.cc",
+)
+
+reflect_cc_test(
+    name = "integration_test",
+    srcs = ["integration_test.cc"],
+    deps = [
+        "//pulse/reflect:mirror",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_binary(

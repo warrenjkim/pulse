@@ -1,3 +1,5 @@
+load("//bazel:cc.bzl", "cc_binary", "cc_library", "cc_test")
+
 cc_library(
     name = "reflect",
     visibility = ["//visibility:public"],

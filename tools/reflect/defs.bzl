@@ -1,3 +1,4 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 _CLANG = str(Label("@llvm_toolchain_llvm//:bin/clang"))
@@ -31,4 +32,21 @@ def clang_verify_test(name, src):
             _PLUGIN,
             _STUB,
         ],
+    )
+
+def reflect_cc_test(name, srcs, deps = [], **kwargs):
+    cc_library(
+        name = name + "_lib",
+        testonly = True,
+        srcs = srcs,
+        deps = deps,
+        copts = ["-fplugin=$(location %s)" % _PLUGIN],
+        additional_compiler_inputs = [_PLUGIN],
+        alwayslink = True,
+    )
+
+    cc_test(
+        name = name,
+        deps = [":" + name + "_lib"],
+        **kwargs
     )

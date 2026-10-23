@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef PULSE_REFLECT_PLUGIN
+#error "pulse/reflect requires the pulse_reflect plugin"
+#endif
+
 #include <concepts>
 #include <cstddef>
 #include <string_view>
