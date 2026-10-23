@@ -1,5 +1,8 @@
 #include "pulse/reflect/mirror.h"
 
+#include <string>
+#include <string_view>
+
 #include "gtest/gtest.h"
 
 namespace pulse::reflect {
@@ -47,6 +50,21 @@ concept ValidMirror = requires { typename Mirror<T, D...>; };
 TEST(MirrorTest, Mirror) {
   static_assert(ValidMirror<A, I, J>);
   static_assert(!ValidMirror<B, I>);
+}
+
+TEST(MirrorTest, FieldName) { static_assert(kFieldName<I> == "i"); }
+
+TEST(MirrorTest, ForEachField) {
+  static_assert([]() {
+    std::string names;
+    int sum = 0;
+    ForEachField(A{.i = 2, .j = true},
+                 [&](std::string_view name, const auto& v) {
+                   names += name;
+                   sum += v;
+                 });
+    return names == "ij" && sum == 3;
+  }());
 }
 
 }  // namespace

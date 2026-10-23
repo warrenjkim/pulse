@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <string_view>
 
 namespace pulse::reflect {
 
@@ -38,5 +39,17 @@ template <typename T, FieldDescriptor<T>... D>
 struct Mirror {
   static constexpr size_t kSize = sizeof...(D);
 };
+
+// The name of the field `D` describes.
+template <typename D>
+inline constexpr std::string_view kFieldName = D::Name();
+
+// Calls `f(name, value)` for each field of `value`, in declaration order.
+template <Reflected T, typename F>
+constexpr void ForEachField(const T& value, F&& f) {
+  [&]<typename... D>(Mirror<T, D...>) {
+    (f(kFieldName<D>, D::Value(value)), ...);
+  }(Describe<T>{});
+}
 
 }  // namespace pulse::reflect
