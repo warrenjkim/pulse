@@ -11,7 +11,10 @@ _PLUGIN_FEATURES = [
     "-parse_headers",
 ]
 
-exports_files(["verify_test.sh"])
+exports_files([
+    "clang_verify_test.sh",
+    "testdata/mirror_stub.h",
+])
 
 cc_library(
     name = "attribute",
