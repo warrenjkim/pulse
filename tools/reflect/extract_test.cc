@@ -90,3 +90,8 @@ struct [[pulse::reflect]] WithAnonymousUnion {
     float f;
   };
 };
+
+struct [[pulse::reflect]] WithDeclarator {
+  int i;
+  // expected-error@+1 {{declare variables separately from a reflected class}}
+} declarator;

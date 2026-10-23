@@ -36,6 +36,7 @@ cc_library(
     deps = [
         ":attribute",
         ":extract",
+        ":inject",
         ":record",
         "//third_party/llvm:clang_headers",
     ],
@@ -110,6 +111,20 @@ cc_test(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "inject",
+    srcs = ["inject.cc"],
+    hdrs = ["inject.h"],
+    copts = _PLUGIN_COPTS,
+    features = _PLUGIN_FEATURES,
+    deps = ["//third_party/llvm:clang_headers"],
+)
+
+clang_verify_test(
+    name = "inject_test",
+    src = "inject_test.cc",
 )
 
 cc_binary(

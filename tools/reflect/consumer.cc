@@ -9,12 +9,14 @@
 #include "llvm/Support/Casting.h"
 #include "tools/reflect/attribute.h"
 #include "tools/reflect/extract.h"
+#include "tools/reflect/inject.h"
 #include "tools/reflect/record.h"
 
 namespace pulse::reflect::plugin {
 
-ReflectConsumer::ReflectConsumer(clang::DiagnosticsEngine* diags)
-    : diags_(diags) {}
+ReflectConsumer::ReflectConsumer(clang::DiagnosticsEngine* diags,
+                                 clang::Preprocessor* preprocessor)
+    : diags_(diags), preprocessor_(preprocessor) {}
 
 void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
   const auto* decl = llvm::dyn_cast<clang::CXXRecordDecl>(tag);
@@ -30,6 +32,15 @@ void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
   const std::optional<Record> record = Extract(*decl, diags_);
   if (!record.has_value()) {
     return;
+  }
+
+  if (!Inject("consteval bool PulseInjected(const ::" + record->qualified_name +
+                  "*) { return true; }",
+              decl->getLocation(), preprocessor_)) {
+    diags_->Report(decl->getLocation(),
+                   diags_->getCustomDiagID(
+                       clang::DiagnosticsEngine::Error,
+                       "pulse::reflect: could not inject generated source"));
   }
 }
 

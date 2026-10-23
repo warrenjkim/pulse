@@ -14,7 +14,8 @@ namespace pulse::reflect::plugin {
 
 std::unique_ptr<clang::ASTConsumer> ReflectAction::CreateASTConsumer(
     clang::CompilerInstance& ci, llvm::StringRef) {
-  return std::make_unique<ReflectConsumer>(&ci.getDiagnostics());
+  return std::make_unique<ReflectConsumer>(&ci.getDiagnostics(),
+                                           &ci.getPreprocessor());
 }
 
 bool ReflectAction::ParseArgs(const clang::CompilerInstance&,
