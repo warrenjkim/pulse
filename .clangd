@@ -4,3 +4,5 @@ CompileFlags:
 Diagnostics:
   MissingIncludes: Strict
   UnusedIncludes: Strict
+Style:
+  QuotedHeaders: ["clang/.*", "llvm/.*"]
