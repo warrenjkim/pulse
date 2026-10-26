@@ -11,3 +11,9 @@ cc_library(
     includes = ["include"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "clang",
+    srcs = ["bin/clang"],
+    visibility = ["//visibility:public"],
+)

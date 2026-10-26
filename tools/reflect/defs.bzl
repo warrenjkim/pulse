@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
-_CLANG = str(Label("@llvm_toolchain_llvm//:bin/clang"))
+_CLANG = str(Label("//third_party/llvm:clang"))
 _PLUGIN = str(Label("//tools/reflect:plugin"))
 _VERIFY = str(Label("//tools/reflect:clang_verify_test.sh"))
 _STUB = str(Label("//tools/reflect:testdata/mirror_stub.h"))

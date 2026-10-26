@@ -31,3 +31,13 @@ alias(
     }),
     visibility = ["//tools/reflect:__pkg__"],
 )
+
+alias(
+    name = "clang",
+    actual = select({
+        ":macos_aarch64": "@llvm_macos_aarch64//:clang",
+        ":linux_aarch64": "@llvm_linux_aarch64//:clang",
+        ":linux_x86_64": "@llvm_linux_x86_64//:clang",
+    }),
+    visibility = ["//tools/reflect:__pkg__"],
+)
