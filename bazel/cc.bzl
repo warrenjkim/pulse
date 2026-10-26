@@ -17,6 +17,7 @@ _COMPILE_ATTRS = [
 def _with_plugin(kwargs):
     kwargs["copts"] = kwargs.get("copts", []) + [
         "-fplugin=$(location %s)" % _PLUGIN,
+        "-DPULSE_REFLECT_PLUGIN=1",
     ]
     kwargs["additional_compiler_inputs"] = kwargs.get(
         "additional_compiler_inputs",

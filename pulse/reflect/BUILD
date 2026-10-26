@@ -30,3 +30,25 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "stringify",
+    hdrs = ["stringify.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":mirror",
+        "//pulse/core:pretty_function",
+        "//pulse/core:stringify",
+    ],
+)
+
+cc_test(
+    name = "stringify_test",
+    srcs = ["stringify_test.cc"],
+    deps = [
+        ":stringify",
+        "//pulse/core:stringify",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
