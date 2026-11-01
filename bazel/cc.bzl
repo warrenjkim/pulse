@@ -1,63 +1,23 @@
-load(
-    "@rules_cc//cc:defs.bzl",
-    _cc_binary = "cc_binary",
-    _cc_library = "cc_library",
-    _cc_test = "cc_test",
-)
+load("@rules_cc//cc:defs.bzl", _cc_library = "cc_library")
+load("//tools/reflect:defs.bzl", "reflect_headers")
 
-_PLUGIN = str(Label("//tools/reflect:plugin"))
+def cc_library(name, **kwargs):
+    """A `cc_library` that generates reflection for its headers.
 
-_COMPILE_ATTRS = [
-    "copts",
-    "defines",
-    "includes",
-    "local_defines",
-]
+    Each `foo.h` gets a generated `foo.reflect.h`. A header with classes marked
+    `pulse_reflect` must include it after them:
 
-def _with_plugin(kwargs):
-    kwargs["copts"] = kwargs.get("copts", []) + [
-        "-fplugin=$(location %s)" % _PLUGIN,
-    ]
-    kwargs["additional_compiler_inputs"] = kwargs.get(
-        "additional_compiler_inputs",
-        [],
-    ) + [_PLUGIN]
-    return kwargs
+        #include "path/to/foo.reflect.h"
+    """
+    hdrs = kwargs.get("hdrs", [])
+    headers = [h for h in hdrs + kwargs.get("srcs", []) if h.endswith(".h")]
+    if headers:
+        reflect_headers(
+            name = name + "_reflect",
+            srcs = headers,
+            deps = kwargs.get("deps", []),
+            testonly = kwargs.get("testonly", False),
+        )
+        kwargs["hdrs"] = hdrs + [":" + name + "_reflect"]
 
-def _sources_library(name, srcs, deps, testonly, kwargs):
-    lib = {
-        "name": name + "_lib",
-        "srcs": srcs,
-        "deps": deps,
-        "testonly": testonly,
-        "alwayslink": True,
-    }
-    for attr in _COMPILE_ATTRS:
-        if attr in kwargs:
-            lib[attr] = kwargs.pop(attr)
-
-    cc_library(**lib)
-    return [":" + name + "_lib"]
-
-def cc_library(**kwargs):
-    _cc_library(**_with_plugin(kwargs))
-
-def cc_test(name, srcs = [], deps = [], **kwargs):
-    _cc_test(
-        name = name,
-        deps = _sources_library(name, srcs, deps, True, kwargs),
-        **kwargs
-    )
-
-def cc_binary(name, srcs = [], deps = [], **kwargs):
-    _cc_binary(
-        name = name,
-        deps = _sources_library(
-            name,
-            srcs,
-            deps,
-            kwargs.get("testonly", False),
-            kwargs,
-        ),
-        **kwargs
-    )
+    _cc_library(name = name, **kwargs)

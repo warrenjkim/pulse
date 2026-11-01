@@ -1,3 +1,5 @@
+load("//bazel:cc.bzl", "cc_library")
+
 cc_library(
     name = "cors",
     srcs = ["cors.cc"],

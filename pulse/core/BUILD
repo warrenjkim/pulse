@@ -1,3 +1,5 @@
+load("//bazel:cc.bzl", "cc_library")
+
 cc_library(
     name = "core",
     visibility = ["//visibility:public"],
@@ -15,6 +17,7 @@ cc_library(
     name = "demangle",
     hdrs = ["demangle.h"],
     visibility = ["//visibility:public"],
+    deps = [":pretty_function"],
 )
 
 cc_library(

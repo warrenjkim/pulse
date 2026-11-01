@@ -1,26 +1,8 @@
-#include "pulse/reflect/stringify.h"
+#include "pulse/reflect/stringify.h"  // IWYU pragma: keep
 
 #include "gtest/gtest.h"
 #include "pulse/core/stringify.h"
-
-namespace ns {
-
-struct pulse_reflect A {
-  int i;
-  bool j;
-};
-
-struct pulse_reflect B {
-  A a;
-};
-
-struct C {};
-
-struct pulse_reflect D {
-  C c;
-};
-
-}  // namespace ns
+#include "pulse/reflect/testdata/types.h"
 
 namespace pulse {
 
