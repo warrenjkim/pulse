@@ -5,18 +5,18 @@
 
 namespace ns {
 
-struct [[pulse::reflect]] A {
+struct pulse_reflect A {
   int i;
   bool j;
 };
 
-struct [[pulse::reflect]] B {
+struct pulse_reflect B {
   A a;
 };
 
 struct C {};
 
-struct [[pulse::reflect]] D {
+struct pulse_reflect D {
   C c;
 };
 

@@ -31,7 +31,7 @@ concept ReflectedStringifiable =
 
 namespace pulse {
 
-// Renders a class marked `[[pulse::reflect]]` with its field names:
+// Renders a class marked `pulse_reflect` with its field names:
 //
 //   ns::A{.i=2,.j=true}
 template <internal::ReflectedStringifiable T>

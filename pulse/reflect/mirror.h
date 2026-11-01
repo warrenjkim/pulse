@@ -4,6 +4,16 @@
 #include <cstddef>
 #include <string_view>
 
+// Marks a struct or class for reflection:
+//
+//   struct pulse_reflect A {
+//     int i;
+//   };
+//
+// The pulse_reflect plugin generates its reflection into `foo.reflect.h`.
+// `foo.h` must include it after its reflected classes.
+#define pulse_reflect [[clang::annotate("pulse::reflect")]]
+
 namespace pulse::reflect {
 
 // A field descriptor for class `T`. The pulse-reflect plugin generates one per
@@ -22,7 +32,7 @@ concept FieldDescriptor = requires(const T& value) {
 };
 
 // Whether `T` has a `PulseReflect` overload, i.e. is marked with
-// `[[pulse::reflect]]`.
+// `pulse_reflect`.
 template <typename T>
 concept Reflected = requires { PulseReflect(static_cast<const T*>(nullptr)); };
 

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "pulse/reflect/mirror.h"
+
 namespace ns {
 
-struct [[pulse::reflect]] A {
+struct pulse_reflect A {
   int i;
   bool j;
 };

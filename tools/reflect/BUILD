@@ -174,7 +174,6 @@ cc_binary(
     linkshared = True,
     deps = [
         ":action",
-        ":attribute",
         "//third_party/llvm:clang_headers",
     ],
 )

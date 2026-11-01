@@ -5,7 +5,7 @@
 
 namespace pulse::reflect::plugin {
 
-// A class marked `[[pulse::reflect]]`, independent of Clang's AST.
+// A class marked `pulse_reflect`, independent of Clang's AST.
 struct Record {
   // A namespace enclosing the class. An empty `name` is an anonymous namespace.
   struct Namespace {

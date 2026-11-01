@@ -1,6 +1,5 @@
 CompileFlags:
   Remove: [-fplugin=*]
-  Add: [-Wno-unknown-attributes]
 Diagnostics:
   MissingIncludes: Strict
   UnusedIncludes: Strict

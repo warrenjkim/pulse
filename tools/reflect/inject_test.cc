@@ -12,13 +12,13 @@ template <typename T>
 constexpr int kSize =
     Size<decltype(PulseReflect(static_cast<const T*>(nullptr)))>::kValue;
 
-struct [[pulse::reflect]] A {
+struct pulse_reflect A {
   int i;
 };
 
 namespace ns {
 
-struct [[pulse::reflect]] B {
+struct pulse_reflect B {
   int i;
   int j;
 };
@@ -27,7 +27,7 @@ struct [[pulse::reflect]] B {
 
 namespace {
 
-struct [[pulse::reflect]] C {};
+struct pulse_reflect C {};
 
 }  // namespace
 
