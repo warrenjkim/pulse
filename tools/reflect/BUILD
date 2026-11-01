@@ -13,6 +13,7 @@ _PLUGIN_FEATURES = [
 
 exports_files([
     "clang_verify_test.sh",
+    "run_clang.sh",
     "testdata/mirror_stub.h",
 ])
 

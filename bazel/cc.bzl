@@ -8,6 +8,8 @@ def cc_library(name, **kwargs):
     `pulse_reflect` must include it after them:
 
         #include "path/to/foo.reflect.h"
+
+    Generation runs pulse's own clang, so this works with any C++ toolchain.
     """
     hdrs = kwargs.get("hdrs", [])
     headers = [h for h in hdrs + kwargs.get("srcs", []) if h.endswith(".h")]

@@ -6,6 +6,7 @@ load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 _CLANG = str(Label("//third_party/llvm:clang"))
 _PLUGIN = str(Label("//tools/reflect:plugin"))
+_RUN_CLANG = str(Label("//tools/reflect:run_clang.sh"))
 _VERIFY = str(Label("//tools/reflect:clang_verify_test.sh"))
 _STUB = str(Label("//tools/reflect:testdata/mirror_stub.h"))
 
@@ -48,13 +49,14 @@ def _reflect_headers_impl(ctx):
 
     stub_root = stubs[0].path.removesuffix("/" + outputs[0].short_path) if stubs else ""
     plugin = ctx.file._plugin
+    clang = ctx.file._clang
     inputs = depset(
-        direct = ctx.files.srcs + stubs + [plugin],
-        transitive = [compilation_context.headers, cc_toolchain.all_files],
-    )
-    compiler = cc_common.get_tool_for_action(
-        feature_configuration = feature_configuration,
-        action_name = CPP_COMPILE_ACTION_NAME,
+        direct = ctx.files.srcs + stubs + [plugin, clang],
+        transitive = [
+            compilation_context.headers,
+            cc_toolchain.all_files,
+            ctx.attr._clang[DefaultInfo].default_runfiles.files,
+        ],
     )
 
     for src, output in zip(ctx.files.srcs, outputs):
@@ -68,6 +70,8 @@ def _reflect_headers_impl(ctx):
                 "-fsyntax-only",
                 # NOTE: The toolchain passes `-c`, which `-fsyntax-only` ignores.
                 "-Wno-unused-command-line-argument",
+                # NOTE: The toolchain may pass warnings pulse's clang lacks.
+                "-Wno-unknown-warning-option",
                 "-fplugin=" + plugin.path,
                 "-fplugin-arg-pulse_reflect-emit=" + output.path,
                 "-fplugin-arg-pulse_reflect-include=" + output.short_path,
@@ -82,8 +86,8 @@ def _reflect_headers_impl(ctx):
             preprocessor_defines = compilation_context.defines,
         )
         ctx.actions.run(
-            executable = compiler,
-            arguments = cc_common.get_memory_inefficient_command_line(
+            executable = ctx.executable._run_clang,
+            arguments = [clang.path] + cc_common.get_memory_inefficient_command_line(
                 feature_configuration = feature_configuration,
                 action_name = CPP_COMPILE_ACTION_NAME,
                 variables = variables,
@@ -103,12 +107,23 @@ def _reflect_headers_impl(ctx):
 
 # Generates `foo.reflect.h` next to each `foo.h` in `srcs` with the
 # pulse_reflect plugin.
+#
+# NOTE: The plugin only loads into the clang it was built against, so this runs
+# pulse's pinned clang rather than the consumer's compiler. It only parses, so
+# no code from it reaches the consumer's build.
 reflect_headers = rule(
     implementation = _reflect_headers_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = [".h"]),
         "deps": attr.label_list(providers = [CcInfo]),
+        "_clang": attr.label(default = _CLANG, allow_single_file = True, cfg = "exec"),
         "_plugin": attr.label(default = _PLUGIN, allow_single_file = True),
+        "_run_clang": attr.label(
+            default = _RUN_CLANG,
+            allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+        ),
     },
     fragments = ["cpp"],
     toolchains = use_cc_toolchain(),
