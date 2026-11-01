@@ -13,8 +13,8 @@ namespace pulse::reflect::plugin {
 
 // Runs after Clang's main action on every file compiled with the plugin.
 //
-// Accepts `-fplugin-arg-pulse_reflect-emit=<path>` to write the generated
-// source of the main file to `<path>` instead of injecting it, and
+// Requires `-fplugin-arg-pulse_reflect-emit=<path>` to write the generated
+// source of the main file to `<path>`. Accepts
 // `-fplugin-arg-pulse_reflect-include=<include>` to require the main file to
 // include `<include>`, the generated source, after its reflected classes.
 class ReflectAction : public clang::PluginASTAction {

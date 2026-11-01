@@ -39,7 +39,6 @@ cc_library(
     deps = [
         ":attribute",
         ":extract",
-        ":inject",
         ":record",
         ":render",
         "//third_party/llvm:clang_headers",
@@ -117,24 +116,7 @@ cc_test(
     ],
 )
 
-cc_library(
-    name = "inject",
-    srcs = ["inject.cc"],
-    hdrs = ["inject.h"],
-    copts = _PLUGIN_COPTS,
-    features = _PLUGIN_FEATURES,
-    deps = ["//third_party/llvm:clang_headers"],
-)
-
-clang_verify_test(
-    name = "inject_test",
-    src = "inject_test.cc",
-)
-
-_INCLUDE_TEST_ARGS = [
-    "-fplugin-arg-pulse_reflect-emit=/dev/null",
-    "-fplugin-arg-pulse_reflect-include=testdata/empty.reflect.h",
-]
+_INCLUDE_TEST_ARGS = ["-fplugin-arg-pulse_reflect-include=testdata/empty.reflect.h"]
 
 clang_verify_test(
     name = "include_missing_test",

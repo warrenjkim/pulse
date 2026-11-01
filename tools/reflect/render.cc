@@ -59,12 +59,6 @@ void WriteRecord(const Record& record, SourceWriter* w) {
 
 }  // namespace
 
-std::string RenderRecord(const Record& record) {
-  SourceWriter w;
-  WriteRecord(record, &w);
-  return *std::move(w);
-}
-
 std::string RenderHeader(const std::vector<Record>& records) {
   SourceWriter w;
   w.Line("#pragma once");

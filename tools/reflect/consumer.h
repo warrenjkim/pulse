@@ -13,10 +13,8 @@
 
 namespace pulse::reflect::plugin {
 
-// Extracts each class marked `pulse_reflect` as its definition completes.
-//
-// A non-empty `emit_path` writes the reflection source of each class defined in
-// the main file into `emit_path`. Otherwise, injects it after each definition.
+// Writes the reflection source of each class marked `pulse_reflect` in the
+// main file into `emit_path`.
 //
 // A non-empty `include` also requires the main file to include `include` after
 // its last reflected class.

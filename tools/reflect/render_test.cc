@@ -7,19 +7,15 @@ namespace pulse::reflect::plugin {
 
 namespace {
 
-TEST(RenderTest, Empty) {
-  EXPECT_EQ(RenderRecord(Record{.qualified_name = "A"}),
-            R"([[maybe_unused]] consteval auto PulseReflect(const ::A*) {
-  return ::pulse::reflect::Mirror<::A>{};
-}
-)");
-}
-
 TEST(RenderTest, Fields) {
-  EXPECT_EQ(RenderRecord(
-                Record{.qualified_name = "ns::A",
-                       .fields = {Record::Field{.name = "i"}, {.name = "j"}}}),
-            R"([[maybe_unused]] consteval auto PulseReflect(const ::ns::A*) {
+  EXPECT_EQ(RenderHeader({Record{
+                .qualified_name = "ns::A",
+                .fields = {Record::Field{.name = "i"}, {.name = "j"}}}}),
+            R"(#pragma once
+
+#include "pulse/reflect/mirror.h"
+
+[[maybe_unused]] consteval auto PulseReflect(const ::ns::A*) {
   struct PulseField0 {
     using Type = decltype(::ns::A::i);
     static consteval const char* Name() { return "i"; }

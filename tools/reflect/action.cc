@@ -21,6 +21,7 @@ std::unique_ptr<clang::ASTConsumer> ReflectAction::CreateASTConsumer(
 
 bool ReflectAction::ParseArgs(const clang::CompilerInstance& ci,
                               const std::vector<std::string>& args) {
+  clang::DiagnosticsEngine* diags = &ci.getDiagnostics();
   for (llvm::StringRef arg : args) {
     if (arg.consume_front("emit=")) {
       emit_path_ = arg.str();
@@ -32,11 +33,17 @@ bool ReflectAction::ParseArgs(const clang::CompilerInstance& ci,
       continue;
     }
 
-    clang::DiagnosticsEngine* diags = &ci.getDiagnostics();
     diags->Report(
         diags->getCustomDiagID(clang::DiagnosticsEngine::Error,
                                "pulse::reflect: unknown argument '%0'"))
         << arg;
+    return false;
+  }
+
+  if (emit_path_.empty()) {
+    diags->Report(diags->getCustomDiagID(
+        clang::DiagnosticsEngine::Error,
+        "pulse::reflect: missing -fplugin-arg-pulse_reflect-emit=<path>"));
     return false;
   }
 

@@ -17,7 +17,6 @@
 #include "llvm/Support/raw_ostream.h"
 #include "tools/reflect/attribute.h"
 #include "tools/reflect/extract.h"
-#include "tools/reflect/inject.h"
 #include "tools/reflect/record.h"
 #include "tools/reflect/render.h"
 
@@ -42,9 +41,8 @@ void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
     return;
   }
 
-  // NOTE: When emitting, each header emits its own classes.
-  if (!emit_path_.empty() &&
-      !preprocessor_->getSourceManager().isInMainFile(decl->getLocation())) {
+  // NOTE: Each header emits its own classes.
+  if (!preprocessor_->getSourceManager().isInMainFile(decl->getLocation())) {
     return;
   }
 
@@ -53,25 +51,11 @@ void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
     return;
   }
 
-  if (!emit_path_.empty()) {
-    records_.push_back(*std::move(record));
-    last_reflected_ = decl->getBraceRange().getEnd();
-    return;
-  }
-
-  if (!Inject(RenderRecord(*record), decl->getLocation(), preprocessor_)) {
-    diags_->Report(decl->getLocation(),
-                   diags_->getCustomDiagID(
-                       clang::DiagnosticsEngine::Error,
-                       "pulse::reflect: could not inject generated source"));
-  }
+  records_.push_back(*std::move(record));
+  last_reflected_ = decl->getBraceRange().getEnd();
 }
 
 void ReflectConsumer::HandleTranslationUnit(clang::ASTContext&) {
-  if (emit_path_.empty()) {
-    return;
-  }
-
   if (!include_.empty() && !records_.empty()) {
     CheckIncluded();
   }
