@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "tools/reflect/record.h"
 
@@ -30,6 +31,10 @@ namespace pulse::reflect::plugin {
 //     return ::pulse::reflect::Mirror<::ns::A, PulseField0>{};
 //   }
 // ```
-std::string Render(const Record& record);
+std::string RenderRecord(const Record& record);
+
+// Renders a header holding the reflection source of each of `records`, each
+// within its class's namespaces.
+std::string RenderHeader(const std::vector<Record>& records);
 
 }  // namespace pulse::reflect::plugin

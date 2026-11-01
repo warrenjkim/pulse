@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "clang/AST/ASTConsumer.h"
+#include "clang/Basic/Diagnostic.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Lex/Preprocessor.h"
@@ -19,11 +20,26 @@ std::unique_ptr<clang::ASTConsumer> ReflectAction::CreateASTConsumer(
   preprocessor.setPredefines(preprocessor.getPredefines() +
                              "#define PULSE_REFLECT_PLUGIN 1\n");
 
-  return std::make_unique<ReflectConsumer>(&ci.getDiagnostics(), &preprocessor);
+  return std::make_unique<ReflectConsumer>(&ci.getDiagnostics(), &preprocessor,
+                                           emit_path_);
 }
 
-bool ReflectAction::ParseArgs(const clang::CompilerInstance&,
-                              const std::vector<std::string>&) {
+bool ReflectAction::ParseArgs(const clang::CompilerInstance& ci,
+                              const std::vector<std::string>& args) {
+  for (llvm::StringRef arg : args) {
+    if (arg.consume_front("emit=")) {
+      emit_path_ = arg.str();
+      continue;
+    }
+
+    clang::DiagnosticsEngine* diags = &ci.getDiagnostics();
+    diags->Report(
+        diags->getCustomDiagID(clang::DiagnosticsEngine::Error,
+                               "pulse::reflect: unknown argument '%0'"))
+        << arg;
+    return false;
+  }
+
   return true;
 }
 

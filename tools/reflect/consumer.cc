@@ -1,12 +1,18 @@
 #include "tools/reflect/consumer.h"
 
 #include <optional>
+#include <string>
+#include <system_error>
+#include <utility>
 
+#include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/Basic/Diagnostic.h"
+#include "clang/Basic/SourceManager.h"
 #include "clang/Basic/Specifiers.h"
 #include "llvm/Support/Casting.h"
+#include "llvm/Support/raw_ostream.h"
 #include "tools/reflect/attribute.h"
 #include "tools/reflect/extract.h"
 #include "tools/reflect/inject.h"
@@ -16,8 +22,11 @@
 namespace pulse::reflect::plugin {
 
 ReflectConsumer::ReflectConsumer(clang::DiagnosticsEngine* diags,
-                                 clang::Preprocessor* preprocessor)
-    : diags_(diags), preprocessor_(preprocessor) {}
+                                 clang::Preprocessor* preprocessor,
+                                 std::string emit_path)
+    : diags_(diags),
+      preprocessor_(preprocessor),
+      emit_path_(std::move(emit_path)) {}
 
 void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
   const auto* decl = llvm::dyn_cast<clang::CXXRecordDecl>(tag);
@@ -30,16 +39,48 @@ void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
     return;
   }
 
-  const std::optional<Record> record = Extract(*decl, diags_);
+  // NOTE: When emitting, each header emits its own classes.
+  if (!emit_path_.empty() &&
+      !preprocessor_->getSourceManager().isInMainFile(decl->getLocation())) {
+    return;
+  }
+
+  std::optional<Record> record = Extract(*decl, diags_);
   if (!record.has_value()) {
     return;
   }
 
-  if (!Inject(Render(*record), decl->getLocation(), preprocessor_)) {
+  if (!emit_path_.empty()) {
+    records_.push_back(*std::move(record));
+    return;
+  }
+
+  if (!Inject(RenderRecord(*record), decl->getLocation(), preprocessor_)) {
     diags_->Report(decl->getLocation(),
                    diags_->getCustomDiagID(
                        clang::DiagnosticsEngine::Error,
                        "pulse::reflect: could not inject generated source"));
+  }
+}
+
+void ReflectConsumer::HandleTranslationUnit(clang::ASTContext&) {
+  if (emit_path_.empty()) {
+    return;
+  }
+
+  std::error_code error;
+  llvm::raw_fd_ostream out(emit_path_, error);
+  if (!error) {
+    out << RenderHeader(records_);
+    out.close();
+    error = out.error();
+  }
+
+  if (error) {
+    diags_->Report(
+        diags_->getCustomDiagID(clang::DiagnosticsEngine::Error,
+                                "pulse::reflect: could not write '%0': %1"))
+        << emit_path_ << error.message();
   }
 }
 
