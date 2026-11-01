@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
-load(":defs.bzl", "clang_verify_test", "exec_file", "reflect_cc_test")
+load(":defs.bzl", "clang_verify_test", "exec_file", "reflect_headers")
 
 _PLUGIN_COPTS = [
     "-std=c++23",
@@ -131,10 +131,28 @@ clang_verify_test(
     src = "inject_test.cc",
 )
 
-reflect_cc_test(
+reflect_headers(
+    name = "reflected_gen",
+    testonly = True,
+    srcs = ["testdata/reflected.h"],
+    deps = ["//pulse/reflect:mirror"],
+)
+
+cc_library(
+    name = "reflected",
+    testonly = True,
+    hdrs = [
+        "testdata/reflected.h",
+        ":reflected_gen",
+    ],
+    deps = ["//pulse/reflect:mirror"],
+)
+
+cc_test(
     name = "integration_test",
     srcs = ["integration_test.cc"],
     deps = [
+        ":reflected",
         "//pulse/reflect:mirror",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
