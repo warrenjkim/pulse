@@ -9,8 +9,10 @@
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/Basic/Diagnostic.h"
+#include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/Specifiers.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
 #include "tools/reflect/attribute.h"
@@ -23,10 +25,11 @@ namespace pulse::reflect::plugin {
 
 ReflectConsumer::ReflectConsumer(clang::DiagnosticsEngine* diags,
                                  clang::Preprocessor* preprocessor,
-                                 std::string emit_path)
+                                 std::string emit_path, std::string include)
     : diags_(diags),
       preprocessor_(preprocessor),
-      emit_path_(std::move(emit_path)) {}
+      emit_path_(std::move(emit_path)),
+      include_(std::move(include)) {}
 
 void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
   const auto* decl = llvm::dyn_cast<clang::CXXRecordDecl>(tag);
@@ -52,6 +55,7 @@ void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
 
   if (!emit_path_.empty()) {
     records_.push_back(*std::move(record));
+    last_reflected_ = decl->getBraceRange().getEnd();
     return;
   }
 
@@ -68,6 +72,10 @@ void ReflectConsumer::HandleTranslationUnit(clang::ASTContext&) {
     return;
   }
 
+  if (!include_.empty() && !records_.empty()) {
+    CheckIncluded();
+  }
+
   std::error_code error;
   llvm::raw_fd_ostream out(emit_path_, error);
   if (!error) {
@@ -82,6 +90,43 @@ void ReflectConsumer::HandleTranslationUnit(clang::ASTContext&) {
                                 "pulse::reflect: could not write '%0': %1"))
         << emit_path_ << error.message();
   }
+}
+
+void ReflectConsumer::CheckIncluded() {
+  const clang::SourceManager& sources = preprocessor_->getSourceManager();
+  for (unsigned i = 0; i < sources.local_sloc_entry_size(); i++) {
+    const clang::SrcMgr::SLocEntry& entry = sources.getLocalSLocEntry(i);
+    if (!entry.isFile()) {
+      continue;
+    }
+
+    const clang::SrcMgr::FileInfo& file = entry.getFile();
+    const llvm::StringRef name = file.getName();
+    if (!(name == include_ || name.ends_with("/" + include_)) ||
+        !sources.isInMainFile(file.getIncludeLoc())) {
+      continue;
+    }
+
+    if (sources.isBeforeInTranslationUnit(file.getIncludeLoc(),
+                                          last_reflected_)) {
+      diags_->Report(file.getIncludeLoc(),
+                     diags_->getCustomDiagID(
+                         clang::DiagnosticsEngine::Error,
+                         "pulse::reflect: include \"%0\" after the last "
+                         "reflected class"))
+          << include_;
+    }
+
+    return;
+  }
+
+  diags_->Report(last_reflected_,
+                 diags_->getCustomDiagID(
+                     clang::DiagnosticsEngine::Error,
+                     "pulse::reflect: this header does not include its "
+                     "generated source; add `#include \"%0\"` after its "
+                     "reflected classes"))
+      << include_;
 }
 
 }  // namespace pulse::reflect::plugin

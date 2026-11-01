@@ -131,6 +131,24 @@ clang_verify_test(
     src = "inject_test.cc",
 )
 
+_INCLUDE_TEST_ARGS = [
+    "-fplugin-arg-pulse_reflect-emit=/dev/null",
+    "-fplugin-arg-pulse_reflect-include=testdata/empty.reflect.h",
+]
+
+clang_verify_test(
+    name = "include_missing_test",
+    src = "include_missing_test.cc",
+    args = _INCLUDE_TEST_ARGS,
+)
+
+clang_verify_test(
+    name = "include_order_test",
+    src = "include_order_test.cc",
+    args = _INCLUDE_TEST_ARGS,
+    data = ["testdata/empty.reflect.h"],
+)
+
 reflect_headers(
     name = "reflected_gen",
     testonly = True,

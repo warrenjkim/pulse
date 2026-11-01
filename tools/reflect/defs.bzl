@@ -70,6 +70,7 @@ def _reflect_headers_impl(ctx):
                 "-Wno-unused-command-line-argument",
                 "-fplugin=" + plugin.path,
                 "-fplugin-arg-pulse_reflect-emit=" + output.path,
+                "-fplugin-arg-pulse_reflect-include=" + output.short_path,
             ],
             include_directories = compilation_context.includes,
             quote_include_directories = depset(
@@ -113,7 +114,7 @@ reflect_headers = rule(
     toolchains = use_cc_toolchain(),
 )
 
-def clang_verify_test(name, src):
+def clang_verify_test(name, src, args = [], data = []):
     sh_test(
         name = name,
         srcs = [_VERIFY],
@@ -123,7 +124,9 @@ def clang_verify_test(name, src):
             "$(rootpath %s)" % _STUB,
             "$(rootpath %s)" % src,
         ],
-        data = [
+        # NOTE: Not `args`, which also get each `--test_arg`.
+        env = {"CLANG_VERIFY_ARGS": " ".join(args)},
+        data = data + [
             src,
             _CLANG,
             _PLUGIN,
