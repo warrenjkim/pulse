@@ -23,8 +23,28 @@ struct pulse_reflect WithoutFields {
   static constexpr bool kB = true;
 };
 
-// expected-error@+1 {{unions cannot be reflected}}
+// expected-error@+1 {{only applies to structs and classes}}
 union pulse_reflect Union {
   int i;
   float f;
 };
+
+// expected-error@+1 {{only applies to structs and classes}}
+enum class pulse_reflect Enum { kA };
+
+// expected-error@+1 {{only applies to structs and classes}}
+pulse_reflect void Function();
+
+// expected-error@+1 {{only applies to structs and classes}}
+pulse_reflect int variable;
+
+struct Members {
+  // expected-error@+1 {{only applies to structs and classes}}
+  pulse_reflect int field;
+
+  // expected-error@+1 {{only applies to structs and classes}}
+  pulse_reflect void Method();
+};
+
+// expected-error@+1 {{only applies to structs and classes}}
+namespace pulse_reflect reflected {}

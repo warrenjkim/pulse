@@ -69,11 +69,6 @@ std::optional<Record> Extract(const clang::CXXRecordDecl& decl,
                               clang::DiagnosticsEngine* diags) {
   const unsigned errors = diags->getNumErrors();
 
-  if (decl.isUnion()) {
-    Error(decl.getLocation(), "unions cannot be reflected", diags);
-    return std::nullopt;
-  }
-
   if (decl.getDeclContext()->isFunctionOrMethod()) {
     Error(decl.getLocation(), "local classes cannot be reflected", diags);
   }

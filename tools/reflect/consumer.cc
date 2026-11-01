@@ -32,7 +32,7 @@ ReflectConsumer::ReflectConsumer(clang::DiagnosticsEngine* diags,
 
 void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
   const auto* decl = llvm::dyn_cast<clang::CXXRecordDecl>(tag);
-  if (decl == nullptr || !MarkedWithPulseReflect(*decl)) {
+  if (decl == nullptr || decl->isUnion() || !MarkedWithPulseReflect(*decl)) {
     return;
   }
 
@@ -55,7 +55,9 @@ void ReflectConsumer::HandleTagDeclDefinition(clang::TagDecl* tag) {
   last_reflected_ = decl->getBraceRange().getEnd();
 }
 
-void ReflectConsumer::HandleTranslationUnit(clang::ASTContext&) {
+void ReflectConsumer::HandleTranslationUnit(clang::ASTContext& context) {
+  ReportMisplacedMarkers(context, diags_);
+
   if (!include_.empty() && !records_.empty()) {
     CheckIncluded();
   }
