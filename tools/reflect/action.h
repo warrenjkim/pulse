@@ -12,6 +12,11 @@
 namespace pulse::reflect::plugin {
 
 // Runs after Clang's main action on every file compiled with the plugin.
+//
+// Requires `-fplugin-arg-pulse_reflect-emit=<path>` to write the generated
+// source of the main file to `<path>`. Accepts
+// `-fplugin-arg-pulse_reflect-include=<include>` to require the main file to
+// include `<include>`, the generated source, after its reflected classes.
 class ReflectAction : public clang::PluginASTAction {
  protected:
   std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
@@ -21,6 +26,10 @@ class ReflectAction : public clang::PluginASTAction {
                  const std::vector<std::string>& args) override;
 
   ActionType getActionType() override;
+
+ private:
+  std::string emit_path_;
+  std::string include_;
 };
 
 }  // namespace pulse::reflect::plugin

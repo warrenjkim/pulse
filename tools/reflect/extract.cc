@@ -1,10 +1,14 @@
 #include "tools/reflect/extract.h"
 
+#include <cstddef>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
+#include "clang/AST/DeclBase.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclTemplate.h"
 #include "clang/AST/PrettyPrinter.h"
@@ -31,6 +35,25 @@ std::string QualifiedName(const clang::CXXRecordDecl& decl) {
   llvm::raw_string_ostream out(name);
   decl.printQualifiedName(out, policy);
   return name;
+}
+
+std::vector<Record::Namespace> Namespaces(const clang::CXXRecordDecl& decl) {
+  std::vector<Record::Namespace> namespaces;
+  for (const clang::DeclContext* context = decl.getDeclContext();
+       context != nullptr; context = context->getParent()) {
+    if (const auto* ns = llvm::dyn_cast<clang::NamespaceDecl>(context)) {
+      namespaces.push_back(
+          {.name = ns->getNameAsString(), .is_inline = ns->isInline()});
+    }
+  }
+
+  size_t i = 0;
+  size_t j = namespaces.size();
+  while (i + 1 < j) {
+    std::swap(namespaces[i++], namespaces[--j]);
+  }
+
+  return namespaces;
 }
 
 void Error(clang::SourceLocation loc, llvm::StringRef message,
@@ -79,7 +102,8 @@ std::optional<Record> Extract(const clang::CXXRecordDecl& decl,
           "declare variables separately from a reflected class", diags);
   }
 
-  Record record{.qualified_name = QualifiedName(decl)};
+  Record record{.qualified_name = QualifiedName(decl),
+                .namespaces = Namespaces(decl)};
   for (const clang::FieldDecl* field : decl.fields()) {
     if (field->isAnonymousStructOrUnion()) {
       Error(field->getLocation(), "anonymous unions cannot be reflected",

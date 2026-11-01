@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "clang/AST/ASTConsumer.h"
+#include "clang/Basic/Diagnostic.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
-#include "clang/Lex/Preprocessor.h"
 #include "llvm/ADT/StringRef.h"
 #include "tools/reflect/consumer.h"
 
@@ -15,15 +15,38 @@ namespace pulse::reflect::plugin {
 
 std::unique_ptr<clang::ASTConsumer> ReflectAction::CreateASTConsumer(
     clang::CompilerInstance& ci, llvm::StringRef) {
-  clang::Preprocessor& preprocessor = ci.getPreprocessor();
-  preprocessor.setPredefines(preprocessor.getPredefines() +
-                             "#define PULSE_REFLECT_PLUGIN 1\n");
-
-  return std::make_unique<ReflectConsumer>(&ci.getDiagnostics(), &preprocessor);
+  return std::make_unique<ReflectConsumer>(
+      &ci.getDiagnostics(), &ci.getPreprocessor(), emit_path_, include_);
 }
 
-bool ReflectAction::ParseArgs(const clang::CompilerInstance&,
-                              const std::vector<std::string>&) {
+bool ReflectAction::ParseArgs(const clang::CompilerInstance& ci,
+                              const std::vector<std::string>& args) {
+  clang::DiagnosticsEngine* diags = &ci.getDiagnostics();
+  for (llvm::StringRef arg : args) {
+    if (arg.consume_front("emit=")) {
+      emit_path_ = arg.str();
+      continue;
+    }
+
+    if (arg.consume_front("include=")) {
+      include_ = arg.str();
+      continue;
+    }
+
+    diags->Report(
+        diags->getCustomDiagID(clang::DiagnosticsEngine::Error,
+                               "pulse::reflect: unknown argument '%0'"))
+        << arg;
+    return false;
+  }
+
+  if (emit_path_.empty()) {
+    diags->Report(diags->getCustomDiagID(
+        clang::DiagnosticsEngine::Error,
+        "pulse::reflect: missing -fplugin-arg-pulse_reflect-emit=<path>"));
+    return false;
+  }
+
   return true;
 }
 

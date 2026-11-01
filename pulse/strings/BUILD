@@ -1,3 +1,5 @@
+load("//bazel:cc.bzl", "cc_library")
+
 cc_library(
     name = "strings",
     visibility = ["//visibility:public"],

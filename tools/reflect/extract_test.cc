@@ -1,13 +1,13 @@
-struct [[pulse::reflect]] Struct {
+struct pulse_reflect Struct {
   int i;
   int j;
 };
 
-struct [[pulse::reflect]] WithoutFields {};
+struct pulse_reflect WithoutFields {};
 
 namespace inner {
 
-struct [[pulse::reflect]] InNamespace {
+struct pulse_reflect InNamespace {
   int i;
 };
 
@@ -15,20 +15,20 @@ struct [[pulse::reflect]] InNamespace {
 
 namespace {
 
-struct [[pulse::reflect]] InAnonymousNamespace {
+struct pulse_reflect InAnonymousNamespace {
   int i;
 };
 
 }  // namespace
 
-struct [[pulse::reflect]] WithUnnamedUnionMember {
+struct pulse_reflect WithUnnamedUnionMember {
   union {
     int i;
     float f;
   } u;
 };
 
-struct [[pulse::reflect]] WithNamedUnionMember {
+struct pulse_reflect WithNamedUnionMember {
   union V {
     int i;
     float f;
@@ -38,27 +38,27 @@ struct [[pulse::reflect]] WithNamedUnionMember {
 };
 
 // expected-error@+1 {{unnamed classes cannot be reflected}}
-struct [[pulse::reflect]] {
+struct pulse_reflect {
   int i;
 } unnamed [[maybe_unused]];
 
 void Local() {
   // expected-error@+1 {{local classes cannot be reflected}}
-  struct [[pulse::reflect]] L {
+  struct pulse_reflect L {
     int i;
   };
 }
 
 struct Outer {
   // expected-error@+1 {{nested classes are not supported yet}}
-  struct [[pulse::reflect]] Nested {
+  struct pulse_reflect Nested {
     int i;
   };
 };
 
 // expected-error@+2 {{class templates are not supported yet}}
 template <typename T>
-struct [[pulse::reflect]] Template {
+struct pulse_reflect Template {
   T v;
 };
 
@@ -69,21 +69,21 @@ struct Base {
 };
 
 // expected-error@+1 {{base classes are not supported yet}}
-struct [[pulse::reflect]] WithBase : Base {
+struct pulse_reflect WithBase : Base {
   int j;
 };
 
-class [[pulse::reflect]] Class {
+class pulse_reflect Class {
   // expected-error@+1 {{non-public fields are not supported yet}}
   int i [[maybe_unused]];
 };
 
-struct [[pulse::reflect]] WithBitfield {
+struct pulse_reflect WithBitfield {
   // expected-error@+1 {{bitfields are not supported yet}}
   int i : 1;
 };
 
-struct [[pulse::reflect]] WithAnonymousUnion {
+struct pulse_reflect WithAnonymousUnion {
   // expected-error@+1 {{anonymous unions cannot be reflected}}
   union {
     int i;
@@ -91,7 +91,7 @@ struct [[pulse::reflect]] WithAnonymousUnion {
   };
 };
 
-struct [[pulse::reflect]] WithDeclarator {
+struct pulse_reflect WithDeclarator {
   int i;
   // expected-error@+1 {{declare variables separately from a reflected class}}
 } declarator;

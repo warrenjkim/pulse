@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include "tools/reflect/record.h"
 #include "tools/reflect/source_writer.h"
@@ -27,36 +28,59 @@ std::string FieldDescriptors(size_t count) {
   return out;
 }
 
-}  // namespace
-
-std::string Render(const Record& record) {
+void WriteRecord(const Record& record, SourceWriter* w) {
   const std::string& qualified_name = record.qualified_name;
 
-  SourceWriter w;
-  w.Line(
+  w->Line(
       "[[maybe_unused]] "
       "consteval auto PulseReflect(const ::",
       qualified_name, "*) {");
-  w.Indent();
+  w->Indent();
 
   for (size_t i = 0; i < record.fields.size(); i++) {
     const Record::Field& field = record.fields[i];
 
-    w.Line("struct ", kDescriptor, std::to_string(i), " {");
-    w.Indent();
-    w.Line("using Type = decltype(::", qualified_name, "::", field.name, ");");
-    w.Line("static consteval const char* Name() { return \"", field.name,
-           "\"; }");
-    w.Line("static constexpr const Type& Value(const ::", qualified_name,
-           "& v) { return v.", field.name, "; }");
-    w.Dedent();
-    w.Line("};");
+    w->Line("struct ", kDescriptor, std::to_string(i), " {");
+    w->Indent();
+    w->Line("using Type = decltype(::", qualified_name, "::", field.name, ");");
+    w->Line("static consteval const char* Name() { return \"", field.name,
+            "\"; }");
+    w->Line("static constexpr const Type& Value(const ::", qualified_name,
+            "& v) { return v.", field.name, "; }");
+    w->Dedent();
+    w->Line("};");
   }
 
-  w.Line("return ::pulse::reflect::Mirror<::", qualified_name,
-         FieldDescriptors(record.fields.size()), ">{};");
-  w.Dedent();
-  w.Line("}");
+  w->Line("return ::pulse::reflect::Mirror<::", qualified_name,
+          FieldDescriptors(record.fields.size()), ">{};");
+  w->Dedent();
+  w->Line("}");
+}
+
+}  // namespace
+
+std::string RenderHeader(const std::vector<Record>& records) {
+  SourceWriter w;
+  w.Line("#pragma once");
+  if (records.empty()) {
+    return *std::move(w);
+  }
+
+  w.Line();
+  w.Line(R"src(#include "pulse/reflect/mirror.h")src");
+  for (const Record& record : records) {
+    w.Line();
+    for (const Record::Namespace& ns : record.namespaces) {
+      w.Line(ns.is_inline ? "inline " : "", "namespace",
+             ns.name.empty() ? "" : " ", ns.name, " {");
+    }
+
+    WriteRecord(record, &w);
+    for (auto ns = record.namespaces.rbegin(); ns != record.namespaces.rend();
+         ns++) {
+      w.Line("}  // namespace", ns->name.empty() ? "" : " ", ns->name);
+    }
+  }
 
   return *std::move(w);
 }

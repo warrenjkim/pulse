@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
-load(":defs.bzl", "clang_verify_test", "exec_file", "reflect_cc_test")
+load(":defs.bzl", "clang_verify_test", "exec_file", "reflect_headers")
 
 _PLUGIN_COPTS = [
     "-std=c++23",
@@ -39,7 +39,6 @@ cc_library(
     deps = [
         ":attribute",
         ":extract",
-        ":inject",
         ":record",
         ":render",
         "//third_party/llvm:clang_headers",
@@ -117,24 +116,43 @@ cc_test(
     ],
 )
 
-cc_library(
-    name = "inject",
-    srcs = ["inject.cc"],
-    hdrs = ["inject.h"],
-    copts = _PLUGIN_COPTS,
-    features = _PLUGIN_FEATURES,
-    deps = ["//third_party/llvm:clang_headers"],
+_INCLUDE_TEST_ARGS = ["-fplugin-arg-pulse_reflect-include=testdata/empty.reflect.h"]
+
+clang_verify_test(
+    name = "include_missing_test",
+    src = "include_missing_test.cc",
+    args = _INCLUDE_TEST_ARGS,
 )
 
 clang_verify_test(
-    name = "inject_test",
-    src = "inject_test.cc",
+    name = "include_order_test",
+    src = "include_order_test.cc",
+    args = _INCLUDE_TEST_ARGS,
+    data = ["testdata/empty.reflect.h"],
 )
 
-reflect_cc_test(
+reflect_headers(
+    name = "reflected_gen",
+    testonly = True,
+    srcs = ["testdata/reflected.h"],
+    deps = ["//pulse/reflect:mirror"],
+)
+
+cc_library(
+    name = "reflected",
+    testonly = True,
+    hdrs = [
+        "testdata/reflected.h",
+        ":reflected_gen",
+    ],
+    deps = ["//pulse/reflect:mirror"],
+)
+
+cc_test(
     name = "integration_test",
     srcs = ["integration_test.cc"],
     deps = [
+        ":reflected",
         "//pulse/reflect:mirror",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -156,7 +174,6 @@ cc_binary(
     linkshared = True,
     deps = [
         ":action",
-        ":attribute",
         "//third_party/llvm:clang_headers",
     ],
 )

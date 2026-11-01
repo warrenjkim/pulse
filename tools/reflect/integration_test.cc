@@ -3,15 +3,7 @@
 
 #include "gtest/gtest.h"
 #include "pulse/reflect/mirror.h"
-
-namespace ns {
-
-struct [[pulse::reflect]] A {
-  int i;
-  bool j;
-};
-
-}  // namespace ns
+#include "tools/reflect/testdata/reflected.h"
 
 namespace pulse::reflect {
 
