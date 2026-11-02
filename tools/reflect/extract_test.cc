@@ -74,8 +74,16 @@ struct pulse_reflect WithBase : Base {
 };
 
 class pulse_reflect Class {
-  // expected-error@+1 {{non-public fields are not supported yet}}
   int i [[maybe_unused]];
+};
+
+class pulse_reflect WithPrivateReference {
+ public:
+  explicit WithPrivateReference(int& i) : i(i) {}
+
+ private:
+  // expected-error@+1 {{non-public reference fields cannot be reflected}}
+  int& i [[maybe_unused]];
 };
 
 struct pulse_reflect WithBitfield {
