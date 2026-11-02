@@ -1,6 +1,7 @@
 #include "pulse/core/stringify.h"
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -161,6 +162,17 @@ TEST(StringifyTest, CharPointerEscapesLikeAString) {
 TEST(StringifyTest, NullCharPointerPrintsNullptr) {
   EXPECT_THAT(ToString(static_cast<const char*>(nullptr)), Eq("nullptr"));
   EXPECT_THAT(ToString(static_cast<char*>(nullptr)), Eq("nullptr"));
+}
+
+TEST(StringifyTest, EngagedOptionalPrintsValue) {
+  EXPECT_THAT(ToString(std::optional<int>(42)), Eq("std::optional<int>{42}"));
+  EXPECT_THAT(ToString(std::optional<std::string>("hi")),
+              Eq("std::optional<std::string>{\"hi\"}"));
+}
+
+TEST(StringifyTest, EmptyOptionalPrintsNullopt) {
+  EXPECT_THAT(ToString(std::optional<int>()),
+              Eq("std::optional<int>{nullopt}"));
 }
 
 TEST(StringifyTest, ConstVoidPointerPrintsHexAddress) {

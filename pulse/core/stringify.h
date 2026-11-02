@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -132,6 +133,19 @@ template <internal::VoidPointer T>
 struct Stringify<T> {
   static std::string ToString(const void* value) {
     return internal::HexAddress(value);
+  }
+};
+
+template <Stringifiable T>
+struct Stringify<std::optional<T>> {
+  static std::string ToString(const std::optional<T>& value) {
+    std::string out = "std::optional<";
+    out += TypeName<T>();
+    out += ">{";
+    out += value.has_value() ? Stringify<T>::ToString(*value) : "nullopt";
+    out += "}";
+
+    return out;
   }
 };
 
