@@ -36,6 +36,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":pretty_function",
+        "//pulse/reflect:mirror",
     ],
 )
 

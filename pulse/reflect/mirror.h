@@ -12,6 +12,9 @@
 //
 // The pulse_reflect plugin generates its reflection into `foo.reflect.h`.
 // `foo.h` must include it after its reflected classes.
+//
+// Reflected classes are printable with `pulse::ToString` from
+// `pulse/core/stringify.h`.
 #define pulse_reflect [[clang::annotate("pulse::reflect")]]
 
 namespace pulse::reflect {

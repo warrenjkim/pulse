@@ -3,7 +3,11 @@
 #include <concepts>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <type_traits>
+
+#include "pulse/core/pretty_function.h"
+#include "pulse/reflect/mirror.h"
 
 namespace pulse {
 
@@ -128,6 +132,60 @@ template <internal::VoidPointer T>
 struct Stringify<T> {
   static std::string ToString(const void* value) {
     return internal::HexAddress(value);
+  }
+};
+
+namespace internal {
+
+template <typename M>
+inline constexpr bool kFieldsStringifiable = false;
+
+template <typename T, typename... D>
+inline constexpr bool kFieldsStringifiable<reflect::Mirror<T, D...>> =
+    (Stringifiable<std::remove_cvref_t<typename D::Type>> && ...);
+
+// A class with member `begin()` and `end()`, like a container.
+template <typename T>
+concept MemberRange = requires(const T& value) {
+  value.begin();
+  value.end();
+};
+
+// A reflected class whose fields are all stringifiable.
+//
+// NOTE: Member ranges are excluded so a reflected class that is also a range
+// keeps rendering as a container instead of matching two specializations.
+template <typename T>
+concept ReflectedStringifiable = reflect::Reflected<T> && !MemberRange<T> &&
+                                 kFieldsStringifiable<reflect::Describe<T>>;
+
+}  // namespace internal
+
+// Renders a class marked `pulse_reflect` with its field names:
+//
+//   ns::A{.i=2,.j=true}
+template <internal::ReflectedStringifiable T>
+struct Stringify<T> {
+  static std::string ToString(const T& value) {
+    std::string out(TypeName<T>());
+    out += "{";
+
+    bool first = true;
+    reflect::ForEachField(
+        value, [&first, &out](std::string_view name, const auto& field) {
+          if (!first) {
+            out += ",";
+          }
+
+          first = false;
+          out += ".";
+          out += name;
+          out += "=";
+          out += pulse::ToString(field);
+        });
+    out += "}";
+
+    return out;
   }
 };
 

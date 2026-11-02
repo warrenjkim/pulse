@@ -1,7 +1,6 @@
-#include "pulse/reflect/stringify.h"  // IWYU pragma: keep
+#include "pulse/core/stringify.h"
 
 #include "gtest/gtest.h"
-#include "pulse/core/stringify.h"
 #include "pulse/reflect/testdata/types.h"
 
 namespace pulse {
