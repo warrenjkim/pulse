@@ -19,6 +19,14 @@ struct pulse_reflect D {
   C c;
 };
 
+class pulse_reflect E {
+ public:
+  explicit E(int i) : i_(i) {}
+
+ private:
+  int i_;
+};
+
 }  // namespace ns
 
 #include "pulse/reflect/testdata/types.reflect.h"

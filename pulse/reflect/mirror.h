@@ -65,4 +65,49 @@ constexpr void ForEachField(const T& value, F&& f) {
   }(Describe<T>{});
 }
 
+namespace internal {
+
+// Names the non-public field of `T` at index `I`.
+template <typename T, size_t I>
+struct PrivateField {};
+
+// Makes `GetMemberPointer(Tag)` return the member pointer `M`, which may point
+// to a private member:
+//
+//   constexpr auto GetMemberPointer(PrivateField<::ns::A, 1>);
+//   template struct MemberPointer<PrivateField<::ns::A, 1>, &::ns::A::i>;
+template <typename Tag, auto M>
+struct MemberPointer {
+  friend constexpr auto GetMemberPointer(Tag) { return M; }
+};
+
+template <typename M>
+struct MemberTypeOf;
+
+template <typename C, typename T>
+struct MemberTypeOf<T C::*> {
+  using Type = T;
+};
+
+// The type of the member `M` points to, e.g. `const int` for `const int A::*`.
+template <typename M>
+using MemberType = MemberTypeOf<M>::Type;
+
+// The `Type` and `Value` of the non-public field of `T` at index `I`, whose
+// `MemberPointer` is defined. The plugin adds `Name`:
+//
+//   struct PulseField1 : PrivateFieldDescriptor<::ns::A, 1> {
+//     static consteval const char* Name() { return "i"; }
+//   };
+template <typename T, size_t I>
+struct PrivateFieldDescriptor {
+  using Type = MemberType<decltype(GetMemberPointer(PrivateField<T, I>{}))>;
+
+  static constexpr const Type& Value(const T& v) {
+    return v.*GetMemberPointer(PrivateField<T, I>{});
+  }
+};
+
+}  // namespace internal
+
 }  // namespace pulse::reflect

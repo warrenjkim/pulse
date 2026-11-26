@@ -31,6 +31,37 @@ TEST(RenderTest, Fields) {
 )");
 }
 
+TEST(RenderTest, PrivateFields) {
+  EXPECT_EQ(
+      RenderHeader({Record{.qualified_name = "ns::A",
+                           .namespaces = {{.name = "ns"}},
+                           .fields = {Record::Field{.name = "i"},
+                                      {.name = "j", .is_public = false}}}}),
+      R"(#pragma once
+
+#include "pulse/reflect/mirror.h"
+
+namespace pulse::reflect::internal {
+constexpr auto GetMemberPointer(::pulse::reflect::internal::PrivateField<::ns::A, 1>);
+template struct MemberPointer<::pulse::reflect::internal::PrivateField<::ns::A, 1>, &::ns::A::j>;
+}  // namespace pulse::reflect::internal
+
+namespace ns {
+[[maybe_unused]] consteval auto PulseReflect(const ::ns::A*) {
+  struct PulseField0 {
+    using Type = decltype(::ns::A::i);
+    static consteval const char* Name() { return "i"; }
+    static constexpr const Type& Value(const ::ns::A& v) { return v.i; }
+  };
+  struct PulseField1 : ::pulse::reflect::internal::PrivateFieldDescriptor<::ns::A, 1> {
+    static consteval const char* Name() { return "j"; }
+  };
+  return ::pulse::reflect::Mirror<::ns::A, PulseField0, PulseField1>{};
+}
+}  // namespace ns
+)");
+}
+
 TEST(RenderTest, EmptyHeader) { EXPECT_EQ(RenderHeader({}), "#pragma once\n"); }
 
 TEST(RenderTest, Header) {

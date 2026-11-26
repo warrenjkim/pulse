@@ -13,6 +13,10 @@ TEST(StringifyTest, ToString) {
             "ns::B{.a=ns::A{.i=1,.j=false}}");
 }
 
+TEST(StringifyTest, NonPublicFields) {
+  EXPECT_EQ(ToString(ns::E(1)), "ns::E{.i_=1}");
+}
+
 TEST(StringifyTest, Stringifiable) {
   static_assert(Stringifiable<ns::A>);
   static_assert(!Stringifiable<ns::D>);

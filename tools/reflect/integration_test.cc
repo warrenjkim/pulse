@@ -26,6 +26,19 @@ TEST(EndToEndTest, ForEachField) {
   }());
 }
 
+TEST(EndToEndTest, NonPublicFields) {
+  static_assert([] {
+    std::string names;
+    int sum = 0;
+    ForEachField(ns::B(1, 2, 3), [&](std::string_view name, const auto& v) {
+      names += name;
+      names += ',';
+      sum += v;
+    });
+    return names == "i,j_,k_," && sum == 6;
+  }());
+}
+
 }  // namespace
 
 }  // namespace pulse::reflect

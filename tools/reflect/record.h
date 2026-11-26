@@ -15,6 +15,8 @@ struct Record {
 
   struct Field {
     std::string name;
+    // Non-public fields are read through `pulse::reflect::internal`.
+    bool is_public{true};
   };
 
   // The class's name with its enclosing scopes, e.g. `geo::Point`.

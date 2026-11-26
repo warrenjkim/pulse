@@ -117,14 +117,17 @@ std::optional<Record> Extract(const clang::CXXRecordDecl& decl,
       continue;
     }
 
-    // TODO(support private fields)
-    if (field->getAccess() != clang::AS_public) {
-      Error(field->getLocation(), "non-public fields are not supported yet",
-            diags);
+    // NOTE: Non-public fields are read through a member pointer, and C++ has
+    // no pointers to reference members.
+    const bool is_public = field->getAccess() == clang::AS_public;
+    if (!is_public && field->getType()->isReferenceType()) {
+      Error(field->getLocation(),
+            "non-public reference fields cannot be reflected", diags);
       continue;
     }
 
-    record.fields.push_back({.name = field->getNameAsString()});
+    record.fields.push_back(
+        {.name = field->getNameAsString(), .is_public = is_public});
   }
 
   if (diags->getNumErrors() != errors) {
