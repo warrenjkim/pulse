@@ -6,6 +6,7 @@ cc_library(
     deps = [
         ":enum_macros",
         ":error",
+        ":flags",
         ":pretty_function",
         ":result",
         ":result_or_die",
@@ -68,6 +69,30 @@ cc_library(
         ":enum_macros",
         ":stringify",
         "//pulse/strings:cat",
+    ],
+)
+
+cc_library(
+    name = "flags",
+    srcs = ["flags.cc"],
+    hdrs = ["flags.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":error",
+        ":result",
+        "//pulse/strings:cat",
+    ],
+)
+
+cc_test(
+    name = "flags_test",
+    srcs = ["flags_test.cc"],
+    deps = [
+        ":error",
+        ":flags",
+        ":result",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
